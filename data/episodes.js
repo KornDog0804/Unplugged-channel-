@@ -1,5 +1,7 @@
 // data/episodes.js
-export const EPISODES = [
+// IMPORTANT: This is a plain script (NOT a module). No "export" allowed.
+
+const EPISODES = [
   {
     id: "aic-1996",
     artist: "Alice In Chains",
@@ -23,6 +25,8 @@ export const EPISODES = [
     ]
   },
 
-  // Keep your other episodes here (Nirvana, Clapton, STP, Jay-Z…)
-  // You can add them later the same way.
+  // Add more episodes below the same way.
 ];
+
+// Make it globally available to app.js
+window.EPISODES = EPISODES;
