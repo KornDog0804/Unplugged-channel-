@@ -1,0 +1,154 @@
+:root{
+  --bg:#07070a;
+  --panel:rgba(255,255,255,.06);
+  --panel2:rgba(255,255,255,.035);
+  --line:rgba(255,255,255,.10);
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.65);
+  --muted2:rgba(255,255,255,.45);
+  --shadow:0 18px 55px rgba(0,0,0,.6);
+  --radius:18px;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  color:var(--text);
+  background:
+    radial-gradient(1200px 900px at 20% 15%, rgba(180,90,255,.10), transparent 60%),
+    radial-gradient(1100px 900px at 80% 20%, rgba(255,160,80,.09), transparent 55%),
+    radial-gradient(900px 700px at 55% 90%, rgba(80,255,170,.06), transparent 55%),
+    var(--bg);
+}
+
+.topbar{
+  position:sticky; top:0; z-index:5;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding:14px 16px;
+  background: linear-gradient(to bottom, rgba(7,7,10,.85), rgba(7,7,10,.55));
+  backdrop-filter: blur(10px);
+  border-bottom:1px solid var(--line);
+}
+
+.brand{display:flex; align-items:center; gap:10px}
+.dot{
+  width:11px; height:11px; border-radius:50%;
+  background: radial-gradient(circle at 35% 35%, rgba(255,255,255,.95), rgba(255,255,255,.15) 40%, rgba(255,120,60,.65) 70%, rgba(255,120,60,0));
+  box-shadow: 0 0 18px rgba(255,140,70,.35);
+}
+.title{font-weight:800; letter-spacing:.2px}
+.subtitle{font-size:12px; color:var(--muted); margin-top:2px}
+
+.actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+.btn{
+  border:1px solid var(--line);
+  background: rgba(255,255,255,.05);
+  color:var(--text);
+  padding:10px 12px;
+  border-radius: 14px;
+  cursor:pointer;
+  transition: transform .08s ease, background .15s ease;
+}
+.btn:hover{background: rgba(255,255,255,.08)}
+.btn:active{transform: translateY(1px)}
+.btn.primary{
+  border-color: rgba(255,180,120,.35);
+  background: linear-gradient(180deg, rgba(255,150,90,.18), rgba(255,255,255,.06));
+}
+.btn.small{padding:8px 10px; border-radius:12px; font-size:13px}
+
+.app{padding:16px; max-width:1100px; margin:0 auto;}
+.screen{display:block}
+.hidden{display:none !important}
+
+.sectionHead{
+  background: var(--panel2);
+  border:1px solid var(--line);
+  border-radius: var(--radius);
+  padding:14px 14px;
+  box-shadow: var(--shadow);
+}
+.sectionHead h2{margin:0 0 4px 0}
+.sectionHead p{margin:0; color:var(--muted); font-size:13px}
+
+.grid{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap:12px;
+}
+.card{
+  border:1px solid var(--line);
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding:14px;
+  box-shadow: var(--shadow);
+  cursor:pointer;
+  transition: transform .10s ease, background .18s ease, border-color .18s ease;
+}
+.card:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.16);
+}
+.card .artist{font-weight:800; font-size:16px}
+.card .meta{color:var(--muted); font-size:13px; margin-top:3px}
+.badges{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+.badge{
+  font-size:11px;
+  color:rgba(255,255,255,.85);
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.22);
+  padding:5px 8px;
+  border-radius:999px;
+}
+
+.playerTop{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:12px;
+}
+.now{flex:1; min-width:0}
+.nowTitle{font-weight:900}
+.nowMeta{color:var(--muted); font-size:13px; margin-top:2px}
+
+.stage{
+  border:1px solid var(--line);
+  background: rgba(0,0,0,.22);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  overflow:hidden;
+  position:relative;
+  min-height: 62vh;
+}
+
+#introCanvas{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.nowCard{
+  position:absolute;
+  left:16px; right:16px; bottom:16px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(0,0,0,.42);
+  border-radius: 18px;
+  padding:14px;
+  backdrop-filter: blur(10px);
+}
+.nowCard h3{margin:8px 0 3px 0}
+.muted{color:var(--muted)}
+.smallGap{margin-top:8px}
+.divider{height:1px; background: rgba(255,255,255,.12); margin:12px 0}
+.badgeRow{display:flex; gap:8px; flex-wrap:wrap}
+
+.footerHint{
+  margin-top:10px;
+  font-size:13px;
+}
