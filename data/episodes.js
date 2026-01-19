@@ -8,6 +8,10 @@ const EPISODES = [
     year: 1996,
     intro: "candle",
     mode: "full",
+
+    // Accent color used by the UI (TV LED, highlights, etc.)
+    themeColor: "#7CFFB2",
+
     tracks: [
       { title: "Nutshell", url: "https://www.youtube.com/watch?v=9EKi2E9dVY8" },
       { title: "Brother", url: "https://www.youtube.com/watch?v=1hnRTfzbT_s" },
