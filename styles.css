@@ -440,6 +440,7 @@ body.debug #debugPanel{ display:block; }
   transform: translateY(10px) scale(.98);
   transition: opacity .22s ease, transform .22s ease;
 }
+background-image: url("/images/1000049177-removebg-preview.png");
 
 /* Optional: a tiny glow that still stays clean */
 .zk.on{
