@@ -102,3 +102,49 @@ body {
 }
 
 .hidden{ display:none; }
+.ep { cursor: pointer; }
+.ep:focus { outline: 2px solid rgba(140,255,220,.35); outline-offset: 2px; }
+
+.epDetails { margin-top: 12px; display: grid; gap: 12px; }
+
+.player {
+  border-radius: 16px;
+  background: rgba(255,255,255,.06);
+  padding: 12px;
+}
+
+.playerTitle { font-weight: 700; margin-bottom: 10px; }
+
+.playerFrameWrap {
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0,0,0,.35);
+}
+
+.playerFrame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  display: block;
+}
+
+.trackList { display: grid; gap: 8px; }
+
+.track {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: inherit;
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.track:active { transform: scale(.99); }
+
+.trackNum { opacity: .75; font-variant-numeric: tabular-nums; }
+.trackPlay { opacity: .9; font-weight: 700; }
