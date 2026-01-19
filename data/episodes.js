@@ -1,6 +1,5 @@
 // data/episodes.js
-// Unplugged Channel — Final Top 5
-// Classic script, exposed globally for app.js
+// Unplugged Channel — Top 5 (Clean + Working)
 
 const EPISODES = [
 
@@ -10,7 +9,6 @@ const EPISODES = [
     artist: "Alice In Chains",
     year: 1996,
     intro: "candle",
-    mode: "tracks",
     tracks: [
       { title: "Nutshell", url: "https://www.youtube.com/watch?v=9EKi2E9dVY8" },
       { title: "Brother", url: "https://www.youtube.com/watch?v=1hnRTfzbT_s" },
@@ -28,21 +26,17 @@ const EPISODES = [
     ]
   },
 
-  // 2️⃣ Nirvana — MTV Unplugged in New York (1993)
+  // 2️⃣ Nirvana — MTV Unplugged in New York (1993) — CLEAN
   {
     id: "nirvana-unplugged-1993",
     artist: "Nirvana",
     year: 1993,
     intro: "candle",
-    mode: "tracks",
     tracks: [
       { title: "About a Girl", url: "https://www.youtube.com/watch?v=_24pJQUj7zg" },
       { title: "Come As You Are", url: "https://www.youtube.com/watch?v=z9LiPuVRyU8" },
       { title: "Jesus Doesn't Want Me for a Sunbeam", url: "https://www.youtube.com/watch?v=rfXqT8rfs9Q" },
       { title: "The Man Who Sold the World", url: "https://www.youtube.com/watch?v=fregObNcHC8" },
-      { title: "Pennyroyal Tea", url: "https://www.youtube.com/watch?v=4VxdufqB9zg" },
-      { title: "Dumb", url: "https://www.youtube.com/watch?v=5YeyG9G3G1M" },
-      { title: "All Apologies", url: "https://www.youtube.com/watch?v=ZJ6yqQyG2fY" },
       { title: "Where Did You Sleep Last Night", url: "https://www.youtube.com/watch?v=hEMm7gxBYSc" }
     ]
   },
@@ -53,7 +47,6 @@ const EPISODES = [
     artist: "Pearl Jam",
     year: 1992,
     intro: "lava",
-    mode: "tracks",
     tracks: [
       { title: "Oceans", url: "https://www.youtube.com/watch?v=0csYYDUVnR8" },
       { title: "Alive", url: "https://www.youtube.com/watch?v=nL3RLO1-oQI" },
@@ -62,37 +55,34 @@ const EPISODES = [
     ]
   },
 
-  // 4️⃣ KISS — MTV Unplugged (1995) — FULL SHOW
+  // 4️⃣ KISS — MTV Unplugged (1995) — Full Episode
   {
     id: "kiss-unplugged-1995",
     artist: "KISS",
     year: 1995,
     intro: "lava",
-    mode: "full",
     tracks: [
       {
-        title: "KISS — MTV Unplugged (Full Concert)",
+        title: "KISS — MTV Unplugged (Full Episode)",
         url: "https://www.youtube.com/watch?v=X4E_ULt7tLM"
       }
     ]
   },
 
-  // 5️⃣ Jay-Z & The Roots — MTV Unplugged (2001) — FULL SHOW
+  // 5️⃣ Jay-Z & The Roots — MTV Unplugged (2001) — Full Episode
   {
     id: "jayz-roots-unplugged-2001",
     artist: "Jay-Z & The Roots",
     year: 2001,
     intro: "lava",
-    mode: "full",
     tracks: [
       {
-        title: "Jay-Z & The Roots — MTV Unplugged (Full Show)",
+        title: "Jay-Z & The Roots — MTV Unplugged (Full Episode)",
         url: "https://www.youtube.com/watch?v=r2I_pGlvtAY"
       }
     ]
   }
-
 ];
 
-// Expose globally for app.js
+// expose globally
 window.EPISODES = EPISODES;
