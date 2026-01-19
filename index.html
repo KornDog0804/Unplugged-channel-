@@ -1,20 +1,21 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Unplugged Channel</title>
-  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    body {
+      background: #0b0b0f;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+  </style>
 </head>
-
 <body>
-  <!-- If this div is missing, nothing renders -->
-  <div id="app"></div>
-
-  <!-- YouTube IFrame API (your app creates players) -->
-  <script src="https://www.youtube.com/iframe_api"></script>
-
-  <!-- IMPORTANT: app.js uses import/export so it MUST be module -->
-  <script type="module" src="./app.js"></script>
+  <h1>Unplugged Channel is LIVE</h1>
 </body>
 </html>
