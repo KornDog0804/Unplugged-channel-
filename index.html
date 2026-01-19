@@ -5,14 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Unplugged Channel</title>
 
-  <!-- Load your CSS -->
-  <link rel="stylesheet" href="./styles.css" />
-</head>
-<body>
-  <!-- App mounts here -->
-  <div id="app"></div>
+  <!-- IMPORTANT: use ./ so Netlify paths always work -->
+  <link rel="stylesheet" href="./styles.css?v=1" />
 
-  <!-- Load your JS (module is important) -->
-  <script type="module" src="./app.js"></script>
+  <style>
+    /* Diagnostic overlay - cannot be hidden by your CSS */
+    #__diag {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      z-index: 2147483647;
+      background: rgba(0,0,0,.92);
+      color: #d7ffd7;
+      font: 14px/1.35 Arial, sans-serif;
+      border: 2px solid #22ff66;
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+      word-break: break-word;
+    }
+    #__diag b { color:#22ff66; }
+    #__diag .bad { color:#ff6b6b; }
+    #__diag .ok  { color:#7CFF7C; }
+    #__diag code { color:#9cffd9; }
+    #app {
+      /* If your CSS was hiding everything, this forces app visible */
+      min-height: 100vh;
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Diagnostic overlay -->
+  <div id="__diag">
+    <div><b>DIAGNOSTIC MODE</b> — if you can see this, HTML is loading ✅</div>
+    <div id="__diag_status">Checking…</div>
+  </div>
+
+  <!-- This is what your JS should render into -->
+  <main id="app" style="padding:24px;">
+    <h1 style="margin:0 0 12px;">Unplugged Channel</h1>
+    <p style="margin:0;opacity:.9">
+      If this text shows but your normal UI doesn’t, your <code>app.js</code> is crashing or not finding the right element.
+    </p>
+    <hr style="margin:18px 0;border:0;border-top:1px solid rgba(255,255,255,.15)" />
+    <div id="fallback" style="opacity:.9">
+      Fallback content is visible ✅
+    </div>
+  </main>
+
+  <script>
+    // Catch ANY JS crash and print it on screen
+    (function () {
+      const status = document.getElementById("__diag_status");
+      const say = (html) => { status.innerHTML = html; };
+
+      window.addEventListener("error", (e) => {
+        say(`<span class="bad"><b>JS ERROR:</b> ${e.message}</span><br><small>${(e.filename || "")}:${e.lineno || ""}:${e.colno || ""}</small>`);
+      });
+
+      window.addEventListener("unhandledrejection", (e) => {
+        const msg = (e.reason && (e.reason.stack || e.reason.message)) ? (e.reason.stack || e.reason.message) : String(e.reason);
+        say(`<span class="bad"><b>PROMISE REJECTION:</b> ${msg}</span>`);
+      });
+
+      // Quick resource checks
+      const checks = [];
+      checks.push(`index.html <span class="ok">OK</span>`);
+      say(checks.join("<br>"));
+    })();
+  </script>
+
+  <!-- IMPORTANT: load your app LAST and with ./ -->
+  <script type="module" src="./app.js?v=1"></script>
 </body>
 </html>
