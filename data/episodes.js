@@ -1,13 +1,13 @@
 // data/episodes.js
-// IMPORTANT: This is a plain script (NOT a module). No "export" allowed.
+// IMPORTANT: This is a classic script (no export/import). It must work on Netlify static hosting.
 
 const EPISODES = [
   {
     id: "aic-1996",
     artist: "Alice In Chains",
     year: 1996,
-    intro: "candle", // candle intro for AIC
-    mode: "full",   // full set (song-by-song)
+    intro: "candle",
+    mode: "full",
     tracks: [
       { title: "Nutshell", url: "https://www.youtube.com/watch?v=9EKi2E9dVY8" },
       { title: "Brother", url: "https://www.youtube.com/watch?v=1hnRTfzbT_s" },
@@ -23,10 +23,8 @@ const EPISODES = [
       { title: "Over Now", url: "https://www.youtube.com/watch?v=sV_-8KIXyPs" },
       { title: "The Killer Is Me", url: "https://www.youtube.com/watch?v=JztnWfB3sfY" }
     ]
-  },
-
-  // Add more episodes below the same way.
+  }
 ];
 
-// Make it globally available to app.js
+// Expose globally so app.js can read it:
 window.EPISODES = EPISODES;
