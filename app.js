@@ -3,14 +3,11 @@
 
   const debugPanel = $("debugPanel");
   const debugLines = $("debugLines");
+  const btnDiag = $("btnDiag");
   const status = $("status");
   const list = $("episodes");
   const tagline = $("tagline");
 
-  // Zombie kitty badge element exists in index.html as #zombieKitty
-  const zk = $("zombieKitty");
-
-  // ---------- Debug helpers ----------
   const log = (label, value) => {
     if (!debugLines) return;
     const row = document.createElement("div");
@@ -24,21 +21,13 @@
 
   const safeText = (v) => (v == null ? "" : String(v));
 
-  // ---------- YouTube helpers ----------
   const getVideoId = (url) => {
     try {
       const u = new URL(url);
-
-      // youtu.be/<id>
       if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "");
-
-      // youtube.com/watch?v=<id>
       const v = u.searchParams.get("v");
       if (v) return v;
-
-      // youtube.com/embed/<id>
       if (u.pathname.includes("/embed/")) return u.pathname.split("/embed/")[1].split(/[?#]/)[0];
-
       return "";
     } catch {
       return "";
@@ -48,58 +37,70 @@
   const makeYouTubeEmbed = (url) => {
     const id = getVideoId(url);
     if (!id) return "";
-    // playsinline helps mobile
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
   };
 
-  // ---------- Intro label ----------
   const introLabel = (ep) => {
     if (ep.intro === "candle") return "🕯️ Candle intro (AIC / Nirvana vibes)";
     return "🟣🟢 Lava lamp intro (warm + cozy)";
   };
 
-  // ---------- Artist theme hook ----------
   const applyArtistTheme = (ep) => {
-    // Optional future support:
-    // ep.themeColor = "#7CFFB2" or something
     const c = ep && ep.themeColor ? String(ep.themeColor) : "";
     if (c) document.documentElement.style.setProperty("--accent", c);
     else document.documentElement.style.removeProperty("--accent");
-
-    // Optional tagline override:
-    if (tagline && ep && ep.tagline) tagline.textContent = safeText(ep.tagline);
   };
 
-  // ---------- Zombie Kitty badge logic ----------
-  // You said: can't rename. Cool. We'll use ONE sprite sheet file and "background-position".
-  // Your file is currently: /images/1000049177-removebg-preview.png
-  // It is 2 rows of 3. We'll treat them as 1..6 in reading order.
-  //
-  // IMPORTANT: this assumes your CSS has #zombieKitty set up with background-image + size.
-  // If not yet, add these to styles.css:
-  // #zombieKitty { background-image:url("images/1000049177-removebg-preview.png"); }
-  //
-  const setKittySkin = (n) => {
-    if (!zk) return;
+  /* =========================
+     ZOMBIE KITTY helpers
+     ========================= */
+  let zkEl = null;
+  let zkLabelEl = null;
+  let zkTimer = null;
 
-    // clamp 1..6
-    let skin = Number(n) || 1;
-    if (skin < 1) skin = 1;
-    if (skin > 6) skin = 6;
+  const ensureZombieKitty = () => {
+    if (zkEl && zkLabelEl) return;
 
-    // store state for CSS
-    zk.setAttribute("data-skin", String(skin));
+    zkEl = document.createElement("div");
+    zkEl.className = "zk";
+    zkEl.setAttribute("aria-hidden", "true");
 
-    // little pop animation if CSS supports it
-    zk.classList.remove("zkPop");
-    void zk.offsetWidth;
-    zk.classList.add("zkPop");
+    zkLabelEl = document.createElement("div");
+    zkLabelEl.className = "zkLabel";
+    zkLabelEl.textContent = "Zombie Kitty Approved ✅";
+    zkLabelEl.setAttribute("aria-hidden", "true");
+
+    document.body.appendChild(zkEl);
+    document.body.appendChild(zkLabelEl);
   };
 
-  // Map track index -> 1..6 (loops)
-  const skinFromTrackIndex = (idx) => ((idx % 6) + 1);
+  // skinIndex: 0..5 (your sheet is 3 across x 2 rows)
+  const setZkSkin = (skinIndex) => {
+    ensureZombieKitty();
+    const idx = Math.max(0, Math.min(5, Number(skinIndex) || 0));
+    const col = idx % 3;           // 0,1,2
+    const row = Math.floor(idx / 3); // 0 or 1
+    const x = (col * 50);          // 0%, 50%, 100% across 3 tiles via bg-size 300%
+    const y = (row * 100);         // 0% or 100% for 2 rows via bg-size 200%
+    zkEl.style.backgroundPosition = `${x}% ${y}%`;
+  };
 
-  // ---------- Episode details renderer ----------
+  const flashZombieKitty = (skinIndex) => {
+    ensureZombieKitty();
+    setZkSkin(skinIndex);
+
+    // Reset timer so rapid song changes still feel snappy
+    if (zkTimer) clearTimeout(zkTimer);
+
+    zkEl.classList.add("on");
+    zkLabelEl.classList.add("on");
+
+    zkTimer = setTimeout(() => {
+      zkEl.classList.remove("on");
+      zkLabelEl.classList.remove("on");
+    }, 2200); // show for 2.2s
+  };
+
   const renderEpisodeDetails = (ep, detailsEl) => {
     detailsEl.innerHTML = "";
 
@@ -113,12 +114,13 @@
     intro.textContent = introLabel(ep);
     detailsEl.appendChild(intro);
 
-    // Player block
+    // Player
     const player = document.createElement("div");
-    player.className = "player playerWrap";
+    player.className = "player";
 
     const playerTitle = document.createElement("div");
     playerTitle.className = "playerTitle";
+    playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(ep.tracks?.[0]?.title || "Select a track")}`;
     player.appendChild(playerTitle);
 
     const tv = document.createElement("div");
@@ -127,13 +129,9 @@
     const tvTop = document.createElement("div");
     tvTop.className = "tvTopBar";
     tvTop.innerHTML = `
-      <div class="tvLeft">
-        <div class="tvLED"></div>
-        <div class="tvLabel">LIVE • UNPLUGGED</div>
-      </div>
-      <div class="tvRight">
-        <div class="tvKnob" title="don’t touch my knobs"></div>
-      </div>
+      <div class="tvLED"></div>
+      <div class="tvLabel">LIVE • UNPLUGGED</div>
+      <div class="tvKnob"></div>
     `;
     tv.appendChild(tvTop);
 
@@ -150,58 +148,30 @@
     iframe.loading = "lazy";
     iframe.title = "YouTube player";
 
+    // default to first track
+    const firstUrl = ep.tracks && ep.tracks[0] ? ep.tracks[0].url : "";
+    const embed = firstUrl ? makeYouTubeEmbed(firstUrl) : "";
+    if (embed) iframe.src = embed;
+
     frameWrap.appendChild(iframe);
     tv.appendChild(frameWrap);
 
     const now = document.createElement("div");
     now.className = "nowPlaying";
+    now.textContent = embed ? `Now playing: ${safeText(ep.tracks[0].title)}` : "Pick a track to start";
     tv.appendChild(now);
 
     player.appendChild(tv);
     detailsEl.appendChild(player);
 
-    // Track list
+    // Tracks
     const trackList = document.createElement("div");
     trackList.className = "trackList";
 
-    // Default selection: first track
-    const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
-    const firstTrack = tracks[0] || null;
-
-    const setNowPlaying = (t, idx) => {
-      const title = t ? safeText(t.title) : "Select a track";
-      playerTitle.textContent = `${safeText(ep.artist)} — ${title}`;
-      now.textContent = t ? `Now playing: ${title}` : "Pick a track to start";
-
-      // LED pulse
-      const led = tv.querySelector(".tvLED");
-      if (led) {
-        led.classList.remove("pulse");
-        void led.offsetWidth;
-        led.classList.add("pulse");
-      }
-
-      // Kitty changes per track
-      if (typeof idx === "number") setKittySkin(skinFromTrackIndex(idx));
-    };
-
-    const playTrack = (t, idx) => {
-      const src = t && t.url ? makeYouTubeEmbed(t.url) : "";
-      if (src) iframe.src = src;
-      setNowPlaying(t, idx);
-
-      // highlight active button
-      trackList.querySelectorAll(".track").forEach((b) => b.classList.remove("active"));
-      const activeBtn = trackList.querySelector(`.track[data-idx="${idx}"]`);
-      if (activeBtn) activeBtn.classList.add("active");
-    };
-
-    // Build buttons
-    tracks.forEach((t, idx) => {
+    (ep.tracks || []).forEach((t, idx) => {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "track";
-      btn.dataset.idx = String(idx);
       btn.innerHTML = `
         <span class="trackNum">${idx + 1}.</span>
         <span class="trackTitle">${safeText(t.title)}</span>
@@ -209,28 +179,33 @@
       `;
 
       btn.addEventListener("click", (e) => {
-        e.stopPropagation(); // IMPORTANT: don't collapse the episode when tapping tracks
-        playTrack(t, idx);
+        e.stopPropagation();
+
+        const src = makeYouTubeEmbed(t.url);
+        if (src) iframe.src = src;
+
+        playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t.title)}`;
+        now.textContent = `Now playing: ${safeText(t.title)}`;
+
+        // TV LED pulse
+        const led = tv.querySelector(".tvLED");
+        if (led) {
+          led.classList.remove("pulse");
+          void led.offsetWidth;
+          led.classList.add("pulse");
+        }
+
+        // Zombie Kitty pops up briefly, then disappears
+        // Use ep.zkSkin if present (0..5). Otherwise default to 1.
+        flashZombieKitty(ep.zkSkin ?? 1);
       });
 
       trackList.appendChild(btn);
     });
 
     detailsEl.appendChild(trackList);
-
-    // Auto-play first track (or just preload)
-    if (firstTrack) {
-      // Set kitty to track 1
-      setKittySkin(1);
-
-      // Start playing first track (you can change to "no autoplay" if you want)
-      playTrack(firstTrack, 0);
-    } else {
-      setNowPlaying(null, 0);
-    }
   };
 
-  // ---------- Episodes list renderer ----------
   const render = (episodes) => {
     list.innerHTML = "";
 
@@ -287,8 +262,9 @@
       details.className = "epDetails hidden";
       card.appendChild(details);
 
-      const openThis = () => {
-        // close others
+      const toggle = () => {
+        const isOpen = !details.classList.contains("hidden");
+
         document.querySelectorAll(".epDetails").forEach((d) => {
           if (d !== details) d.classList.add("hidden");
         });
@@ -296,33 +272,20 @@
           if (e !== card) e.classList.remove("open");
         });
 
+        if (isOpen) {
+          details.classList.add("hidden");
+          card.classList.remove("open");
+          return;
+        }
+
         applyArtistTheme(ep);
         renderEpisodeDetails(ep, details);
         details.classList.remove("hidden");
         card.classList.add("open");
-
-        // keep it clean on mobile
         card.scrollIntoView({ behavior: "smooth", block: "start" });
       };
 
-      const closeThis = () => {
-        details.classList.add("hidden");
-        card.classList.remove("open");
-      };
-
-      const toggle = () => {
-        const isOpen = !details.classList.contains("hidden");
-        if (isOpen) closeThis();
-        else openThis();
-      };
-
-      // IMPORTANT: clicking inside details should NOT toggle close
-      card.addEventListener("click", (e) => {
-        const clickedInsideDetails = e.target && details.contains(e.target);
-        if (clickedInsideDetails) return;
-        toggle();
-      });
-
+      card.addEventListener("click", toggle);
       card.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -334,54 +297,33 @@
     });
   };
 
-  // ---------- Boot ----------
   const boot = () => {
     const params = new URLSearchParams(location.search);
     const debugOn = params.get("debug") === "1";
 
-    // If debug is on, inject a button into #debugMount (created in index.html)
+    // Keep debug off-screen unless ?debug=1
+    if (btnDiag) btnDiag.style.display = debugOn ? "inline-flex" : "none";
+    if (debugPanel) debugPanel.classList.add("hidden");
+
     if (debugOn) {
       document.body.classList.add("debug");
       if (tagline) tagline.textContent = "Debug mode: ON (remove ?debug=1 to hide)";
+      btnDiag.addEventListener("click", () => debugPanel.classList.toggle("hidden"));
       log("DOM", "ready ✅");
       log("CSS", "loaded (if you see gradient)");
-
-      // create debug button if it exists in mount (index.html)
-      const mount = $("debugMount");
-      if (mount) {
-        const btn = document.createElement("button");
-        btn.id = "btnDiag";
-        btn.className = "btn btnGhost";
-        btn.type = "button";
-        btn.textContent = "Debug";
-        mount.appendChild(btn);
-
-        btn.addEventListener("click", () => {
-          if (debugPanel) debugPanel.classList.toggle("hidden");
-        });
-      }
-    } else {
-      // Ensure debug panel stays hidden in normal mode
-      if (debugPanel) debugPanel.classList.add("hidden");
     }
 
-    // Set default kitty skin (1) when page loads
-    setKittySkin(1);
-
     const episodes = window.EPISODES || window.episodes;
-
     if (debugOn) log("episodes.js", episodes ? "global found ✅" : "global NOT found ❌");
 
     if (!episodes) {
       setStatus("episodes.js loaded but did NOT expose data. Fix needed.");
-      if (list) {
-        list.innerHTML = `
-          <div class="muted">
-            Your <b>data/episodes.js</b> must expose a global like:
-            <div class="mono" style="margin-top:10px;">window.EPISODES = EPISODES;</div>
-          </div>
-        `;
-      }
+      list.innerHTML = `
+        <div class="muted">
+          Your <b>data/episodes.js</b> must expose a global like:
+          <div class="mono" style="margin-top:10px;">window.EPISODES = EPISODES;</div>
+        </div>
+      `;
       return;
     }
 
