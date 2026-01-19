@@ -2,15 +2,70 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Unplugged Channel</title>
 
-  <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="styles.css?v=1" />
+
+  <!-- HARD FAIL-SAFE: if any JS error happens, show it on the page -->
+  <script>
+    (function () {
+      const show = (msg) => {
+        let box = document.getElementById("kdCrash");
+        if (!box) {
+          box = document.createElement("div");
+          box.id = "kdCrash";
+          box.style.cssText = `
+            position:fixed; left:12px; right:12px; top:12px; z-index:999999;
+            border:2px solid #ff4d4d; border-radius:14px; padding:12px 14px;
+            background:rgba(10,10,14,.92); color:#fff; font:14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+            box-shadow:0 12px 40px rgba(0,0,0,.45);
+            white-space:pre-wrap;
+          `;
+          document.addEventListener("DOMContentLoaded", () => document.body.appendChild(box));
+        }
+        box.textContent = "JS CRASH DETECTED:\n\n" + msg;
+      };
+
+      window.addEventListener("error", (e) => {
+        show((e && (e.message || e.error && e.error.stack)) || String(e));
+      });
+
+      window.addEventListener("unhandledrejection", (e) => {
+        const reason = e && e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : "Unknown rejection";
+        show(reason);
+      });
+    })();
+  </script>
 </head>
 
 <body>
-  <main id="app"></main>
+  <header class="top">
+    <div class="brand">
+      <div class="dot"></div>
+      <div>
+        <div class="title">Unplugged Channel</div>
+        <div class="sub">If this page loads but looks empty, your JS is crashing.</div>
+      </div>
+    </div>
+    <button id="btnDiag" class="btn">Toggle Debug</button>
+  </header>
 
-  <script type="module" src="./app.js"></script>
+  <main class="wrap">
+    <section id="debugPanel" class="card hidden">
+      <div class="h2">Debug Panel</div>
+      <div id="debugLines" class="mono"></div>
+    </section>
+
+    <section class="card">
+      <div class="h2">Episodes</div>
+      <div id="status" class="pill">Loading…</div>
+      <div id="episodes" class="list"></div>
+    </section>
+  </main>
+
+  <!-- IMPORTANT: cache-bust the scripts so your phone isn't showing an old broken version -->
+  <script src="data/episodes.js?v=1"></script>
+  <script src="app.js?v=1" defer></script>
 </body>
 </html>
