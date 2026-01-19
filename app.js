@@ -1,162 +1,198 @@
-import { playLavaIntro } from "./introLava.js";
-import { playCandleIntro } from "./introCandle.js";
+// app.js
+import { EPISODES } from "./data/episodes.js";
+import { runCandleIntro } from "./introCandle.js";
+import { runLavaIntro } from "./introLava.js";
 
-const screenBrowse = document.getElementById("screenBrowse");
-const screenPlayer = document.getElementById("screenPlayer");
+// ---------- UI ----------
+const $ = (sel) => document.querySelector(sel);
 
-const btnChannel = document.getElementById("btnChannel");
-const btnBrowse = document.getElementById("btnBrowse");
-const btnBack = document.getElementById("btnBack");
-const btnNext = document.getElementById("btnNext");
+function render() {
+  const app = $("#app");
 
-const grid = document.getElementById("grid");
-const introCanvas = document.getElementById("introCanvas");
-
-const nowTitle = document.getElementById("nowTitle");
-const nowMeta = document.getElementById("nowMeta");
-
-const nowCard = document.getElementById("nowCard");
-const badgeRow = document.getElementById("badgeRow");
-const epArtist = document.getElementById("epArtist");
-const epYear = document.getElementById("epYear");
-
-let episodes = [];
-let currentIndex = 0;
-let channelMode = false;
-
-init();
-
-async function init() {
-  episodes = await loadEpisodes();
-
-  renderGrid();
-  setScreen("browse");
-
-  btnChannel.addEventListener("click", () => startChannel());
-  btnBrowse.addEventListener("click", () => setScreen("browse"));
-  btnBack.addEventListener("click", () => {
-    if (channelMode) {
-      // If you’re channeling, back goes to browse but keeps mode ready.
-      setScreen("browse");
-    } else {
-      setScreen("browse");
-    }
-  });
-  btnNext.addEventListener("click", () => nextEpisode(true));
-
-  // Start in browse
-}
-
-function setScreen(which) {
-  if (which === "browse") {
-    screenBrowse.classList.remove("hidden");
-    screenPlayer.classList.add("hidden");
-  } else {
-    screenBrowse.classList.add("hidden");
-    screenPlayer.classList.remove("hidden");
-  }
-}
-
-function renderGrid() {
-  grid.innerHTML = "";
-  for (const ep of episodes) {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <div class="artist">${escapeHtml(ep.artist)}</div>
-      <div class="meta">${ep.year} • ${ep.intro === "candle" ? "Candle intro" : "Lava intro"}</div>
-      <div class="badges">
-        <span class="badge">${escapeHtml(ep.badge || "FREE MIX")}</span>
-        <span class="badge">${ep.intro === "candle" ? "CANDLE" : "LAVA"}</span>
+  app.innerHTML = `
+    <div class="header">
+      <div>
+        <div class="title">Unplugged Channel</div>
+        <div class="sub">FREE-first • Shuffle channel + pick-anytime</div>
       </div>
-    `;
-    card.addEventListener("click", () => {
-      channelMode = false;
-      playEpisodeById(ep.id);
+
+      <div class="pillrow">
+        <button class="btn" id="shuffleBtn">▶ Channel (Shuffle)</button>
+        <button class="btn" id="browseBtn">Browse</button>
+      </div>
+    </div>
+
+    <div class="sectionCard">
+      <h1 class="sectionTitle">Browse Episodes</h1>
+      <p class="sectionSub">Pick one, or hit Channel and let it ride.</p>
+
+      <div class="list" id="episodeList"></div>
+    </div>
+  `;
+
+  const list = $("#episodeList");
+  list.innerHTML = EPISODES.map(ep => cardHTML(ep)).join("");
+
+  $("#shuffleBtn").addEventListener("click", () => {
+    const shuffled = [...EPISODES].sort(() => Math.random() - 0.5);
+    playEpisode(shuffled[0].id);
+  });
+
+  $("#browseBtn").addEventListener("click", () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  });
+
+  // card click handlers
+  for (const ep of EPISODES) {
+    const el = document.getElementById(`play-${ep.id}`);
+    if (el) el.addEventListener("click", () => playEpisode(ep.id));
+  }
+}
+
+function cardHTML(ep) {
+  const tags = [];
+  tags.push(ep.mode === "full" ? "FREE FULL / MIX" : "FREE MIX");
+  tags.push(ep.intro === "candle" ? "CANDLE" : "LAVA");
+
+  return `
+    <div class="card">
+      <div class="cardTop">
+        <div>
+          <div class="cardTitle">${ep.artist}</div>
+          <div class="cardMeta">${ep.year} • ${ep.intro === "candle" ? "Candle intro" : "Lava intro"}</div>
+        </div>
+        <button class="btn" id="play-${ep.id}">Play</button>
+      </div>
+
+      <div class="tags">
+        ${tags.map(t => `<span class="tag">${t}</span>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+// ---------- Player Overlay (YouTube IFrame API) ----------
+let ytPlayer = null;
+let currentEpisode = null;
+let currentIndex = 0;
+
+const overlay = () => $("#playerOverlay");
+const nowArtist = () => $("#nowArtist");
+const nowTrack = () => $("#nowTrack");
+const queue = () => $("#queue");
+
+function openOverlay() {
+  overlay().classList.remove("hidden");
+  overlay().setAttribute("aria-hidden", "false");
+}
+function closeOverlay() {
+  overlay().classList.add("hidden");
+  overlay().setAttribute("aria-hidden", "true");
+  // Stop playback
+  try { ytPlayer?.stopVideo?.(); } catch {}
+}
+
+function setNowPlaying() {
+  nowArtist().textContent = `${currentEpisode.artist} • ${currentEpisode.year}`;
+  nowTrack().textContent = currentEpisode.tracks[currentIndex]?.title ?? "—";
+}
+
+function renderQueue() {
+  queue().innerHTML = currentEpisode.tracks
+    .map((t, i) => `
+      <div class="queueItem ${i === currentIndex ? "active" : ""}" data-idx="${i}">
+        <div class="queueTitle">${String(i+1).padStart(2,"0")}. ${t.title}</div>
+        <div class="queueSmall">Tap to play</div>
+      </div>
+    `)
+    .join("");
+
+  queue().querySelectorAll(".queueItem").forEach(item => {
+    item.addEventListener("click", () => {
+      const idx = Number(item.getAttribute("data-idx"));
+      playIndex(idx);
     });
-    grid.appendChild(card);
-  }
+  });
 }
 
-function startChannel() {
-  channelMode = true;
-  // random starting point
-  currentIndex = Math.floor(Math.random() * episodes.length);
-  playEpisode(episodes[currentIndex]);
+function youtubeIdFromUrl(url) {
+  const u = new URL(url);
+  if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "");
+  return u.searchParams.get("v");
 }
 
-function nextEpisode(fromButton = false) {
-  // Shuffle behavior: pick a different random index
-  if (episodes.length <= 1) return;
+function playIndex(idx) {
+  currentIndex = Math.max(0, Math.min(idx, currentEpisode.tracks.length - 1));
+  setNowPlaying();
+  renderQueue();
 
-  let next = currentIndex;
-  for (let i=0; i<10; i++) {
-    next = Math.floor(Math.random() * episodes.length);
-    if (next !== currentIndex) break;
-  }
-  currentIndex = next;
-  playEpisode(episodes[currentIndex]);
-}
+  const id = youtubeIdFromUrl(currentEpisode.tracks[currentIndex].url);
+  if (!id) return;
 
-function playEpisodeById(id) {
-  const idx = episodes.findIndex(e => e.id === id);
-  if (idx >= 0) currentIndex = idx;
-  playEpisode(episodes[currentIndex]);
-}
-
-async function playEpisode(ep) {
-  setScreen("player");
-  nowCard.classList.add("hidden");
-
-  nowTitle.textContent = "Now Playing";
-  nowMeta.textContent = `${ep.artist} • ${ep.year} • ${channelMode ? "Channel Mode" : "Picked"}`;
-
-  // Make canvas fill the stage area
-  fitCanvasToStage();
-
-  const label = `${ep.artist} — ${ep.year}`;
-
-  // Intro
-  if (ep.intro === "candle") {
-    await playCandleIntro(introCanvas, label, 5);
+  if (!ytPlayer) {
+    ytPlayer = new YT.Player("ytPlayer", {
+      videoId: id,
+      playerVars: {
+        autoplay: 1,
+        rel: 0,
+        modestbranding: 1
+      },
+      events: {
+        onStateChange: (e) => {
+          // 0 = ended
+          if (e.data === 0) next();
+        }
+      }
+    });
   } else {
-    await playLavaIntro(introCanvas, ep.palette, label, 3);
+    ytPlayer.loadVideoById(id);
+  }
+}
+
+function prev() {
+  playIndex(currentIndex - 1);
+}
+function next() {
+  playIndex(currentIndex + 1);
+}
+
+// Wire overlay buttons once
+function wireOverlayControls() {
+  $("#closePlayer").addEventListener("click", closeOverlay);
+  $("#prevTrack").addEventListener("click", prev);
+  $("#nextTrack").addEventListener("click", next);
+
+  // click background to close (but not the card)
+  overlay().addEventListener("click", (e) => {
+    if (e.target === overlay()) closeOverlay();
+  });
+}
+
+// ---------- Episode Play Flow (Intro -> Player) ----------
+async function playEpisode(id) {
+  const ep = EPISODES.find(e => e.id === id);
+  if (!ep) return;
+
+  currentEpisode = ep;
+  currentIndex = 0;
+
+  // Run intro first (user gesture starts this chain, good for autoplay rules)
+  if (ep.intro === "candle") {
+    await runCandleIntro({ label: ep.artist });
+  } else {
+    await runLavaIntro({ label: ep.artist });
   }
 
-  // “Now Playing” card (video wiring comes next)
-  badgeRow.innerHTML = "";
-  badgeRow.appendChild(makeBadge(ep.badge || "FREE MIX"));
-  badgeRow.appendChild(makeBadge(ep.intro === "candle" ? "CANDLE INTRO" : "LAVA INTRO"));
-
-  epArtist.textContent = ep.artist;
-  epYear.textContent = String(ep.year);
-
-  nowCard.classList.remove("hidden");
+  openOverlay();
+  setNowPlaying();
+  renderQueue();
+  playIndex(0);
 }
 
-function fitCanvasToStage() {
-  // Ensure canvas uses CSS size properly; the intro modules handle internal scaling.
-  const stage = introCanvas.parentElement;
-  if (!stage) return;
-  // Force a reflow so getBoundingClientRect is correct on first show
-  stage.getBoundingClientRect();
-}
+// YouTube API calls window.onYouTubeIframeAPIReady when it’s loaded.
+// We don’t need to do anything there; we create the player on first play.
+window.onYouTubeIframeAPIReady = () => {};
 
-function makeBadge(text) {
-  const s = document.createElement("span");
-  s.className = "badge";
-  s.textContent = text;
-  return s;
-}
-
-async function loadEpisodes() {
-  const res = await fetch("./data/unplugged.json", { cache: "no-store" });
-  if (!res.ok) throw new Error("Could not load unplugged.json");
-  return await res.json();
-}
-
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"']/g, (m) => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
-  }[m]));
-}
+// boot
+render();
+wireOverlayControls();
