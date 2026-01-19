@@ -2,72 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Unplugged Channel</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="dot"></div>
-      <div>
-        <div class="title">Unplugged Channel</div>
-        <div class="subtitle">FREE-first • Shuffle channel + pick-anytime</div>
+  <div id="app"></div>
+
+  <!-- Player Overlay -->
+  <div id="playerOverlay" class="overlay hidden" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="overlay-top">
+        <div>
+          <div id="nowArtist" class="now-artist">Now Playing</div>
+          <div id="nowTrack" class="now-track">—</div>
+        </div>
+        <button id="closePlayer" class="btn ghost" type="button">Close</button>
       </div>
+
+      <div class="player-wrap">
+        <div id="ytPlayer"></div>
+      </div>
+
+      <div class="overlay-controls">
+        <button id="prevTrack" class="btn" type="button">⏮ Prev</button>
+        <button id="nextTrack" class="btn" type="button">Next ⏭</button>
+      </div>
+
+      <div id="queue" class="queue"></div>
     </div>
+  </div>
 
-    <div class="actions">
-      <button id="btnChannel" class="btn primary">▶ Channel (Shuffle)</button>
-      <button id="btnBrowse" class="btn">Browse</button>
-    </div>
-  </header>
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
 
-  <main class="app">
-    <section id="screenBrowse" class="screen">
-      <div class="sectionHead">
-        <h2>Browse Episodes</h2>
-        <p>Pick one, or hit Channel and let it ride.</p>
-      </div>
-      <div id="grid" class="grid"></div>
-    </section>
-
-    <section id="screenPlayer" class="screen hidden">
-      <div class="playerTop">
-        <button id="btnBack" class="btn small">← Back</button>
-        <div class="now">
-          <div id="nowTitle" class="nowTitle">Now Playing</div>
-          <div id="nowMeta" class="nowMeta"></div>
-        </div>
-        <div class="playerActions">
-          <button id="btnNext" class="btn small">Next ▷</button>
-        </div>
-      </div>
-
-      <div class="stage">
-        <canvas id="introCanvas"></canvas>
-
-        <div id="nowCard" class="nowCard hidden">
-          <div class="badgeRow" id="badgeRow"></div>
-          <h3 id="epArtist"></h3>
-          <div id="epYear" class="muted"></div>
-
-          <div class="divider"></div>
-
-          <div class="muted">
-            Playback wiring is next (YouTube FULL / YouTube MIX / Local upgrade).
-          </div>
-          <div class="muted smallGap">
-            For now, this proves: shuffle, browse, and intros (candle vs lava) all work.
-          </div>
-        </div>
-      </div>
-
-      <div class="footerHint muted">
-        Tip: press <b>Next</b> to test intros fast. AIC + Nirvana = candle. Everyone else = lava.
-      </div>
-    </section>
-  </main>
-
+  <!-- Your app -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
