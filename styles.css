@@ -409,3 +409,67 @@ body.debug #debugPanel{ display:block; }
   border-color: rgba(124,255,178,.35);
   background: rgba(124,255,178,.10);
 }
+/* =========================
+   ZOMBIE KITTY (override)
+   Put this at the VERY BOTTOM of styles.css
+   ========================= */
+
+.zk{
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 92px;
+  height: 92px;
+  z-index: 9999;
+
+  /* No glass box. Truly transparent. */
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+
+  background-image: url("images/1000049177-removebg-preview.png");
+  background-repeat: no-repeat;
+  background-size: 300% 200%; /* 3 across, 2 rows */
+  background-position: 0% 0%;
+
+  pointer-events: none;
+
+  /* Hidden until we trigger it */
+  opacity: 0;
+  transform: translateY(10px) scale(.98);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+/* Optional: a tiny glow that still stays clean */
+.zk.on{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: drop-shadow(0 10px 28px rgba(0,0,0,.55));
+}
+
+/* The little “Kitty Approved” label */
+.zkLabel{
+  position: fixed;
+  right: 14px;
+  bottom: 112px;
+  z-index: 10000;
+  pointer-events: none;
+
+  padding: 8px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(0,0,0,.35);
+
+  font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  color: rgba(255,255,255,.9);
+
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity .22s ease, transform .22s ease;
+}
+
+.zkLabel.on{
+  opacity: 1;
+  transform: translateY(0);
+}
