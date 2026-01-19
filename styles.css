@@ -313,3 +313,43 @@ body.debug #debugPanel{ display:block; }
   opacity:.95;
 }
 .muted{ color: var(--muted); font-size:14px; }
+/* ===============================
+   Zombie Kitty Stamp
+   =============================== */
+
+.zk {
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  width: 88px;
+  height: 88px;
+  background-image: url("/images/1000049177-removebg-preview.png");
+  background-size: 300% 200%;
+  background-repeat: no-repeat;
+  image-rendering: auto;
+  filter: drop-shadow(0 10px 25px rgba(0,0,0,.6));
+  z-index: 999;
+  pointer-events: none;
+  opacity: .95;
+}
+
+/* Sprite positions (2 rows × 3 columns) */
+.zk.k1 { background-position:   0%   0%; }
+.zk.k2 { background-position:  50%   0%; }
+.zk.k3 { background-position: 100%   0%; }
+.zk.k4 { background-position:   0% 100%; }
+.zk.k5 { background-position:  50% 100%; }
+.zk.k6 { background-position: 100% 100%; }
+
+/* Stamp label */
+.zk::after {
+  content: "Kitty Approved";
+  position: absolute;
+  bottom: -22px;
+  right: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .3px;
+  color: rgba(255,255,255,.85);
+  text-shadow: 0 2px 6px rgba(0,0,0,.6);
+}
