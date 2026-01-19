@@ -1,43 +1,20 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Unplugged Channel</title>
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
+  <!-- If this div is missing, nothing renders -->
   <div id="app"></div>
 
-  <!-- Player Overlay -->
-  <div id="playerOverlay" class="overlay hidden" aria-hidden="true">
-    <div class="overlay-card">
-      <div class="overlay-top">
-        <div>
-          <div id="nowArtist" class="now-artist">Now Playing</div>
-          <div id="nowTrack" class="now-track">—</div>
-        </div>
-        <button id="closePlayer" class="btn ghost" type="button">Close</button>
-      </div>
-
-      <div class="player-wrap">
-        <div id="ytPlayer"></div>
-      </div>
-
-      <div class="overlay-controls">
-        <button id="prevTrack" class="btn" type="button">⏮ Prev</button>
-        <button id="nextTrack" class="btn" type="button">Next ⏭</button>
-      </div>
-
-      <div id="queue" class="queue"></div>
-    </div>
-  </div>
-
-  <!-- YouTube IFrame API -->
+  <!-- YouTube IFrame API (your app creates players) -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
-  <!-- Your app -->
+  <!-- IMPORTANT: app.js uses import/export so it MUST be module -->
   <script type="module" src="./app.js"></script>
 </body>
 </html>
