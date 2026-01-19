@@ -1,0 +1,98 @@
+[
+  {
+    "id": "alice-in-chains-1996",
+    "artist": "Alice In Chains",
+    "year": 1996,
+    "intro": "candle",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#f2c77a", "liquid": "#2a1a0d", "glow": "#ffb86b" }
+  },
+  {
+    "id": "nirvana-1993",
+    "artist": "Nirvana",
+    "year": 1993,
+    "intro": "candle",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#f2c77a", "liquid": "#23170d", "glow": "#ffb86b" }
+  },
+  {
+    "id": "eric-clapton-1992",
+    "artist": "Eric Clapton",
+    "year": 1992,
+    "intro": "lava",
+    "badge": "FREE FULL / MIX",
+    "palette": { "blob": "#ffcf7a", "liquid": "#241509", "glow": "#ffb86b" }
+  },
+  {
+    "id": "stone-temple-pilots-1993",
+    "artist": "Stone Temple Pilots",
+    "year": 1993,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#e0a85a", "liquid": "#181818", "glow": "#ffb86b" }
+  },
+  {
+    "id": "jay-z-2001",
+    "artist": "Jay-Z",
+    "year": 2001,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#2f6bff", "liquid": "#05060a", "glow": "#7aa7ff" }
+  },
+  {
+    "id": "mariah-carey-1992",
+    "artist": "Mariah Carey",
+    "year": 1992,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#e9e3ff", "liquid": "#1b1022", "glow": "#d1b7ff" }
+  },
+  {
+    "id": "aerosmith-1990",
+    "artist": "Aerosmith",
+    "year": 1990,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#ff3b3b", "liquid": "#0a0404", "glow": "#ff9a7a" }
+  },
+  {
+    "id": "live-1995",
+    "artist": "Live",
+    "year": 1995,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#41d37a", "liquid": "#07160e", "glow": "#ffb86b" }
+  },
+  {
+    "id": "lenny-kravitz-1994",
+    "artist": "Lenny Kravitz",
+    "year": 1994,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#8a4bff", "liquid": "#130718", "glow": "#ffcf7a" }
+  },
+  {
+    "id": "kiss-1995",
+    "artist": "KISS",
+    "year": 1995,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#ff2a2a", "liquid": "#030305", "glow": "#ff7a5a" }
+  },
+  {
+    "id": "tlc-1996",
+    "artist": "TLC",
+    "year": 1996,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#1de2d6", "liquid": "#061316", "glow": "#ff4bd3" }
+  },
+  {
+    "id": "paramore-2009",
+    "artist": "Paramore",
+    "year": 2009,
+    "intro": "lava",
+    "badge": "FREE MIX",
+    "palette": { "blob": "#ff7a18", "liquid": "#061018", "glow": "#1de2d6" }
+  }
+]
