@@ -1,4 +1,3 @@
-// app.js
 (function () {
   const $ = (id) => document.getElementById(id);
 
@@ -7,6 +6,7 @@
   const btnDiag = $("btnDiag");
   const status = $("status");
   const list = $("episodes");
+  const tagline = $("tagline");
 
   const log = (label, value) => {
     if (!debugLines) return;
@@ -21,163 +21,147 @@
 
   const safeText = (v) => (v == null ? "" : String(v));
 
-  // Extract a YouTube video id from common URL formats
-  const ytIdFromUrl = (url) => {
+  const getVideoId = (url) => {
     try {
       const u = new URL(url);
       // youtu.be/<id>
-      if (u.hostname.includes("youtu.be")) {
-        return (u.pathname || "").replace("/", "").trim();
-      }
+      if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "");
       // youtube.com/watch?v=<id>
       const v = u.searchParams.get("v");
-      if (v) return v.trim();
-
+      if (v) return v;
       // youtube.com/embed/<id>
-      const parts = (u.pathname || "").split("/").filter(Boolean);
-      const embedIndex = parts.indexOf("embed");
-      if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1].trim();
-
+      if (u.pathname.includes("/embed/")) return u.pathname.split("/embed/")[1].split(/[?#]/)[0];
       return "";
-    } catch (e) {
+    } catch {
       return "";
     }
+  };
+
+  const makeYouTubeEmbed = (url) => {
+    const id = getVideoId(url);
+    if (!id) return "";
+    // modestbranding is deprecated-ish but harmless; controls stay.
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
   };
 
   const introLabel = (ep) => {
-    const intro = (ep && ep.intro) ? String(ep.intro).toLowerCase() : "";
-    if (intro === "candle") return "🕯️ Candle intro (AIC / Nirvana vibes)";
-    if (intro === "lava") return "🫧 Lava lamp intro";
-    return "";
+    if (ep.intro === "candle") return "🕯️ Candle intro (AIC / Nirvana vibes)";
+    return "🟣🟢 Lava lamp intro (warm + cozy)";
   };
 
-  const buildTrackRow = (n, track, onPlay) => {
-    const row = document.createElement("button");
-    row.type = "button";
-    row.className = "trackRow";
-
-    const left = document.createElement("div");
-    left.className = "trackLeft";
-    left.textContent = `${n}. ${safeText(track.title || "Untitled")}`;
-
-    const right = document.createElement("div");
-    right.className = "trackRight";
-    right.textContent = "Play ▶";
-
-    row.appendChild(left);
-    row.appendChild(right);
-
-    row.addEventListener("click", onPlay);
-
-    return row;
+  const applyArtistTheme = (ep) => {
+    // Optional: if you add ep.themeColor in episodes.js, we use it
+    const c = ep && ep.themeColor ? String(ep.themeColor) : "";
+    if (c) document.documentElement.style.setProperty("--accent", c);
+    else document.documentElement.style.removeProperty("--accent");
   };
 
-  const renderEpisodeDetails = (container, ep, index) => {
-    // Details wrapper
-    const details = document.createElement("div");
-    details.className = "epDetails";
+  const renderEpisodeDetails = (ep, detailsEl) => {
+    detailsEl.innerHTML = "";
 
-    const hint = document.createElement("div");
-    hint.className = "muted";
-    hint.textContent = "Tap to open tracklist";
+    const topLine = document.createElement("div");
+    topLine.className = "epHint";
+    topLine.textContent = "Tap a track to play";
+    detailsEl.appendChild(topLine);
 
-    const intro = introLabel(ep);
-    const introLine = document.createElement("div");
-    introLine.className = "muted";
-    introLine.textContent = intro;
+    const intro = document.createElement("div");
+    intro.className = "epIntro";
+    intro.textContent = introLabel(ep);
+    detailsEl.appendChild(intro);
 
-    const playerCard = document.createElement("div");
-    playerCard.className = "playerCard";
+    // Player
+    const player = document.createElement("div");
+    player.className = "player";
 
     const playerTitle = document.createElement("div");
     playerTitle.className = "playerTitle";
-    playerTitle.textContent = "Select a track to play";
+    playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(ep.tracks?.[0]?.title || "Select a track")}`;
+    player.appendChild(playerTitle);
 
-    const playerWrap = document.createElement("div");
-    playerWrap.className = "playerWrap";
+    const tv = document.createElement("div");
+    tv.className = "tvFrame";
 
-    // IMPORTANT: the iframe id must be unique per episode
-    const frameId = `ytFrame_${safeText(ep.id || index)}`;
+    const tvTop = document.createElement("div");
+    tvTop.className = "tvTopBar";
+    tvTop.innerHTML = `
+      <div class="tvLED"></div>
+      <div class="tvLabel">LIVE • UNPLUGGED</div>
+      <div class="tvKnob"></div>
+    `;
+    tv.appendChild(tvTop);
+
+    const frameWrap = document.createElement("div");
+    frameWrap.className = "playerFrameWrap";
 
     const iframe = document.createElement("iframe");
-    iframe.id = frameId;
-    iframe.className = "player";
-    iframe.width = "100%";
-    iframe.height = "220";
-    iframe.style.border = "0";
-    iframe.style.borderRadius = "14px";
+    iframe.className = "playerFrame";
+    iframe.id = "ytFrame";
     iframe.allow =
       "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
     iframe.allowFullscreen = true;
-    iframe.src = ""; // start empty until user picks a track
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.loading = "lazy";
+    iframe.title = "YouTube player";
 
-    playerWrap.appendChild(iframe);
+    // default to first track
+    const firstUrl = ep.tracks && ep.tracks[0] ? ep.tracks[0].url : "";
+    const embed = firstUrl ? makeYouTubeEmbed(firstUrl) : "";
+    if (embed) iframe.src = embed;
 
-    playerCard.appendChild(playerTitle);
-    playerCard.appendChild(playerWrap);
+    frameWrap.appendChild(iframe);
+    tv.appendChild(frameWrap);
 
-    const tracksWrap = document.createElement("div");
-    tracksWrap.className = "tracksWrap";
+    // now playing
+    const now = document.createElement("div");
+    now.className = "nowPlaying";
+    now.textContent = embed ? `Now playing: ${safeText(ep.tracks[0].title)}` : "Pick a track to start";
+    tv.appendChild(now);
 
-    const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
-    if (!tracks.length) {
-      const none = document.createElement("div");
-      none.className = "muted";
-      none.textContent = "No tracks added for this episode yet.";
-      tracksWrap.appendChild(none);
-    } else {
-      tracks.forEach((t, i) => {
-        const row = buildTrackRow(i + 1, t, () => {
-          const id = ytIdFromUrl(t.url || "");
-          if (!id) {
-            alert("This track link doesn't look like a valid YouTube URL.");
-            return;
-          }
+    player.appendChild(tv);
 
-          playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t.title)}`;
+    detailsEl.appendChild(player);
 
-          // REPLACE iframe node (mobile-safe) so it refreshes without collapsing layout
-          const oldFrame = document.getElementById(frameId);
-          const newFrame = document.createElement("iframe");
-          newFrame.id = frameId;
-          newFrame.className = "player";
-          newFrame.width = "100%";
-          newFrame.height = "220";
-          newFrame.style.border = "0";
-          newFrame.style.borderRadius = "14px";
-          newFrame.allow =
-            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-          newFrame.allowFullscreen = true;
+    // Tracks
+    const trackList = document.createElement("div");
+    trackList.className = "trackList";
 
-          // playsinline helps on mobile; rel=0 reduces “related” noise
-          newFrame.src = `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0`;
+    (ep.tracks || []).forEach((t, idx) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "track";
+      btn.innerHTML = `
+        <span class="trackNum">${idx + 1}.</span>
+        <span class="trackTitle">${safeText(t.title)}</span>
+        <span class="trackPlay">Play ▶</span>
+      `;
 
-          if (oldFrame) oldFrame.replaceWith(newFrame);
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const src = makeYouTubeEmbed(t.url);
+        if (src) iframe.src = src;
+        playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t.title)}`;
+        now.textContent = `Now playing: ${safeText(t.title)}`;
 
-          // DO NOT scroll (this is what made it feel like tracks “disappeared”)
-          // If you ever want a gentle nudge, uncomment:
-          // playerTitle.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        });
-
-        tracksWrap.appendChild(row);
+        // tiny pulse on the TV LED
+        const led = tv.querySelector(".tvLED");
+        if (led) {
+          led.classList.remove("pulse");
+          void led.offsetWidth; // restart animation
+          led.classList.add("pulse");
+        }
       });
-    }
 
-    details.appendChild(hint);
-    if (intro) details.appendChild(introLine);
-    details.appendChild(playerCard);
-    details.appendChild(tracksWrap);
+      trackList.appendChild(btn);
+    });
 
-    container.appendChild(details);
+    detailsEl.appendChild(trackList);
   };
 
   const render = (episodes) => {
-    if (!list) return;
-
     list.innerHTML = "";
 
     if (!Array.isArray(episodes) || episodes.length === 0) {
-      setStatus("No episodes found (episodes.js loaded but data is empty).");
+      setStatus("No episodes found.");
       const empty = document.createElement("div");
       empty.className = "muted";
       empty.textContent = "episodes.js loaded, but it didn’t give us a usable array.";
@@ -185,11 +169,17 @@
       return;
     }
 
-    setStatus(`Loaded ${episodes.length} episodes ✅`);
+    setStatus(`Loaded ${episodes.length} episode${episodes.length === 1 ? "" : "s"} ✅`);
 
     episodes.forEach((ep, i) => {
       const card = document.createElement("div");
       card.className = "ep";
+      card.tabIndex = 0;
+
+      const head = document.createElement("div");
+      head.className = "epHead";
+
+      const left = document.createElement("div");
 
       const title = document.createElement("div");
       title.className = "epTitle";
@@ -197,58 +187,96 @@
 
       const meta = document.createElement("div");
       meta.className = "epMeta";
-      meta.textContent = [
-        ep.artist ? `Artist: ${ep.artist}` : null,
-        ep.year ? `Year: ${ep.year}` : null
-      ].filter(Boolean).join(" • ") || "—";
+      meta.textContent =
+        [
+          ep.artist ? `Artist: ${ep.artist}` : null,
+          ep.year ? `Year: ${ep.year}` : null
+        ].filter(Boolean).join(" • ") || "—";
 
-      // Tap header to expand/collapse
-      const header = document.createElement("button");
-      header.type = "button";
-      header.className = "epHeader";
-      header.appendChild(title);
-      header.appendChild(meta);
+      const hint = document.createElement("div");
+      hint.className = "epSmall";
+      hint.textContent = "Tap to open setlist";
 
-      const body = document.createElement("div");
-      body.className = "epBody hidden";
+      left.appendChild(title);
+      left.appendChild(meta);
+      left.appendChild(hint);
 
-      renderEpisodeDetails(body, ep, i);
+      const chev = document.createElement("div");
+      chev.className = "chev";
+      chev.textContent = "▾";
 
-      header.addEventListener("click", () => {
-        body.classList.toggle("hidden");
+      head.appendChild(left);
+      head.appendChild(chev);
+      card.appendChild(head);
+
+      const details = document.createElement("div");
+      details.className = "epDetails hidden";
+      card.appendChild(details);
+
+      const toggle = () => {
+        const isOpen = !details.classList.contains("hidden");
+
+        // close other open episodes (keeps it clean on mobile)
+        document.querySelectorAll(".epDetails").forEach((d) => {
+          if (d !== details) d.classList.add("hidden");
+        });
+        document.querySelectorAll(".ep").forEach((e) => {
+          if (e !== card) e.classList.remove("open");
+        });
+
+        if (isOpen) {
+          details.classList.add("hidden");
+          card.classList.remove("open");
+          return;
+        }
+
+        applyArtistTheme(ep);
+        renderEpisodeDetails(ep, details);
+        details.classList.remove("hidden");
+        card.classList.add("open");
+        // smooth scroll into view
+        card.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      card.addEventListener("click", toggle);
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
       });
 
-      card.appendChild(header);
-      card.appendChild(body);
       list.appendChild(card);
     });
   };
 
   const boot = () => {
-    // Debug panel toggle
-    if (btnDiag && debugPanel) {
+    // Debug is OFF unless ?debug=1
+    const params = new URLSearchParams(location.search);
+    const debugOn = params.get("debug") === "1";
+
+    if (btnDiag) btnDiag.style.display = debugOn ? "inline-flex" : "none";
+
+    if (debugOn) {
+      document.body.classList.add("debug");
+      if (tagline) tagline.textContent = "Debug mode: ON (remove ?debug=1 to hide)";
       btnDiag.addEventListener("click", () => debugPanel.classList.toggle("hidden"));
+      log("DOM", "ready ✅");
+      log("CSS", "loaded (if you see gradient)");
     }
 
-    log("DOM", "ready ✅");
-    log("CSS", "loaded (if you see gradient)");
-
-    // Expect data/episodes.js to set: window.EPISODES (recommended) or window.episodes
     const episodes = window.EPISODES || window.episodes;
 
-    log("episodes.js", episodes ? "global found ✅" : "global NOT found ❌");
+    if (debugOn) log("episodes.js", episodes ? "global found ✅" : "global NOT found ❌");
 
     if (!episodes) {
       setStatus("episodes.js loaded but did NOT expose data. Fix needed.");
-      if (list) {
-        list.innerHTML = `
-          <div class="muted">
-            Your <b>data/episodes.js</b> must expose the array globally.<br><br>
-            Add this at the bottom:<br>
-            <span class="mono">window.EPISODES = EPISODES;</span>
-          </div>
-        `;
-      }
+      list.innerHTML = `
+        <div class="muted">
+          Your <b>data/episodes.js</b> must expose a global like:
+          <div class="mono" style="margin-top:10px;">window.EPISODES = EPISODES;</div>
+        </div>
+      `;
       return;
     }
 
