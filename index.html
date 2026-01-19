@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Unplugged Channel</title>
 
-  <link rel="stylesheet" href="styles.css?v=1" />
+  <link rel="stylesheet" href="styles.css?v=9" />
 
-  <!-- HARD FAIL-SAFE: if any JS error happens, show it on the page -->
+  <!-- Crash overlay (shows errors only if something breaks) -->
   <script>
     (function () {
       const show = (msg) => {
@@ -28,7 +28,7 @@
       };
 
       window.addEventListener("error", (e) => {
-        show((e && (e.message || e.error && e.error.stack)) || String(e));
+        show((e && (e.message || (e.error && e.error.stack))) || String(e));
       });
 
       window.addEventListener("unhandledrejection", (e) => {
@@ -43,12 +43,14 @@
   <header class="top">
     <div class="brand">
       <div class="dot"></div>
-      <div>
+      <div class="brandText">
         <div class="title">Unplugged Channel</div>
-        <div class="sub">If this page loads but looks empty, your JS is crashing.</div>
+        <div class="sub" id="tagline">MTV vibes. Candles + lava lamps. Pick a set.</div>
       </div>
     </div>
-    <button id="btnDiag" class="btn">Toggle Debug</button>
+
+    <!-- Debug is hidden unless you use ?debug=1 -->
+    <button id="btnDiag" class="btn btnGhost" type="button">Debug</button>
   </header>
 
   <main class="wrap">
@@ -64,8 +66,14 @@
     </section>
   </main>
 
-  <!-- IMPORTANT: cache-bust the scripts so your phone isn't showing an old broken version -->
-  <script src="data/episodes.js?v=1"></script>
-  <script src="app.js?v=1" defer></script>
+  <footer class="foot">
+    <div class="footInner">
+      <div class="footTag">Vinyl Therapy energy, but make it MTV.</div>
+      <div class="footMini">Tip: add <span class="mono">?debug=1</span> to the URL if you ever need diagnostics.</div>
+    </div>
+  </footer>
+
+  <script src="data/episodes.js?v=9"></script>
+  <script src="app.js?v=9" defer></script>
 </body>
 </html>
