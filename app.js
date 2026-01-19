@@ -1,4 +1,4 @@
-// app.js
+document.body.insertAdjacentHTML("afterbegin","<div style='color:#fff;padding:16px;font:16px Arial'>JS LOADED ✅</div>");// app.js
 import { EPISODES } from "./data/episodes.js";
 import { runCandleIntro } from "./introCandle.js";
 import { runLavaIntro } from "./introLava.js";
