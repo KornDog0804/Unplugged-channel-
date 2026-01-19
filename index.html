@@ -52,8 +52,8 @@
       </div>
     </div>
 
-    <!-- Debug is hidden unless you use ?debug=1 -->
-    <button id="btnDiag" class="btn btnGhost" type="button">Debug</button>
+    <!-- Debug button is injected ONLY when using ?debug=1 -->
+    <div id="debugMount"></div>
   </header>
 
   <main class="wrap">
@@ -69,7 +69,27 @@
     </section>
   </main>
 
-  <!-- No footer debug tip anymore -->
+  <!-- Zombie Kitty stamp (bottom-right) -->
+  <div id="zombieKitty" class="zk k1" aria-hidden="true"></div>
+
+  <script>
+    // Only show the Debug button if URL has ?debug=1
+    (function () {
+      const params = new URLSearchParams(location.search);
+      const isDebug = params.get("debug") === "1";
+      if (!isDebug) return;
+
+      const mount = document.getElementById("debugMount");
+      if (!mount) return;
+
+      const btn = document.createElement("button");
+      btn.id = "btnDiag";
+      btn.className = "btn btnGhost";
+      btn.type = "button";
+      btn.textContent = "Debug";
+      mount.appendChild(btn);
+    })();
+  </script>
 
   <script src="data/episodes.js?v=10"></script>
   <script src="app.js?v=10" defer></script>
