@@ -8,6 +8,7 @@
   const list = $("episodes");
   const tagline = $("tagline");
 
+  // ---------- Debug helpers ----------
   const log = (label, value) => {
     if (!debugLines) return;
     const row = document.createElement("div");
@@ -21,35 +22,46 @@
 
   const safeText = (v) => (v == null ? "" : String(v));
 
+  // ---------- YouTube URL helpers ----------
   const getVideoId = (url) => {
     try {
       const u = new URL(url);
+
+      // youtu.be/<id>
       if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "");
+
+      // youtube.com/watch?v=<id>
       const v = u.searchParams.get("v");
       if (v) return v;
+
+      // youtube.com/embed/<id>
       if (u.pathname.includes("/embed/")) return u.pathname.split("/embed/")[1].split(/[?#]/)[0];
+
       return "";
     } catch {
       return "";
     }
   };
 
+  // Build an embed URL that allows JS API control
   const makeYouTubeEmbed = (url) => {
     const id = getVideoId(url);
     if (!id) return "";
-    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
+    // enablejsapi=1 is the key for autoplay/ended detection & next-track advance
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(
+      location.origin
+    )}`;
   };
 
   // ---------- Card polish helpers ----------
   const pickAccent = (ep) => {
-    // Use ep.accent if you add it later in episodes.js; otherwise infer from artist
     if (ep && ep.accent) return String(ep.accent);
 
     const a = (ep.artist || "").toLowerCase();
-    if (a.includes("alice in chains")) return "#7CFFB2"; // sickly neon green
-    if (a.includes("nirvana")) return "#8A5CFF"; // violet
-    if (a.includes("pearl jam")) return "#FFB74A"; // warm amber
-    if (a.includes("jay-z") || a.includes("jay z")) return "#FFD54A"; // gold
+    if (a.includes("alice in chains")) return "#7CFFB2";
+    if (a.includes("nirvana")) return "#8A5CFF";
+    if (a.includes("pearl jam")) return "#FFB74A";
+    if (a.includes("jay-z") || a.includes("jay z")) return "#FFD54A";
     return "#8A5CFF";
   };
 
@@ -82,13 +94,45 @@
     return wrap;
   };
 
-  // ---------- Existing details renderer (unchanged vibe) ----------
+  // ---------- Theme ----------
   const applyArtistTheme = (ep) => {
     const c = pickAccent(ep);
     document.documentElement.style.setProperty("--accent", c);
   };
 
-  const renderEpisodeDetails = (ep, detailsEl) => {
+  // ---------- YouTube IFrame API wiring ----------
+  let ytApiReady = false;
+  let ytApiLoading = false;
+
+  const ensureYouTubeAPI = (debugOn) => {
+    if (ytApiReady || ytApiLoading) return;
+    ytApiLoading = true;
+
+    // If already present
+    if (window.YT && window.YT.Player) {
+      ytApiReady = true;
+      ytApiLoading = false;
+      if (debugOn) log("YT API", "already present ✅");
+      return;
+    }
+
+    // Load it once
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    tag.async = true;
+    document.head.appendChild(tag);
+
+    window.onYouTubeIframeAPIReady = () => {
+      ytApiReady = true;
+      ytApiLoading = false;
+      if (debugOn) log("YT API", "loaded ✅");
+    };
+
+    if (debugOn) log("YT API", "loading…");
+  };
+
+  // ---------- Episode Details Renderer ----------
+  const renderEpisodeDetails = (ep, detailsEl, debugOn) => {
     detailsEl.innerHTML = "";
 
     const topLine = document.createElement("div");
@@ -98,9 +142,10 @@
 
     const intro = document.createElement("div");
     intro.className = "epIntro";
-    intro.textContent = ep.intro === "candle"
-      ? "🕯️ Candle intro (AIC / Nirvana vibes)"
-      : "🟣🟢 Lava lamp intro (warm + cozy)";
+    intro.textContent =
+      ep.intro === "candle"
+        ? "🕯️ Candle intro (AIC / Nirvana vibes)"
+        : "🟣🟢 Lava lamp intro (warm + cozy)";
     detailsEl.appendChild(intro);
 
     // Player
@@ -127,27 +172,18 @@
     const frameWrap = document.createElement("div");
     frameWrap.className = "playerFrameWrap";
 
-    const iframe = document.createElement("iframe");
-    iframe.className = "playerFrame";
-    iframe.id = "ytFrame";
-    iframe.allow =
-      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-    iframe.allowFullscreen = true;
-    iframe.referrerPolicy = "strict-origin-when-cross-origin";
-    iframe.loading = "lazy";
-    iframe.title = "YouTube player";
+    // We use an inner container so the YT API can own the iframe safely.
+    const ytMount = document.createElement("div");
+    ytMount.id = "ytMount";
+    ytMount.style.width = "100%";
+    ytMount.style.height = "100%";
+    frameWrap.appendChild(ytMount);
 
-    // default to first track
-    const firstUrl = ep.tracks && ep.tracks[0] ? ep.tracks[0].url : "";
-    const embed = firstUrl ? makeYouTubeEmbed(firstUrl) : "";
-    if (embed) iframe.src = embed;
-
-    frameWrap.appendChild(iframe);
     tv.appendChild(frameWrap);
 
     const now = document.createElement("div");
     now.className = "nowPlaying";
-    now.textContent = embed ? `Now playing: ${safeText(ep.tracks[0].title)}` : "Pick a track to start";
+    now.textContent = ep.tracks?.[0]?.title ? `Now playing: ${safeText(ep.tracks[0].title)}` : "Pick a track to start";
     tv.appendChild(now);
 
     player.appendChild(tv);
@@ -157,6 +193,121 @@
     const trackList = document.createElement("div");
     trackList.className = "trackList";
 
+    // State for auto-advance
+    let currentIndex = 0;
+    let ytPlayer = null;
+    let lastPlayToken = 0; // prevents double-advance
+
+    const pulseLED = () => {
+      const led = tv.querySelector(".tvLED");
+      if (led) {
+        led.classList.remove("pulse");
+        void led.offsetWidth;
+        led.classList.add("pulse");
+      }
+    };
+
+    const setNowPlaying = (idx) => {
+      const t = ep.tracks?.[idx];
+      playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t?.title || "Select a track")}`;
+      now.textContent = t?.title ? `Now playing: ${safeText(t.title)}` : "Pick a track to start";
+    };
+
+    const markActiveTrack = (idx) => {
+      [...trackList.querySelectorAll(".track")].forEach((b, i) => {
+        if (i === idx) b.classList.add("active");
+        else b.classList.remove("active");
+      });
+    };
+
+    const tryPlayIndex = (idx, reason) => {
+      if (!Array.isArray(ep.tracks) || ep.tracks.length === 0) return;
+
+      // wrap
+      if (idx >= ep.tracks.length) idx = 0;
+      if (idx < 0) idx = 0;
+
+      const t = ep.tracks[idx];
+      const id = t ? getVideoId(t.url) : "";
+      if (!id) {
+        if (debugOn) log("Skip", `No video ID at track ${idx + 1}`);
+        return tryPlayIndex(idx + 1, "bad-id");
+      }
+
+      currentIndex = idx;
+      setNowPlaying(idx);
+      markActiveTrack(idx);
+      pulseLED();
+
+      if (!ytApiReady || !window.YT || !window.YT.Player) {
+        // fallback: no API yet, just show a normal iframe
+        // NOTE: auto-advance won't work in fallback mode.
+        detailsEl.querySelector("#ytMount").innerHTML = "";
+        const iframe = document.createElement("iframe");
+        iframe.className = "playerFrame";
+        iframe.allow =
+          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+        iframe.allowFullscreen = true;
+        iframe.referrerPolicy = "strict-origin-when-cross-origin";
+        iframe.loading = "lazy";
+        iframe.title = "YouTube player";
+        iframe.src = makeYouTubeEmbed(t.url);
+        detailsEl.querySelector("#ytMount").appendChild(iframe);
+
+        if (debugOn) log("YT", `fallback iframe (no API) — ${reason || "manual"}`);
+        return;
+      }
+
+      const playToken = ++lastPlayToken;
+
+      // Create player once, then load by ID
+      if (!ytPlayer) {
+        ytPlayer = new window.YT.Player("ytMount", {
+          videoId: id,
+          playerVars: {
+            autoplay: 1,
+            rel: 0,
+            playsinline: 1,
+            modestbranding: 1
+          },
+          events: {
+            onReady: () => {
+              if (debugOn) log("YT", "player ready ✅");
+              // extra nudge on autoplay
+              try {
+                ytPlayer.playVideo();
+              } catch {}
+            },
+            onStateChange: (e) => {
+              // 0 = ended
+              if (e.data === 0) {
+                // avoid double-fire
+                if (playToken !== lastPlayToken) return;
+                if (debugOn) log("YT", `ended -> next track`);
+                tryPlayIndex(currentIndex + 1, "ended");
+              }
+            },
+            onError: (e) => {
+              // Typical blocked/unavailable error codes: 2, 5, 100, 101, 150
+              if (debugOn) log("YT", `error ${e.data} -> skipping`);
+              // skip to next track
+              tryPlayIndex(currentIndex + 1, "error");
+            }
+          }
+        });
+      } else {
+        // load next by ID
+        try {
+          ytPlayer.loadVideoById(id);
+          if (debugOn) log("YT", `loadVideoById -> ${idx + 1} (${reason || "manual"})`);
+        } catch {
+          if (debugOn) log("YT", `load failed -> skipping`);
+          return tryPlayIndex(idx + 1, "load-fail");
+        }
+      }
+    };
+
+    // Build track buttons
     (ep.tracks || []).forEach((t, idx) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -169,26 +320,38 @@
 
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        const src = makeYouTubeEmbed(t.url);
-        if (src) iframe.src = src;
-        playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t.title)}`;
-        now.textContent = `Now playing: ${safeText(t.title)}`;
-
-        const led = tv.querySelector(".tvLED");
-        if (led) {
-          led.classList.remove("pulse");
-          void led.offsetWidth;
-          led.classList.add("pulse");
-        }
+        tryPlayIndex(idx, "click");
       });
 
       trackList.appendChild(btn);
     });
 
     detailsEl.appendChild(trackList);
+
+    // Load API and autoplay first track using API when ready
+    ensureYouTubeAPI(debugOn);
+
+    // Try immediately (fallback iframe) then re-try once API is ready
+    tryPlayIndex(0, "boot");
+
+    // Once API is ready, re-mount as a real player so auto-advance works
+    const waitForAPI = () => {
+      if (ytApiReady) {
+        // If we already created a fallback iframe, replace with API player on the current track
+        if (!ytPlayer) {
+          // clear mount
+          const mount = detailsEl.querySelector("#ytMount");
+          if (mount) mount.innerHTML = "";
+          tryPlayIndex(currentIndex, "api-ready");
+        }
+        return;
+      }
+      setTimeout(waitForAPI, 120);
+    };
+    waitForAPI();
   };
 
-  const render = (episodes) => {
+  const render = (episodes, debugOn) => {
     list.innerHTML = "";
 
     if (!Array.isArray(episodes) || episodes.length === 0) {
@@ -222,10 +385,8 @@
       const meta = document.createElement("div");
       meta.className = "epMeta";
       meta.textContent =
-        [
-          ep.artist ? `Artist: ${ep.artist}` : null,
-          ep.year ? `Year: ${ep.year}` : null
-        ].filter(Boolean).join(" • ") || "—";
+        [ep.artist ? `Artist: ${ep.artist}` : null, ep.year ? `Year: ${ep.year}` : null].filter(Boolean).join(" • ") ||
+        "—";
 
       const hint = document.createElement("div");
       hint.className = "epSmall";
@@ -265,7 +426,7 @@
         }
 
         applyArtistTheme(ep);
-        renderEpisodeDetails(ep, details);
+        renderEpisodeDetails(ep, details, debugOn);
         details.classList.remove("hidden");
         card.classList.add("open");
         card.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -312,7 +473,7 @@
       return;
     }
 
-    render(episodes);
+    render(episodes, debugOn);
   };
 
   document.addEventListener("DOMContentLoaded", boot);
