@@ -40,65 +40,52 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1`;
   };
 
-  const introLabel = (ep) => {
-    if (ep.intro === "candle") return "🕯️ Candle intro (AIC / Nirvana vibes)";
-    return "🟣🟢 Lava lamp intro (warm + cozy)";
+  // ---------- Card polish helpers ----------
+  const pickAccent = (ep) => {
+    // Use ep.accent if you add it later in episodes.js; otherwise infer from artist
+    if (ep && ep.accent) return String(ep.accent);
+
+    const a = (ep.artist || "").toLowerCase();
+    if (a.includes("alice in chains")) return "#7CFFB2"; // sickly neon green
+    if (a.includes("nirvana")) return "#8A5CFF"; // violet
+    if (a.includes("pearl jam")) return "#FFB74A"; // warm amber
+    if (a.includes("jay-z") || a.includes("jay z")) return "#FFD54A"; // gold
+    return "#8A5CFF";
   };
 
+  const introLabel = (ep) => (ep.intro === "candle" ? "CANDLES" : "LAVA LAMP");
+  const introIcon = (ep) => (ep.intro === "candle" ? "🕯️" : "🟣");
+
+  const modeLabel = (ep) => (ep.mode === "full" ? "TRACKS" : "FULL EP");
+  const modeIcon = (ep) => (ep.mode === "full" ? "🎼" : "📼");
+
+  const renderBadges = (ep) => {
+    const wrap = document.createElement("div");
+    wrap.className = "badges";
+
+    const b1 = document.createElement("div");
+    b1.className = "badge";
+    b1.innerHTML = `<span class="badgeDot"></span><span class="badgeIcon">${introIcon(ep)}</span>${introLabel(ep)}`;
+
+    const b2 = document.createElement("div");
+    b2.className = "badge badgeMuted";
+    b2.innerHTML = `${modeIcon(ep)} ${modeLabel(ep)}`;
+
+    const count = document.createElement("div");
+    count.className = "badge badgeMuted";
+    const n = Array.isArray(ep.tracks) ? ep.tracks.length : 0;
+    count.innerHTML = `▶ ${n} ${n === 1 ? "TRACK" : "TRACKS"}`;
+
+    wrap.appendChild(b1);
+    wrap.appendChild(b2);
+    wrap.appendChild(count);
+    return wrap;
+  };
+
+  // ---------- Existing details renderer (unchanged vibe) ----------
   const applyArtistTheme = (ep) => {
-    const c = ep && ep.themeColor ? String(ep.themeColor) : "";
-    if (c) document.documentElement.style.setProperty("--accent", c);
-    else document.documentElement.style.removeProperty("--accent");
-  };
-
-  /* =========================
-     ZOMBIE KITTY helpers
-     ========================= */
-  let zkEl = null;
-  let zkLabelEl = null;
-  let zkTimer = null;
-
-  const ensureZombieKitty = () => {
-    if (zkEl && zkLabelEl) return;
-
-    zkEl = document.createElement("div");
-    zkEl.className = "zk";
-    zkEl.setAttribute("aria-hidden", "true");
-
-    zkLabelEl = document.createElement("div");
-    zkLabelEl.className = "zkLabel";
-    zkLabelEl.textContent = "Zombie Kitty Approved ✅";
-    zkLabelEl.setAttribute("aria-hidden", "true");
-
-    document.body.appendChild(zkEl);
-    document.body.appendChild(zkLabelEl);
-  };
-
-  // skinIndex: 0..5 (your sheet is 3 across x 2 rows)
-  const setZkSkin = (skinIndex) => {
-    ensureZombieKitty();
-    const idx = Math.max(0, Math.min(5, Number(skinIndex) || 0));
-    const col = idx % 3;           // 0,1,2
-    const row = Math.floor(idx / 3); // 0 or 1
-    const x = (col * 50);          // 0%, 50%, 100% across 3 tiles via bg-size 300%
-    const y = (row * 100);         // 0% or 100% for 2 rows via bg-size 200%
-    zkEl.style.backgroundPosition = `${x}% ${y}%`;
-  };
-
-  const flashZombieKitty = (skinIndex) => {
-    ensureZombieKitty();
-    setZkSkin(skinIndex);
-
-    // Reset timer so rapid song changes still feel snappy
-    if (zkTimer) clearTimeout(zkTimer);
-
-    zkEl.classList.add("on");
-    zkLabelEl.classList.add("on");
-
-    zkTimer = setTimeout(() => {
-      zkEl.classList.remove("on");
-      zkLabelEl.classList.remove("on");
-    }, 2200); // show for 2.2s
+    const c = pickAccent(ep);
+    document.documentElement.style.setProperty("--accent", c);
   };
 
   const renderEpisodeDetails = (ep, detailsEl) => {
@@ -111,7 +98,9 @@
 
     const intro = document.createElement("div");
     intro.className = "epIntro";
-    intro.textContent = introLabel(ep);
+    intro.textContent = ep.intro === "candle"
+      ? "🕯️ Candle intro (AIC / Nirvana vibes)"
+      : "🟣🟢 Lava lamp intro (warm + cozy)";
     detailsEl.appendChild(intro);
 
     // Player
@@ -180,24 +169,17 @@
 
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-
         const src = makeYouTubeEmbed(t.url);
         if (src) iframe.src = src;
-
         playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t.title)}`;
         now.textContent = `Now playing: ${safeText(t.title)}`;
 
-        // TV LED pulse
         const led = tv.querySelector(".tvLED");
         if (led) {
           led.classList.remove("pulse");
           void led.offsetWidth;
           led.classList.add("pulse");
         }
-
-        // Zombie Kitty pops up briefly, then disappears
-        // Use ep.zkSkin if present (0..5). Otherwise default to 1.
-        flashZombieKitty(ep.zkSkin ?? 1);
       });
 
       trackList.appendChild(btn);
@@ -221,9 +203,12 @@
     setStatus(`Loaded ${episodes.length} episode${episodes.length === 1 ? "" : "s"} ✅`);
 
     episodes.forEach((ep, i) => {
+      const accent = pickAccent(ep);
+
       const card = document.createElement("div");
       card.className = "ep";
       card.tabIndex = 0;
+      card.style.setProperty("--epAccent", accent);
 
       const head = document.createElement("div");
       head.className = "epHead";
@@ -232,7 +217,7 @@
 
       const title = document.createElement("div");
       title.className = "epTitle";
-      title.textContent = safeText(ep.title || ep.name || `Episode ${i + 1}`);
+      title.textContent = safeText(ep.title || ep.name || `${safeText(ep.artist) || `Episode ${i + 1}`}`);
 
       const meta = document.createElement("div");
       meta.className = "epMeta";
@@ -248,6 +233,7 @@
 
       left.appendChild(title);
       left.appendChild(meta);
+      left.appendChild(renderBadges(ep));
       left.appendChild(hint);
 
       const chev = document.createElement("div");
@@ -301,9 +287,7 @@
     const params = new URLSearchParams(location.search);
     const debugOn = params.get("debug") === "1";
 
-    // Keep debug off-screen unless ?debug=1
     if (btnDiag) btnDiag.style.display = debugOn ? "inline-flex" : "none";
-    if (debugPanel) debugPanel.classList.add("hidden");
 
     if (debugOn) {
       document.body.classList.add("debug");
@@ -314,6 +298,7 @@
     }
 
     const episodes = window.EPISODES || window.episodes;
+
     if (debugOn) log("episodes.js", episodes ? "global found ✅" : "global NOT found ❌");
 
     if (!episodes) {
