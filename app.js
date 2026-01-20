@@ -8,7 +8,17 @@
   const list = $("episodes");
   const tagline = $("tagline");
 
-  // ---------- Debug helpers ----------
+  // ---- YouTube Player state (for auto-next) ----
+  let YT_API_READY = false;
+  let ytPlayer = null;
+  let currentEp = null;      // episode object currently open/playing
+  let currentTrackIndex = 0; // index inside currentEp.tracks
+  let currentCard = null;    // DOM element for open card
+  let currentDetails = null; // DOM element for open details
+  let currentNowEl = null;   // DOM element for "Now playing"
+  let currentTitleEl = null; // DOM element for player title
+  let currentIframe = null;  // fallback iframe if YT api fails
+
   const log = (label, value) => {
     if (!debugLines) return;
     const row = document.createElement("div");
@@ -22,41 +32,29 @@
 
   const safeText = (v) => (v == null ? "" : String(v));
 
-  // ---------- YouTube URL helpers ----------
   const getVideoId = (url) => {
     try {
       const u = new URL(url);
-
-      // youtu.be/<id>
       if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "");
-
-      // youtube.com/watch?v=<id>
       const v = u.searchParams.get("v");
       if (v) return v;
-
-      // youtube.com/embed/<id>
       if (u.pathname.includes("/embed/")) return u.pathname.split("/embed/")[1].split(/[?#]/)[0];
-
       return "";
     } catch {
       return "";
     }
   };
 
-  // Build an embed URL that allows JS API control
   const makeYouTubeEmbed = (url) => {
     const id = getVideoId(url);
     if (!id) return "";
-    // enablejsapi=1 is the key for autoplay/ended detection & next-track advance
-    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&enablejsapi=1&origin=${encodeURIComponent(
-      location.origin
-    )}`;
+    // enablejsapi=1 is required for YouTube IFrame API control
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&enablejsapi=1`;
   };
 
   // ---------- Card polish helpers ----------
   const pickAccent = (ep) => {
     if (ep && ep.accent) return String(ep.accent);
-
     const a = (ep.artist || "").toLowerCase();
     if (a.includes("alice in chains")) return "#7CFFB2";
     if (a.includes("nirvana")) return "#8A5CFF";
@@ -67,7 +65,6 @@
 
   const introLabel = (ep) => (ep.intro === "candle" ? "CANDLES" : "LAVA LAMP");
   const introIcon = (ep) => (ep.intro === "candle" ? "🕯️" : "🟣");
-
   const modeLabel = (ep) => (ep.mode === "full" ? "TRACKS" : "FULL EP");
   const modeIcon = (ep) => (ep.mode === "full" ? "🎼" : "📼");
 
@@ -94,46 +91,144 @@
     return wrap;
   };
 
-  // ---------- Theme ----------
   const applyArtistTheme = (ep) => {
     const c = pickAccent(ep);
     document.documentElement.style.setProperty("--accent", c);
   };
 
-  // ---------- YouTube IFrame API wiring ----------
-  let ytApiReady = false;
-  let ytApiLoading = false;
+  // ---------- Zombie Kitty hook ----------
+  const fireKitty = (ep, track) => {
+    // If Claude’s ZK is locked in, we won’t break it.
+    // We just call a hook IF it exists.
+    try {
+      if (typeof window.ZK_ON_TRACK === "function") {
+        window.ZK_ON_TRACK({
+          artist: ep?.artist || "",
+          title: track?.title || "",
+          idx: currentTrackIndex,
+        });
+      }
+    } catch {}
+  };
 
-  const ensureYouTubeAPI = (debugOn) => {
-    if (ytApiReady || ytApiLoading) return;
-    ytApiLoading = true;
-
-    // If already present
+  // ---------- YouTube IFrame API load ----------
+  const loadYTApiOnce = () => {
     if (window.YT && window.YT.Player) {
-      ytApiReady = true;
-      ytApiLoading = false;
-      if (debugOn) log("YT API", "already present ✅");
+      YT_API_READY = true;
       return;
     }
+    if (document.getElementById("yt-iframe-api")) return;
 
-    // Load it once
     const tag = document.createElement("script");
+    tag.id = "yt-iframe-api";
     tag.src = "https://www.youtube.com/iframe_api";
-    tag.async = true;
     document.head.appendChild(tag);
 
     window.onYouTubeIframeAPIReady = () => {
-      ytApiReady = true;
-      ytApiLoading = false;
-      if (debugOn) log("YT API", "loaded ✅");
+      YT_API_READY = true;
     };
-
-    if (debugOn) log("YT API", "loading…");
   };
 
-  // ---------- Episode Details Renderer ----------
-  const renderEpisodeDetails = (ep, detailsEl, debugOn) => {
+  const killYTPlayer = () => {
+    try {
+      if (ytPlayer && typeof ytPlayer.destroy === "function") ytPlayer.destroy();
+    } catch {}
+    ytPlayer = null;
+  };
+
+  // ---------- Play logic ----------
+  const playTrack = (ep, idx) => {
+    if (!ep || !Array.isArray(ep.tracks) || !ep.tracks[idx]) return;
+
+    currentEp = ep;
+    currentTrackIndex = idx;
+
+    const t = ep.tracks[idx];
+    const vid = getVideoId(t.url);
+
+    // Update UI labels
+    if (currentTitleEl) currentTitleEl.textContent = `${safeText(ep.artist)} — ${safeText(t.title)}`;
+    if (currentNowEl) currentNowEl.textContent = `Now playing: ${safeText(t.title)}`;
+
+    // LED pulse (if present)
+    try {
+      const led = currentDetails?.querySelector(".tvLED");
+      if (led) {
+        led.classList.remove("pulse");
+        void led.offsetWidth;
+        led.classList.add("pulse");
+      }
+    } catch {}
+
+    // Fire Zombie Kitty (if hook exists)
+    fireKitty(ep, t);
+
+    // Prefer real YT player if API ready
+    if (YT_API_READY && vid) {
+      // Build player once per open card
+      const mount = currentDetails?.querySelector("#ytApiMount");
+      if (!mount) {
+        // fallback to iframe
+        if (currentIframe) currentIframe.src = makeYouTubeEmbed(t.url);
+        return;
+      }
+
+      if (!ytPlayer) {
+        // Create a fresh player in the mount
+        killYTPlayer();
+        mount.innerHTML = `<div id="ytApiPlayer"></div>`;
+
+        ytPlayer = new window.YT.Player("ytApiPlayer", {
+          videoId: vid,
+          playerVars: {
+            autoplay: 1,
+            rel: 0,
+            playsinline: 1,
+          },
+          events: {
+            onStateChange: (e) => {
+              // 0 = ended
+              if (e && e.data === 0) {
+                playNext();
+              }
+            },
+          },
+        });
+      } else {
+        try {
+          ytPlayer.loadVideoById(vid);
+        } catch {
+          // If it ever fails, use iframe fallback
+          if (currentIframe) currentIframe.src = makeYouTubeEmbed(t.url);
+        }
+      }
+
+      return;
+    }
+
+    // Fallback: embed iframe only (no reliable ended event)
+    if (currentIframe) {
+      currentIframe.src = makeYouTubeEmbed(t.url);
+    }
+  };
+
+  const playNext = () => {
+    if (!currentEp || !Array.isArray(currentEp.tracks)) return;
+
+    const next = currentTrackIndex + 1;
+    if (next < currentEp.tracks.length) {
+      playTrack(currentEp, next);
+    } else {
+      // end of episode — do nothing or loop (your call)
+      // If you want loop, uncomment:
+      // playTrack(currentEp, 0);
+    }
+  };
+
+  // ---------- Episode details renderer ----------
+  const renderEpisodeDetails = (ep, detailsEl) => {
     detailsEl.innerHTML = "";
+    currentDetails = detailsEl;
 
     const topLine = document.createElement("div");
     topLine.className = "epHint";
@@ -172,142 +267,47 @@
     const frameWrap = document.createElement("div");
     frameWrap.className = "playerFrameWrap";
 
-    // We use an inner container so the YT API can own the iframe safely.
-    const ytMount = document.createElement("div");
-    ytMount.id = "ytMount";
-    ytMount.style.width = "100%";
-    ytMount.style.height = "100%";
-    frameWrap.appendChild(ytMount);
+    // We mount BOTH:
+    // - a div for YT API player (best for auto-next)
+    // - an iframe fallback (still works even if API blocked)
+    const apiMount = document.createElement("div");
+    apiMount.id = "ytApiMount";
+    apiMount.style.width = "100%";
+    apiMount.style.height = "100%";
+
+    const iframe = document.createElement("iframe");
+    iframe.className = "playerFrame";
+    iframe.id = "ytFrame";
+    iframe.allow =
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+    iframe.loading = "lazy";
+    iframe.title = "YouTube player";
+    iframe.style.display = "none"; // hidden unless we need fallback
+
+    frameWrap.appendChild(apiMount);
+    frameWrap.appendChild(iframe);
 
     tv.appendChild(frameWrap);
 
     const now = document.createElement("div");
     now.className = "nowPlaying";
-    now.textContent = ep.tracks?.[0]?.title ? `Now playing: ${safeText(ep.tracks[0].title)}` : "Pick a track to start";
+    now.textContent = "Pick a track to start";
     tv.appendChild(now);
 
     player.appendChild(tv);
     detailsEl.appendChild(player);
 
+    // Save refs for playTrack()
+    currentTitleEl = playerTitle;
+    currentNowEl = now;
+    currentIframe = iframe;
+
     // Tracks
     const trackList = document.createElement("div");
     trackList.className = "trackList";
 
-    // State for auto-advance
-    let currentIndex = 0;
-    let ytPlayer = null;
-    let lastPlayToken = 0; // prevents double-advance
-
-    const pulseLED = () => {
-      const led = tv.querySelector(".tvLED");
-      if (led) {
-        led.classList.remove("pulse");
-        void led.offsetWidth;
-        led.classList.add("pulse");
-      }
-    };
-
-    const setNowPlaying = (idx) => {
-      const t = ep.tracks?.[idx];
-      playerTitle.textContent = `${safeText(ep.artist)} — ${safeText(t?.title || "Select a track")}`;
-      now.textContent = t?.title ? `Now playing: ${safeText(t.title)}` : "Pick a track to start";
-    };
-
-    const markActiveTrack = (idx) => {
-      [...trackList.querySelectorAll(".track")].forEach((b, i) => {
-        if (i === idx) b.classList.add("active");
-        else b.classList.remove("active");
-      });
-    };
-
-    const tryPlayIndex = (idx, reason) => {
-      if (!Array.isArray(ep.tracks) || ep.tracks.length === 0) return;
-
-      // wrap
-      if (idx >= ep.tracks.length) idx = 0;
-      if (idx < 0) idx = 0;
-
-      const t = ep.tracks[idx];
-      const id = t ? getVideoId(t.url) : "";
-      if (!id) {
-        if (debugOn) log("Skip", `No video ID at track ${idx + 1}`);
-        return tryPlayIndex(idx + 1, "bad-id");
-      }
-
-      currentIndex = idx;
-      setNowPlaying(idx);
-      markActiveTrack(idx);
-      pulseLED();
-
-      if (!ytApiReady || !window.YT || !window.YT.Player) {
-        // fallback: no API yet, just show a normal iframe
-        // NOTE: auto-advance won't work in fallback mode.
-        detailsEl.querySelector("#ytMount").innerHTML = "";
-        const iframe = document.createElement("iframe");
-        iframe.className = "playerFrame";
-        iframe.allow =
-          "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-        iframe.allowFullscreen = true;
-        iframe.referrerPolicy = "strict-origin-when-cross-origin";
-        iframe.loading = "lazy";
-        iframe.title = "YouTube player";
-        iframe.src = makeYouTubeEmbed(t.url);
-        detailsEl.querySelector("#ytMount").appendChild(iframe);
-
-        if (debugOn) log("YT", `fallback iframe (no API) — ${reason || "manual"}`);
-        return;
-      }
-
-      const playToken = ++lastPlayToken;
-
-      // Create player once, then load by ID
-      if (!ytPlayer) {
-        ytPlayer = new window.YT.Player("ytMount", {
-          videoId: id,
-          playerVars: {
-            autoplay: 1,
-            rel: 0,
-            playsinline: 1,
-            modestbranding: 1
-          },
-          events: {
-            onReady: () => {
-              if (debugOn) log("YT", "player ready ✅");
-              // extra nudge on autoplay
-              try {
-                ytPlayer.playVideo();
-              } catch {}
-            },
-            onStateChange: (e) => {
-              // 0 = ended
-              if (e.data === 0) {
-                // avoid double-fire
-                if (playToken !== lastPlayToken) return;
-                if (debugOn) log("YT", `ended -> next track`);
-                tryPlayIndex(currentIndex + 1, "ended");
-              }
-            },
-            onError: (e) => {
-              // Typical blocked/unavailable error codes: 2, 5, 100, 101, 150
-              if (debugOn) log("YT", `error ${e.data} -> skipping`);
-              // skip to next track
-              tryPlayIndex(currentIndex + 1, "error");
-            }
-          }
-        });
-      } else {
-        // load next by ID
-        try {
-          ytPlayer.loadVideoById(id);
-          if (debugOn) log("YT", `loadVideoById -> ${idx + 1} (${reason || "manual"})`);
-        } catch {
-          if (debugOn) log("YT", `load failed -> skipping`);
-          return tryPlayIndex(idx + 1, "load-fail");
-        }
-      }
-    };
-
-    // Build track buttons
     (ep.tracks || []).forEach((t, idx) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -320,38 +320,76 @@
 
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
-        tryPlayIndex(idx, "click");
+        // Ensure YT API requested; player will be used when ready
+        loadYTApiOnce();
+
+        // If API not ready yet, show iframe fallback instantly
+        if (!YT_API_READY) {
+          iframe.style.display = "block";
+          apiMount.style.display = "none";
+        } else {
+          iframe.style.display = "none";
+          apiMount.style.display = "block";
+        }
+
+        playTrack(ep, idx);
       });
 
       trackList.appendChild(btn);
     });
 
     detailsEl.appendChild(trackList);
-
-    // Load API and autoplay first track using API when ready
-    ensureYouTubeAPI(debugOn);
-
-    // Try immediately (fallback iframe) then re-try once API is ready
-    tryPlayIndex(0, "boot");
-
-    // Once API is ready, re-mount as a real player so auto-advance works
-    const waitForAPI = () => {
-      if (ytApiReady) {
-        // If we already created a fallback iframe, replace with API player on the current track
-        if (!ytPlayer) {
-          // clear mount
-          const mount = detailsEl.querySelector("#ytMount");
-          if (mount) mount.innerHTML = "";
-          tryPlayIndex(currentIndex, "api-ready");
-        }
-        return;
-      }
-      setTimeout(waitForAPI, 120);
-    };
-    waitForAPI();
   };
 
-  const render = (episodes, debugOn) => {
+  const closeOpenCard = () => {
+    // Collapse currently open
+    if (currentDetails && currentCard) {
+      currentDetails.classList.add("hidden");
+      currentCard.classList.remove("open");
+    }
+
+    // Stop player (prevents ghost audio + fixes some “can’t pause” weirdness)
+    try {
+      if (ytPlayer && typeof ytPlayer.stopVideo === "function") ytPlayer.stopVideo();
+    } catch {}
+    killYTPlayer();
+
+    // Reset pointers
+    currentEp = null;
+    currentTrackIndex = 0;
+    currentCard = null;
+    currentDetails = null;
+    currentNowEl = null;
+    currentTitleEl = null;
+    currentIframe = null;
+  };
+
+  const openCard = (ep, card, details) => {
+    // Close others
+    document.querySelectorAll(".epDetails").forEach((d) => {
+      if (d !== details) d.classList.add("hidden");
+    });
+    document.querySelectorAll(".ep").forEach((e) => {
+      if (e !== card) e.classList.remove("open");
+    });
+
+    // Also stop any previous player
+    closeOpenCard();
+
+    // Open this one
+    applyArtistTheme(ep);
+    renderEpisodeDetails(ep, details);
+    details.classList.remove("hidden");
+    card.classList.add("open");
+
+    currentCard = card;
+    currentDetails = details;
+
+    // Soft scroll to keep header visible
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const render = (episodes) => {
     list.innerHTML = "";
 
     if (!Array.isArray(episodes) || episodes.length === 0) {
@@ -385,8 +423,9 @@
       const meta = document.createElement("div");
       meta.className = "epMeta";
       meta.textContent =
-        [ep.artist ? `Artist: ${ep.artist}` : null, ep.year ? `Year: ${ep.year}` : null].filter(Boolean).join(" • ") ||
-        "—";
+        [ep.artist ? `Artist: ${ep.artist}` : null, ep.year ? `Year: ${ep.year}` : null]
+          .filter(Boolean)
+          .join(" • ") || "—";
 
       const hint = document.createElement("div");
       hint.className = "epSmall";
@@ -409,30 +448,29 @@
       details.className = "epDetails hidden";
       card.appendChild(details);
 
+      // ---- FIXED TOGGLE (open/close properly) ----
       const toggle = () => {
         const isOpen = !details.classList.contains("hidden");
 
-        document.querySelectorAll(".epDetails").forEach((d) => {
-          if (d !== details) d.classList.add("hidden");
-        });
-        document.querySelectorAll(".ep").forEach((e) => {
-          if (e !== card) e.classList.remove("open");
-        });
-
         if (isOpen) {
-          details.classList.add("hidden");
-          card.classList.remove("open");
+          // close THIS card
+          closeOpenCard();
+
+          // optional: scroll back a little so you can see other artists
+          card.scrollIntoView({ behavior: "smooth", block: "center" });
           return;
         }
 
-        applyArtistTheme(ep);
-        renderEpisodeDetails(ep, details, debugOn);
-        details.classList.remove("hidden");
-        card.classList.add("open");
-        card.scrollIntoView({ behavior: "smooth", block: "start" });
+        openCard(ep, card, details);
       };
 
-      card.addEventListener("click", toggle);
+      card.addEventListener("click", (e) => {
+        // Prevent track button clicks from toggling
+        const target = e.target;
+        if (target && (target.closest(".track") || target.closest("button"))) return;
+        toggle();
+      });
+
       card.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -453,10 +491,19 @@
     if (debugOn) {
       document.body.classList.add("debug");
       if (tagline) tagline.textContent = "Debug mode: ON (remove ?debug=1 to hide)";
-      btnDiag.addEventListener("click", () => debugPanel.classList.toggle("hidden"));
+      btnDiag?.addEventListener("click", () => debugPanel?.classList.toggle("hidden"));
       log("DOM", "ready ✅");
       log("CSS", "loaded (if you see gradient)");
     }
+
+    // Close open card if user taps OUTSIDE any card (clean navigation)
+    document.addEventListener("click", (e) => {
+      if (!currentCard) return;
+      const inside = e.target && e.target.closest && e.target.closest(".ep");
+      if (!inside) {
+        closeOpenCard();
+      }
+    });
 
     const episodes = window.EPISODES || window.episodes;
 
@@ -473,7 +520,10 @@
       return;
     }
 
-    render(episodes, debugOn);
+    // Request YT API early (helps auto-next be ready)
+    loadYTApiOnce();
+
+    render(episodes);
   };
 
   document.addEventListener("DOMContentLoaded", boot);
