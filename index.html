@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Unplugged Channel</title>
 
-  <link rel="stylesheet" href="styles.css?v=10" />
+  <link rel="stylesheet" href="styles.css?v=11" />
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -40,20 +40,27 @@
 </head>
 
 <body>
+  <!-- ✅ POLISHED HEADER -->
   <header class="top">
     <div class="brand">
       <div class="dot"></div>
+
       <div class="brandText">
         <div class="titleRow">
           <div class="title">Unplugged Channel</div>
-          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
+          <div class="liveBadge" title="Live vibe">
+            <span class="liveDot"></span> LIVE
+          </div>
         </div>
+
         <div class="sub" id="tagline">MTV vibes. Candles + amps + acoustic damage.</div>
       </div>
     </div>
 
-    <!-- Debug button is injected ONLY when using ?debug=1 -->
-    <div id="debugMount"></div>
+    <!-- Debug stays hidden unless you use ?debug=1 -->
+    <button id="btnDiag" class="btn btnGhost" type="button" aria-label="Debug">
+      Debug
+    </button>
   </header>
 
   <main class="wrap">
@@ -69,29 +76,7 @@
     </section>
   </main>
 
-  <!-- Zombie Kitty stamp (bottom-right) -->
-  <div id="zombieKitty" class="zk k1" aria-hidden="true"></div>
-
-  <script>
-    // Only show the Debug button if URL has ?debug=1
-    (function () {
-      const params = new URLSearchParams(location.search);
-      const isDebug = params.get("debug") === "1";
-      if (!isDebug) return;
-
-      const mount = document.getElementById("debugMount");
-      if (!mount) return;
-
-      const btn = document.createElement("button");
-      btn.id = "btnDiag";
-      btn.className = "btn btnGhost";
-      btn.type = "button";
-      btn.textContent = "Debug";
-      mount.appendChild(btn);
-    })();
-  </script>
-
-  <script src="data/episodes.js?v=10"></script>
-  <script src="app.js?v=10" defer></script>
+  <script src="data/episodes.js?v=11"></script>
+  <script src="app.js?v=11" defer></script>
 </body>
 </html>
