@@ -296,3 +296,301 @@ body{
   .sessionsTitle{ font-size: 20px; }
   .epTitle{ font-size: 15px; }
 }
+/* =========================================================
+   STRIPPED & TURNED UP — UI POLISH (CSS ONLY)
+   LOCKED JS/HTML. We only make it look legit.
+   Paste at BOTTOM of styles.css
+   ========================================================= */
+
+/* App-wide tuning */
+:root{
+  --bg0: #0b0c10;
+  --bg1: rgba(255,255,255,.06);
+  --bg2: rgba(255,255,255,.08);
+  --line: rgba(255,255,255,.10);
+  --line2: rgba(255,255,255,.14);
+  --txt: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.68);
+  --muted2: rgba(255,255,255,.55);
+  --radius-lg: 22px;
+  --radius-md: 16px;
+  --shadow: 0 18px 60px rgba(0,0,0,.42);
+  --shadow2: 0 10px 30px rgba(0,0,0,.28);
+}
+
+/* Prevent “webpage-y” feel */
+html, body{
+  height: 100%;
+  background: var(--bg0);
+  color: var(--txt);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wrap{
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 14px 12px 24px;
+}
+
+/* Header polish (landing only; sessions header already hidden by your rule) */
+header.top{
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 12px 12px 10px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: linear-gradient(to bottom, rgba(10,10,14,.78), rgba(10,10,14,.15));
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.brand{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brandMark{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: radial-gradient(circle at 30% 30%, rgba(255,180,60,.95), rgba(255,120,30,.55) 55%, rgba(0,0,0,.22) 70%);
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.titleRow{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.title{
+  font-size: 17px;
+  letter-spacing: .4px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.sub{
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--muted);
+  display:flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items:center;
+}
+
+.subStrong{ color: rgba(255,255,255,.82); font-weight: 700; }
+.subSep{ opacity: .55; }
+
+/* LIVE badge feels more “app chip” */
+.liveBadge{
+  display:inline-flex;
+  align-items:center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 10px 24px rgba(0,0,0,.25);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .4px;
+}
+
+.liveDot{
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ffb11a;
+  box-shadow: 0 0 0 4px rgba(255,177,26,.18);
+}
+
+/* Landing card polish (works with your inline landing styles too) */
+#landing{
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow) !important;
+  border: 1px solid rgba(255,255,255,.10) !important;
+}
+
+/* Player block: make it feel “featured” */
+.player-wrap{
+  position: sticky;
+  top: 10px;
+  z-index: 40;
+  margin-bottom: 14px;
+}
+
+.now-playing-title{
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  margin: 2px 2px 10px;
+  color: rgba(255,255,255,.92);
+}
+
+/* TV frame + player shell refinement */
+.tvFrame{
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(0,0,0,.20));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow);
+}
+
+.tvTopBar{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: rgba(0,0,0,.22);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.tvLabel{
+  font-weight: 900;
+  letter-spacing: .6px;
+  text-transform: uppercase;
+  font-size: 12px;
+  opacity: .85;
+}
+
+.playerFrameWrap{
+  padding: 12px;
+  background: rgba(0,0,0,.14);
+}
+
+.player-shell{
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow2);
+}
+
+/* Ensure YouTube player keeps a nice ratio */
+.player-frame{
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  background: #000;
+}
+
+/* Sessions card container */
+#sessionsList{
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow2);
+  padding: 14px 12px 12px;
+}
+
+/* Sessions header area */
+.sessionsHead{
+  display:flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.sessionsTitle{
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.sessionsSub{
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
+/* Status pill */
+#status{
+  white-space: nowrap;
+  padding: 9px 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .3px;
+  background: rgba(0,0,0,.28);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.88);
+}
+
+/* Episode list as app-style rows */
+#episodes{
+  display: grid;
+  gap: 10px;
+}
+
+/* Card row style */
+.ep{
+  border-radius: 18px;
+  padding: 14px 14px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 10px 22px rgba(0,0,0,.20);
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+  cursor: pointer;
+}
+
+.ep:active{
+  transform: scale(.99);
+}
+
+.ep:hover{
+  background: rgba(255,255,255,.075);
+  border-color: rgba(255,255,255,.16);
+}
+
+.epHead{
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.epTitle{
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: .15px;
+  line-height: 1.2;
+}
+
+.epMeta{
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.epSmall{
+  margin-top: 6px;
+  color: var(--muted2);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chev{
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background: rgba(0,0,0,.22);
+  border: 1px solid rgba(255,255,255,.10);
+  font-size: 18px;
+  opacity: .9;
+}
+
+/* Make scroll feel clean */
+*{
+  scroll-behavior: smooth;
+}
