@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>STRIPPED &amp; TURNED UP</title>
 
-  <link rel="stylesheet" href="styles.css?v=24" />
+  <link rel="stylesheet" href="styles.css?v=25" />
 
   <!-- Hide header ONLY on Sessions screen -->
   <style>
@@ -45,7 +45,6 @@
 </head>
 
 <body data-screen="landing">
-  <!-- HEADER (shows on landing, hidden on sessions by CSS above) -->
   <header class="top" id="topBar">
     <div class="brand">
       <div class="brandMark" aria-hidden="true"></div>
@@ -65,7 +64,7 @@
 
   <main class="wrap" id="app">
 
-    <!-- ✅ LANDING PAGE -->
+    <!-- LANDING -->
     <section id="landing" style="
       border-radius: 18px;
       padding: 18px 16px;
@@ -128,7 +127,7 @@
       </div>
     </section>
 
-    <!-- ✅ SESSIONS SCREEN (hidden until Enter) -->
+    <!-- SESSIONS -->
     <section id="sessionsScreen" style="display:none;">
       <section id="playerWrap"></section>
 
@@ -146,11 +145,9 @@
     </section>
   </main>
 
-  <script src="data/episodes.js?v=24"></script>
+  <script src="data/episodes.js?v=25"></script>
 
-  <!-- REQUIRED for autoplay + queue advance -->
-  <script src="https://www.youtube.com/iframe_api"></script>
-
+  <!-- Landing buttons -->
   <script>
     (function () {
       const landing = document.getElementById("landing");
@@ -163,10 +160,7 @@
         document.body.setAttribute("data-screen", "sessions");
         if (landing) landing.style.display = "none";
         if (sessions) sessions.style.display = "block";
-
-        // Tell app.js the user intentionally entered (helps autoplay rules)
         window.__STU_ENTERED__ = true;
-
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
@@ -177,12 +171,15 @@
         aboutBox.style.display = aboutBox.style.display === "none" ? "block" : "none";
       });
 
-      // Optional direct link to sessions
       const params = new URLSearchParams(location.search);
       if (params.get("start") === "1") enterSessions();
     })();
   </script>
 
-  <script src="app.js?v=24" defer></script>
+  <!-- ✅ IMPORTANT: app.js MUST load BEFORE iframe_api so the callback exists -->
+  <script src="app.js?v=25"></script>
+
+  <!-- YouTube API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
