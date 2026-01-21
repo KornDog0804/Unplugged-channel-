@@ -1,8 +1,7 @@
-/* Stripped & Turned Up — app.js (LOCKED BASELINE)
-   - Uses #playerWrap + #sessionsList (from index.html)
-   - Creates the shared player EVEN IF #playerWrap already exists
-   - Uses #episodes for cards (CSS .ep styles)
-   - Updates #status pill
+/* Stripped & Turned Up — app.js (LOCKED BASELINE v24)
+   - Hides header handled by index.html body[data-screen]
+   - Uses YouTube Iframe API for reliable play + queue auto-advance
+   - Still renders your same sessions cards
    - Debug only when ?debug=1
 */
 (function () {
@@ -21,11 +20,7 @@
 
   const main = $("main.wrap") || $("main") || document.body;
 
-  // We support BOTH layouts:
-  // - New HTML: #playerWrap + #sessionsList
-  // - Older HTML: #status + #episodes inside a card
-  const sessionsList = $("#sessionsList");
-  const list = $("#episodes") || $("#sessionsList") || sessionsList;
+  const list = $("#episodes") || $("#sessionsList");
   const status = $("#status") || $("#loadedCount");
 
   function logLine(line) {
@@ -73,85 +68,46 @@
     }
   }
 
-  function toEmbed(url) {
-    const id = ytIdFrom(url);
-    if (!id) return "";
-    return `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
-  }
-
-  // ---------- Shared player (ALWAYS ensure it exists) ----------
+  // ---------- Player shell (ensure it exists) ----------
   let playerWrap = $("#playerWrap");
   if (!playerWrap) {
     playerWrap = el("section", { id: "playerWrap" });
     main.insertBefore(playerWrap, main.firstChild);
   }
 
-  let playerTitle = $("#nowPlayingTitle");
-  let playerFrame = $("#playerFrame");
+  playerWrap.innerHTML = "";
 
-  // If wrapper exists but children don’t, BUILD THEM.
-  if (!playerTitle || !playerFrame) {
-    playerWrap.innerHTML = "";
+  const playerTitle = el(
+    "div",
+    { id: "nowPlayingTitle", class: "now-playing-title" },
+    "Tap a session to play"
+  );
 
-    playerTitle = el(
-      "div",
-      { id: "nowPlayingTitle", class: "now-playing-title" },
-      "Tap a session to play"
-    );
+  // This is the DIV the YT API will turn into an iframe player
+  const playerMount = el("div", {
+    id: "playerFrame",
+    class: "player-frame",
+  });
 
-    playerFrame = el("iframe", {
-      id: "playerFrame",
-      class: "player-frame",
-      src: "about:blank",
-      allow:
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-      allowfullscreen: "true",
-      frameborder: "0",
-      title: "Stripped & Turned Up Player",
-    });
+  const shell = el("div", { class: "player-shell" }, playerMount);
 
-    const shell = el("div", { class: "player-shell" }, playerFrame);
+  const tv = el("div", { class: "tvFrame" }, [
+    el("div", { class: "tvTopBar" }, [
+      el("div", { class: "tvLED" }, ""),
+      el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
+      el("div", { class: "tvKnob" }, ""),
+    ]),
+    el("div", { class: "playerFrameWrap" }, shell),
+    el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready."),
+  ]);
 
-    // (Optional) TV look wrapper if your CSS supports it — safe even if not
-    const tv = el("div", { class: "tvFrame" }, [
-      el("div", { class: "tvTopBar" }, [
-        el("div", { class: "tvLED" }, ""),
-        el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
-        el("div", { class: "tvKnob" }, ""),
-      ]),
-      el("div", { class: "playerFrameWrap" }, shell),
-      el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready."),
-    ]);
-
-    // If your tvFrame styles exist, use it. If not, it just becomes a normal div.
-    playerWrap.className = "player-wrap";
-    playerWrap.appendChild(tv);
-    playerWrap.insertBefore(playerTitle, tv);
-
-    logLine("Player built inside existing #playerWrap.");
-  }
+  playerWrap.className = "player-wrap";
+  playerWrap.appendChild(playerTitle);
+  playerWrap.appendChild(tv);
 
   const nowPlayingLine = $("#nowPlayingLine");
 
-  function setNowPlaying(title, url) {
-    if (playerTitle) playerTitle.textContent = title || "Tap a session to play";
-    if (nowPlayingLine) nowPlayingLine.textContent = title ? "Playing now." : "Ready.";
-
-    if (!playerFrame) return;
-
-    if (!url) {
-      playerFrame.src = "about:blank";
-      return;
-    }
-    const embed = toEmbed(url);
-    if (!embed) {
-      playerFrame.src = "about:blank";
-      logLine("BAD LINK: " + url);
-      return;
-    }
-    playerFrame.src = embed;
-  }
-
+  // ---------- Normalize sessions ----------
   function normalizeEpisodes(arr) {
     const out = [];
     (arr || []).forEach((ep, idx) => {
@@ -160,17 +116,27 @@
       const title = safeText(ep.title) || `Session ${idx + 1}`;
       const artist = safeText(ep.artist) || "";
       const year = ep.year != null ? String(ep.year) : "";
+      const mode = safeText(ep.mode) || "fullshow";
       const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
-      const streamUrl = tracks[0] ? safeText(tracks[0].url) : "";
-      if (!streamUrl) return;
+
+      // build track list (must have at least 1 valid url)
+      const trackList = tracks
+        .map((t) => ({
+          title: safeText(t && t.title),
+          url: safeText(t && t.url),
+          id: ytIdFrom(t && t.url),
+        }))
+        .filter((t) => t.id);
+
+      if (!trackList.length) return;
 
       out.push({
         id: `ep_${idx}_${title.replace(/\s+/g, "_").slice(0, 30)}`,
         title,
         artist,
         year,
-        streamUrl,
-        tracksCount: tracks.length,
+        mode,
+        tracks: trackList,
       });
     });
     return out;
@@ -181,29 +147,137 @@
   if (status) status.textContent = sessions.length ? `Loaded ${sessions.length} sessions` : "No sessions found";
 
   if (!list) {
-    logLine("Missing list container (#episodes or #sessionsList).");
+    logLine("Missing list container (#episodes).");
     return;
   }
 
-  // Clear old tiles/cards
+  // ---------- YouTube Player API wiring ----------
+  let ytPlayer = null;
+  let ytReady = false;
+  let pendingPlay = null;
+
+  // Current queue state
+  let currentSession = null;
+  let currentIndex = 0;
+
+  function setTitleLine(text) {
+    if (playerTitle) playerTitle.textContent = text || "Tap a session to play";
+  }
+
+  function setNowPlayingLine(text) {
+    if (nowPlayingLine) nowPlayingLine.textContent = text || "Ready.";
+  }
+
+  function playVideoById(id) {
+    if (!id) return;
+    if (!ytReady || !ytPlayer) {
+      pendingPlay = { kind: "id", id };
+      return;
+    }
+    try {
+      // This is called from a user tap (gesture), so it should actually play.
+      ytPlayer.loadVideoById(id);
+    } catch (e) {
+      logLine("loadVideoById failed: " + e);
+    }
+  }
+
+  function startSession(session, trackIdx) {
+    currentSession = session;
+    currentIndex = Math.max(0, Math.min(trackIdx || 0, session.tracks.length - 1));
+
+    const t = session.tracks[currentIndex];
+    const label =
+      session.mode === "queue"
+        ? `${session.title} — Track ${currentIndex + 1} (${currentIndex + 1}/${session.tracks.length})`
+        : session.title;
+
+    setTitleLine(label);
+    setNowPlayingLine("Playing now.");
+
+    playVideoById(t.id);
+  }
+
+  function nextInQueue() {
+    if (!currentSession || currentSession.mode !== "queue") return;
+    if (currentSession.tracks.length <= 1) return;
+
+    currentIndex += 1;
+    if (currentIndex >= currentSession.tracks.length) currentIndex = 0;
+
+    const t = currentSession.tracks[currentIndex];
+    const label = `${currentSession.title} — Track ${currentIndex + 1} (${currentIndex + 1}/${currentSession.tracks.length})`;
+    setTitleLine(label);
+    setNowPlayingLine("Playing now.");
+    playVideoById(t.id);
+  }
+
+  // YT API callback
+  window.onYouTubeIframeAPIReady = function () {
+    ytReady = true;
+
+    ytPlayer = new YT.Player("playerFrame", {
+      width: "100%",
+      height: "100%",
+      videoId: "", // start blank
+      playerVars: {
+        autoplay: 0,              // we start only after user taps a session
+        playsinline: 1,
+        rel: 0,
+        modestbranding: 1,
+        iv_load_policy: 3,
+        origin: location.origin
+      },
+      events: {
+        onReady: function () {
+          logLine("YT Player ready");
+          setNowPlayingLine("Ready.");
+
+          // If something tried to play before ready, do it now (after ready)
+          if (pendingPlay && pendingPlay.kind === "id") {
+            const id = pendingPlay.id;
+            pendingPlay = null;
+            try { ytPlayer.loadVideoById(id); } catch (e) {}
+          }
+        },
+        onStateChange: function (e) {
+          // Auto-advance ONLY for queue mode when a video ends
+          if (e && e.data === YT.PlayerState.ENDED) {
+            nextInQueue();
+          }
+        },
+        onError: function (e) {
+          logLine("YT error: " + (e && e.data));
+        }
+      }
+    });
+  };
+
+  // ---------- Render cards ----------
   list.innerHTML = "";
 
-  // Render as .ep cards (matches your CSS)
   sessions.forEach((s) => {
     const meta = [s.artist, s.year].filter(Boolean).join(" • ");
+    const small =
+      s.mode === "queue"
+        ? `${s.tracks.length} tracks`
+        : "Full session";
 
     const card = el("div", { class: "ep", tabindex: "0", "data-id": s.id }, [
       el("div", { class: "epHead" }, [
         el("div", {}, [
           el("div", { class: "epTitle" }, s.title),
           el("div", { class: "epMeta" }, meta),
-          el("div", { class: "epSmall" }, s.tracksCount > 1 ? `${s.tracksCount} tracks` : "Full session"),
+          el("div", { class: "epSmall" }, small),
         ]),
         el("div", { class: "chev", "aria-hidden": "true" }, "›"),
       ]),
     ]);
 
-    const play = () => setNowPlaying(s.title, s.streamUrl);
+    const play = () => {
+      // Must be a user gesture. This is exactly why autoplay becomes reliable.
+      startSession(s, 0);
+    };
 
     card.addEventListener("click", play);
     card.addEventListener("keydown", (e) => {
@@ -219,85 +293,4 @@
   logLine("Debug = " + DEBUG);
   logLine("EPISODES length = " + EPISODES.length);
   logLine("Sessions rendered = " + sessions.length);
-
-  // ============================================================
-  // ADDED (1): Sticky player (no CSS file changes required)
-  // ============================================================
-  (function makePlayerSticky() {
-    if (!playerWrap) return;
-
-    // Stick under the header area; once header hides, it still stays pinned.
-    playerWrap.style.position = "sticky";
-    playerWrap.style.top = "10px";
-    playerWrap.style.zIndex = "50";
-
-    // Prevent the list from visually "tucking under" the player on some phones
-    playerWrap.style.marginBottom = playerWrap.style.marginBottom || "12px";
-  })();
-
-  // ============================================================
-  // ADDED (2): Hide header on scroll down, show on scroll up
-  // Requires: <header id="topBar" ...>
-  // ============================================================
-  (function hideHeaderOnScroll() {
-    const topBar = document.getElementById("topBar");
-    if (!topBar) return;
-
-    let lastY = window.scrollY || 0;
-    let ticking = false;
-    let hidden = false;
-
-    topBar.style.willChange = "transform";
-    topBar.style.transition =
-      topBar.style.transition || "transform 220ms ease, opacity 220ms ease";
-    topBar.style.transform = "translateY(0)";
-    topBar.style.opacity = "1";
-
-    const apply = () => {
-      const y = window.scrollY || 0;
-      const dy = y - lastY;
-
-      // ignore tiny jitter
-      if (Math.abs(dy) < 6) {
-        lastY = y;
-        ticking = false;
-        return;
-      }
-
-      // scroll down -> hide (once you're past the top)
-      if (dy > 0 && y > 40 && !hidden) {
-        hidden = true;
-        topBar.style.transform = "translateY(-110%)";
-        topBar.style.opacity = "0";
-      }
-
-      // scroll up -> show
-      if (dy < 0 && hidden) {
-        hidden = false;
-        topBar.style.transform = "translateY(0)";
-        topBar.style.opacity = "1";
-      }
-
-      // always show at very top
-      if (y <= 10 && hidden) {
-        hidden = false;
-        topBar.style.transform = "translateY(0)";
-        topBar.style.opacity = "1";
-      }
-
-      lastY = y;
-      ticking = false;
-    };
-
-    window.addEventListener(
-      "scroll",
-      () => {
-        if (!ticking) {
-          ticking = true;
-          requestAnimationFrame(apply);
-        }
-      },
-      { passive: true }
-    );
-  })();
 })();
