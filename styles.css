@@ -450,5 +450,94 @@ body{
   font-size: 12px;
   line-height: 1.35;
 }
+/* === HARD KILL DEBUG UI (unless ?debug=1 is used) === */
+body:not(.debug) .debug,
+body:not(.debug) .debug-btn,
+body:not(.debug) .debug-panel,
+body:not(.debug) .debug-tip,
+body:not(.debug) [data-debug] {
+  display: none !important;
+}
+/* === MAIN PLAYER SIZE FIX === */
+.player-wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 28px auto;
+}
+
+.player-shell {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 30px 80px rgba(0,0,0,0.55);
+}
+
+.player-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+/* Bigger on mobile */
+@media (max-width: 768px) {
+  .player-shell {
+    aspect-ratio: 16 / 9;
+    border-radius: 14px;
+  }
+  /* === SESSION TILES === */
+.session-tile {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(0,0,0,0.35));
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 14px;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.session-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0,0,0,.45);
+}
+
+.session-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.session-meta {
+  opacity: .7;
+  font-size: .9rem;
+  margin-top: 4px;
+}
+
+/* === PLAY BUTTON (NOT HIDEOUS ANYMORE) === */
+.session-play {
+  appearance: none;
+  border: none;
+  background: linear-gradient(135deg, #7c7cff, #9cffac);
+  color: #000;
+  font-weight: 700;
+  padding: 10px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: .9rem;
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.session-play:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 30px rgba(156,255,172,.45);
+}
+
+/* Hide play button when tile is active */
+.session-tile.open .session-play {
+  display: none;
+}
+}
 
 /* If you have your Kitty CSS already, paste it BELOW this line so it overrides anything above. */
