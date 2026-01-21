@@ -528,6 +528,43 @@ body:not(.debug) [data-debug] {
   font-size: .9rem;
   transition: transform .15s ease, box-shadow .15s ease;
 }
+  /* --- Player sizing fix (mobile) --- */
+.playerWrap{
+  margin-bottom: 14px;
+}
+
+.playerShell{
+  margin-top: 10px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.playerAspect{
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 42vh;          /* <-- keeps it from eating the whole screen */
+}
+
+.playerMount{
+  width: 100%;
+  height: 100%;
+}
+
+/* Smaller max height on very small screens */
+@media (max-width: 420px){
+  .playerAspect{
+    max-height: 34vh;
+  }
+}
+
+/* --- Make tiles feel tappable and remove any ugly button vibes --- */
+.epTile{
+  cursor: pointer;
+  user-select: none;
+}
+.epTile:active{
+  transform: scale(0.99);
+}
 
 .session-play:hover {
   transform: scale(1.05);
