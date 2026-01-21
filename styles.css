@@ -296,13 +296,10 @@ body{
   .sessionsTitle{ font-size: 20px; }
   .epTitle{ font-size: 15px; }
 }
-/* =========================================================
-   STRIPPED & TURNED UP — UI POLISH (CSS ONLY)
-   LOCKED JS/HTML. We only make it look legit.
-   Paste at BOTTOM of styles.css
-   ========================================================= */
 
-/* App-wide tuning */
+/* =========================================================
+   APP POLISH (kept)
+   ========================================================= */
 :root{
   --bg0: #0b0c10;
   --bg1: rgba(255,255,255,.06);
@@ -318,7 +315,6 @@ body{
   --shadow2: 0 10px 30px rgba(0,0,0,.28);
 }
 
-/* Prevent “webpage-y” feel */
 html, body{
   height: 100%;
   background: var(--bg0);
@@ -333,7 +329,6 @@ html, body{
   padding: 14px 12px 24px;
 }
 
-/* Header polish (landing only; sessions header already hidden by your rule) */
 header.top{
   position: sticky;
   top: 0;
@@ -387,7 +382,6 @@ header.top{
 .subStrong{ color: rgba(255,255,255,.82); font-weight: 700; }
 .subSep{ opacity: .55; }
 
-/* LIVE badge feels more “app chip” */
 .liveBadge{
   display:inline-flex;
   align-items:center;
@@ -410,14 +404,6 @@ header.top{
   box-shadow: 0 0 0 4px rgba(255,177,26,.18);
 }
 
-/* Landing card polish (works with your inline landing styles too) */
-#landing{
-  border-radius: var(--radius-lg) !important;
-  box-shadow: var(--shadow) !important;
-  border: 1px solid rgba(255,255,255,.10) !important;
-}
-
-/* Player block: make it feel “featured” */
 .player-wrap{
   position: sticky;
   top: 10px;
@@ -433,7 +419,6 @@ header.top{
   color: rgba(255,255,255,.92);
 }
 
-/* TV frame + player shell refinement */
 .tvFrame{
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -459,9 +444,16 @@ header.top{
   opacity: .85;
 }
 
+/* Keep player inside a controlled box always */
 .playerFrameWrap{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 70vh;
   padding: 12px;
   background: rgba(0,0,0,.14);
+  overflow: hidden;
+  border-radius: 22px;
 }
 
 .player-shell{
@@ -469,17 +461,21 @@ header.top{
   overflow: hidden;
   border: 1px solid rgba(255,255,255,.10);
   box-shadow: var(--shadow2);
-}
-
-/* Ensure YouTube player keeps a nice ratio */
-.player-frame{
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  display: block;
   background: #000;
 }
 
-/* Sessions card container */
+/* iframe fills the controlled box */
+#playerFrame, 
+.player-frame, 
+.player-shell iframe{
+  position: absolute;
+  inset: 12px; /* matches padding in playerFrameWrap */
+  width: calc(100% - 24px) !important;
+  height: calc(100% - 24px) !important;
+  border: 0 !important;
+}
+
+/* Sessions container polish */
 #sessionsList{
   border-radius: var(--radius-lg);
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
@@ -488,112 +484,26 @@ header.top{
   padding: 14px 12px 12px;
 }
 
-/* Sessions header area */
-.sessionsHead{
-  display:flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.sessionsTitle{
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: .2px;
-}
-
-.sessionsSub{
-  margin-top: 4px;
-  font-size: 13px;
-  line-height: 1.35;
-  color: var(--muted);
-}
-
-/* Status pill */
-#status{
-  white-space: nowrap;
-  padding: 9px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  font-size: 12px;
-  letter-spacing: .3px;
-  background: rgba(0,0,0,.28);
-  border: 1px solid rgba(255,255,255,.12);
-  color: rgba(255,255,255,.88);
-}
-
-/* Episode list as app-style rows */
 #episodes{
   display: grid;
   gap: 10px;
 }
 
-/* Card row style */
 .ep{
-  border-radius: 18px;
-  padding: 14px 14px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 10px 22px rgba(0,0,0,.20);
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
-  cursor: pointer;
-}
-
-.ep:active{
-  transform: scale(.99);
-}
-
-.ep:hover{
-  background: rgba(255,255,255,.075);
-  border-color: rgba(255,255,255,.16);
-}
-
-.epHead{
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.epTitle{
-  font-size: 16px;
-  font-weight: 900;
-  letter-spacing: .15px;
-  line-height: 1.2;
-}
-
-.epMeta{
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.epSmall{
-  margin-top: 6px;
-  color: var(--muted2);
-  font-size: 12px;
-  font-weight: 700;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.30));
+  border: none;
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
 }
 
 .chev{
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background: rgba(0,0,0,.22);
-  border: 1px solid rgba(255,255,255,.10);
-  font-size: 18px;
-  opacity: .9;
+  background: rgba(255,255,255,.08);
+  border: none;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
 }
 
-/* Make scroll feel clean */
-*{
-  scroll-behavior: smooth;
-}
+*{ scroll-behavior: smooth; }
+
 /* --- FIX: "Playing now." clipping --- */
 #nowPlayingLine{
   padding: 10px 14px 12px !important;
@@ -605,123 +515,8 @@ header.top{
   overflow: visible !important;
 }
 
-.tvFrame{
-  overflow: visible !important;
-}
-/* =========================================================
-   NETFLIX-STYLE MODE (CSS ONLY)
-   ========================================================= */
-
-/* HERO PLAYER FEEL */
-.player-wrap{
-  position: sticky;
-  top: 10px;
-  z-index: 40;
-  margin-bottom: 18px;
-}
-
-/* Player title = headline */
-.now-playing-title{
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: .25px;
-  margin: 6px 6px 12px;
-  color: rgba(255,255,255,.95);
-}
-
-/* Player container = cinematic */
-.tvFrame{
-  background:
-    radial-gradient(120% 140% at 50% 0%, rgba(255,255,255,.10), rgba(0,0,0,.45)),
-    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.35));
-  border-radius: 26px;
-  box-shadow: 0 30px 80px rgba(0,0,0,.55);
-}
-
-/* Remove “boxy” feeling */
-.playerFrameWrap{
-  padding: 14px;
-}
-
-/* Video itself */
-.player-shell{
-  border-radius: 20px;
-  overflow: hidden;
-  background: #000;
-}
-
-/* Subtle cinematic footer under player */
-#nowPlayingLine{
-  margin-top: 6px;
-  padding-left: 16px !important;
-  font-size: 12.5px;
-  letter-spacing: .2px;
-  opacity: .8;
-}
-
-/* SESSIONS AREA — SECONDARY CONTENT */
-#sessionsList{
-  margin-top: 6px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.30));
-  border-radius: 24px;
-}
-
-/* Section header hierarchy */
-.sessionsTitle{
-  font-size: 20px;
-  font-weight: 900;
-  letter-spacing: .3px;
-}
-
-.sessionsSub{
-  max-width: 85%;
-  font-size: 13px;
-  color: rgba(255,255,255,.65);
-}
-
-/* Status chip like Netflix tags */
-#status{
-  background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.18);
-  box-shadow: 0 6px 20px rgba(0,0,0,.35);
-}
-
-/* Episode rows = Netflix tiles */
-.ep{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.30));
-  border: none;
-  box-shadow: 0 12px 30px rgba(0,0,0,.35);
-}
-
-/* Hover / tap emphasis */
-.ep:hover{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.12), rgba(0,0,0,.38));
-}
-
-/* Titles feel premium */
-.epTitle{
-  font-size: 16.5px;
-  font-weight: 900;
-  letter-spacing: .25px;
-}
-
-/* Metadata de-emphasized */
-.epMeta{
-  font-size: 13px;
-  opacity: .75;
-}
-
-/* Chevron button = floating */
-.chev{
-  background: rgba(255,255,255,.08);
-  border: none;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.12);
-}
 /* =========================
-   LANDING PAGE (Joey’s Acoustic Corner)
+   LANDING PAGE
    ========================= */
 body.landing{
   margin:0;
@@ -741,153 +536,38 @@ body.landing{
   padding: 18px 14px 32px;
 }
 
-.landingTop{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-  padding: 10px 10px;
-}
+/* (kept the rest of your landing CSS as-is) */
+.landingTop{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 10px}
+.landingBrand{display:flex;align-items:center;gap:12px}
+.landingMark{width:44px;height:44px;border-radius:14px;background:radial-gradient(circle at 30% 30%, rgba(120,255,120,.65), transparent 55%),radial-gradient(circle at 70% 70%, rgba(255,190,70,.55), transparent 60%),rgba(255,255,255,.06);box-shadow:0 12px 30px rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.10)}
+.landingTitle{font-weight:900;letter-spacing:.2px;font-size:16px}
+.landingSub{opacity:.8;font-size:12px;margin-top:2px}
+.landingBadge{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.06);backdrop-filter:blur(10px);font-weight:700;font-size:12px}
+.landingHero{margin-top:10px;border-radius:26px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);box-shadow:0 18px 60px rgba(0,0,0,.45);overflow:hidden}
+.landingLogo{padding:26px 18px 10px;font-weight:1000;letter-spacing:1px;line-height:.92;font-size:clamp(34px, 7vw, 62px);text-transform:uppercase;background:linear-gradient(90deg, rgba(120,255,120,.95), rgba(255,190,70,.92));-webkit-background-clip:text;background-clip:text;color:transparent}
+.landingCard{padding:16px 18px 20px;border-top:1px solid rgba(255,255,255,.10);background:radial-gradient(900px 400px at 20% 0%, rgba(255,190,70,.10), transparent 60%),rgba(10,10,16,.35)}
+.landingCard h1{margin:0 0 8px;font-size:28px;letter-spacing:.2px}
+.landingCard p{margin:0 0 14px;opacity:.86;font-size:14px;line-height:1.45;max-width:62ch}
+.landingButtons{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.landingBtn{display:inline-flex;align-items:center;justify-content:center;padding:12px 14px;border-radius:14px;text-decoration:none;font-weight:900;letter-spacing:.2px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:#fff;min-width:170px}
+.landingBtn.primary{border-color:rgba(120,255,120,.30);background:linear-gradient(90deg, rgba(120,255,120,.90), rgba(255,190,70,.80));color:#0a0b11}
+.landingFine{margin-top:12px;font-size:12px;opacity:.72}
+.landingMini{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.miniItem{border-radius:18px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.05);padding:12px 14px}
+.miniLabel{font-size:12px;opacity:.75;margin-bottom:4px;font-weight:800;letter-spacing:.6px;text-transform:uppercase}
+.miniValue{font-size:13px;opacity:.9}
+@media (max-width: 520px){.landingMini{grid-template-columns:1fr}}
 
-.landingBrand{ display:flex; align-items:center; gap:12px; }
-
-.landingMark{
-  width:44px; height:44px; border-radius:14px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(120,255,120,.65), transparent 55%),
-    radial-gradient(circle at 70% 70%, rgba(255,190,70,.55), transparent 60%),
-    rgba(255,255,255,.06);
-  box-shadow: 0 12px 30px rgba(0,0,0,.35);
-  border: 1px solid rgba(255,255,255,.10);
-}
-
-.landingTitle{ font-weight: 900; letter-spacing: .2px; font-size: 16px; }
-.landingSub{ opacity:.8; font-size: 12px; margin-top:2px; }
-
-.landingBadge{
-  display:flex; align-items:center; gap:8px;
-  padding: 8px 12px; border-radius: 999px;
-  border:1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  backdrop-filter: blur(10px);
-  font-weight: 700; font-size: 12px;
-}
-
-.landingHero{
-  margin-top: 10px;
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
-  overflow:hidden;
-}
-
-.landingLogo{
-  padding: 26px 18px 10px;
-  font-weight: 1000;
-  letter-spacing: 1px;
-  line-height: .92;
-  font-size: clamp(34px, 7vw, 62px);
-  text-transform: uppercase;
-  background: linear-gradient(90deg, rgba(120,255,120,.95), rgba(255,190,70,.92));
-  -webkit-background-clip: text;
-  background-clip:text;
-  color: transparent;
-}
-
-.landingCard{
-  padding: 16px 18px 20px;
-  border-top: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(900px 400px at 20% 0%, rgba(255,190,70,.10), transparent 60%),
-    rgba(10,10,16,.35);
-}
-
-.landingCard h1{ margin: 0 0 8px; font-size: 28px; letter-spacing: .2px; }
-.landingCard p{
-  margin: 0 0 14px;
-  opacity: .86;
-  font-size: 14px;
-  line-height: 1.45;
-  max-width: 62ch;
-}
-
-.landingButtons{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
-
-.landingBtn{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding: 12px 14px; border-radius: 14px;
-  text-decoration:none; font-weight: 900; letter-spacing:.2px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color:#fff;
-  min-width: 170px;
-}
-
-.landingBtn.primary{
-  border-color: rgba(120,255,120,.30);
-  background: linear-gradient(90deg, rgba(120,255,120,.90), rgba(255,190,70,.80));
-  color: #0a0b11;
-}
-
-.landingFine{ margin-top: 12px; font-size: 12px; opacity: .72; }
-
-.landingMini{
-  display:grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.miniItem{
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  padding: 12px 14px;
-}
-
-.miniLabel{
-  font-size: 12px;
-  opacity:.75;
-  margin-bottom: 4px;
-  font-weight: 800;
-  letter-spacing:.6px;
-  text-transform: uppercase;
-}
-
-.miniValue{ font-size: 13px; opacity:.9; }
-
-@media (max-width: 520px){
-  .landingMini{ grid-template-columns: 1fr; }
-}
 /* =========================
-   FOCUS MODE (player prevails)
+   FOCUS MODE
    ========================= */
-
-body.focusMode {
-  overflow-x: hidden;
-}
-
-/* Hide the sessions list completely while focused */
-body.focusMode #sessionsList {
-  display: none !important;
-}
-
-/* Make the player area feel like a dedicated screen */
-body.focusMode #playerWrap {
-  position: relative;
-  margin-top: 10px;
-}
-
-/* Optional: tighten the player card to dominate */
-body.focusMode .playerCard,
-body.focusMode .playerShell,
-body.focusMode .playerFrame {
-  max-width: 100%;
-}
+body.focusMode { overflow-x: hidden; }
+body.focusMode #sessionsList { display: none !important; }
+body.focusMode #playerWrap { position: relative; margin-top: 10px; }
+body.focusMode header.top { display: none !important; }
 
 /* Floating "Change session" button */
-.focusToggleBtn {
+.focusToggleBtn{
   position: sticky;
   top: 12px;
   z-index: 9999;
@@ -906,98 +586,22 @@ body.focusMode .playerFrame {
   margin: 12px auto 0;
   box-shadow: 0 14px 40px rgba(0,0,0,.35);
 }
-
-.focusToggleBtn:active {
-  transform: scale(.99);
-}
-
-.focusToggleBtn .dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
+.focusToggleBtn:active{ transform: scale(.99); }
+.focusToggleBtn .dot{
+  width: 10px; height: 10px; border-radius: 50%;
   background: rgba(120, 255, 120, .9);
   box-shadow: 0 0 16px rgba(120,255,120,.55);
 }
 
-/* When focus mode is ON, hide the header (feels like a "now playing" screen) */
-body.focusMode header.top {
-  display: none !important;
-}
-/* Hide the RULE card on landing */
-.miniItem:has(.miniLabel:contains("Rule")),
-.miniItem.rule,
-.rule {
-  display: none !important;
-}
+/* Featured tile polish */
 .epFeatured{
   border: 1px solid rgba(140,255,140,.18);
   box-shadow: 0 0 0 1px rgba(140,255,140,.10), 0 18px 60px rgba(0,0,0,.35);
 }
-.epFeatured .epTitle{
-  letter-spacing: .2px;
-}
-/* ---------- TV / Big screen player control fix ---------- */
-
-/* keep the YouTube area locked to a normal aspect ratio */
-.playerFrameWrap {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  max-height: 70vh; /* prevents the player from eating the whole TV */
-  overflow: hidden;
-  border-radius: 22px;
-}
-
-/* make sure the iframe fills that box correctly */
-#playerFrame, 
-.player-frame, 
-.player-shell iframe {
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  border: 0;
-}
-
-/* important: don’t let decorative layers block clicks */
-.tvTopBar,
-.nowPlayingTitle,
-.nowPlaying,
-.tvLED,
-.tvLabel,
-.tvKnob {
-  pointer-events: none;
-}
-
-/* the iframe MUST receive clicks */
-.player-shell,
-.playerFrameWrap,
-#playerFrame {
-  pointer-events: auto;
-}
-/* --- TV sizing: keep player controllable on big screens --- */
-@media (min-width: 1100px) {
-  .player-wrap,
-  #playerWrap {
-    max-width: 980px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .tvFrame {
-    max-width: 980px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  /* keep the video area a sane size */
-  .playerFrameWrap {
-    aspect-ratio: 16 / 9;
-    height: auto !important;
-    max-height: 560px;
-  }
-}
+.epFeatured .epTitle{ letter-spacing: .2px; }
 
 /* --- YouTube embed fallback overlay --- */
-.ytFallback {
+.ytFallback{
   position: absolute;
   inset: 0;
   display: none;
@@ -1006,7 +610,6 @@ body.focusMode header.top {
   z-index: 50;
   padding: 18px;
 }
-
 .ytFallbackCard{
   width: min(520px, 92%);
   border-radius: 22px;
@@ -1015,18 +618,8 @@ body.focusMode header.top {
   border: 1px solid rgba(255,255,255,.12);
   text-align: center;
 }
-
-.ytFallbackTitle{
-  font-size: 20px;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-.ytFallbackText{
-  opacity: .85;
-  margin-bottom: 14px;
-}
-
+.ytFallbackTitle{ font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+.ytFallbackText{ opacity: .85; margin-bottom: 14px; }
 .ytFallbackBtn{
   display: inline-flex;
   align-items: center;
@@ -1039,125 +632,69 @@ body.focusMode header.top {
   color: #000;
 }
 
-/* optional: keep the whole TV frame from going comically huge */
-.tvFrame {
-  max-width: 1100px;
-  margin-inline: auto;
-}
+/* =========================================================
+   ✅ TV / SHIELD FIXES (CONTROL + CLICK SAFETY)
+   ========================================================= */
 
-/* also remove the RULE pill with CSS as a backup (if you missed HTML) */
-.landingMini .miniItem:last-child {
-  display: none;
-}
-/* Shield/TV: keep the player from taking over the whole screen */
+/* TV sizing: keep player controllable and NEVER full-screen */
 @media (min-width: 1100px) {
-  #playerWrap, .player-wrap, .tvFrame {
-    max-width: 980px;
-    margin: 0 auto;
+  #playerWrap, .player-wrap, .tvFrame{
+    max-width: 960px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
-  .playerFrameWrap {
-    max-height: 560px;
-    height: auto !important;
+  .playerFrameWrap{
+    max-height: 540px;
     aspect-ratio: 16 / 9;
   }
 }
-/* ===== TV CINEMA MODE + SESSION PICKER OVERLAY ===== */
 
-/* When focused: background hidden vibe */
-body.focusMode {
-  overflow: hidden; /* prevents weird TV scrolling */
+/* Don't let decorative layers block taps */
+.tvTopBar,
+.now-playing-title,
+#nowPlayingLine,
+.tvLED,
+.tvLabel,
+.tvKnob{
+  pointer-events: none !important;
 }
 
-/* Keep player visible and centered */
-body.focusMode .player-wrap{
-  position: relative;
-  z-index: 30;
-  margin-bottom: 0;
-}
-
-/* Overlay that contains the session list */
-.sessionOverlay{
-  position: fixed;
-  inset: 0;
-  z-index: 999;
-  display: none;
-  place-items: center;
-  padding: 24px;
-  background: rgba(0,0,0,.82);
-  backdrop-filter: blur(6px);
-}
-
-/* Show overlay when active */
-body.showSessions .sessionOverlay{
-  display: grid;
-}
-
-.sessionOverlayCard{
-  width: min(1100px, 92vw);
-  max-height: 86vh;
-  overflow: hidden;
-  border-radius: 24px;
-  background: rgba(25,25,28,.92);
-  border: 1px solid rgba(255,255,255,.08);
-  box-shadow: 0 20px 70px rgba(0,0,0,.55);
-}
-
-/* Header */
-.sessionOverlayHead{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px 18px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.sessionOverlayTitle{
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: .2px;
-  color: rgba(255,255,255,.92);
-}
-
-.sessionOverlayClose{
-  border: 1px solid rgba(255,255,255,.15);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.9);
-  border-radius: 999px;
-  padding: 10px 14px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.sessionOverlayClose:focus{
-  outline: 2px solid rgba(140,255,140,.55);
-  outline-offset: 2px;
-}
-
-/* Scrollable list area */
-.sessionOverlayBody{
-  padding: 14px;
-  max-height: calc(86vh - 58px);
-  overflow: auto;
-}
-
-/* Make cards easier to click on TV */
-.sessionOverlayBody .ep{
-  cursor: pointer;
-  transform: translateZ(0);
-}
-
-.sessionOverlayBody .ep:focus{
-  outline: 2px solid rgba(140,255,140,.55);
-  outline-offset: 3px;
-}
-
-/* Optional: when overlay open, prevent any under-click */
-body.showSessions main,
-body.showSessions .player-wrap{
-  pointer-events: none;
-}
-body.showSessions .sessionOverlay{
+/* Player itself can be clicked when not picking sessions */
+.player-shell,
+.playerFrameWrap,
+#playerFrame,
+.player-frame{
   pointer-events: auto;
+}
+
+/* =========================================================
+   ✅ RULE CARD REMOVAL (NO :has / NO :contains)
+   ========================================================= */
+.landingMini .miniItem:last-child,
+.landingMini .miniItem.rule,
+.rule{
+  display: none !important;
+}
+
+/* =========================================================
+   ✅ TV SESSION PICK MODE (CSS ONLY)
+   Requires your JS to toggle a body class like: body.classList.add("pickMode")
+   If your overlay already exists (sessionOverlay), this makes it ALWAYS clickable.
+   ========================================================= */
+
+/* When pickMode is on, stop the player from stealing touches */
+body.pickMode .player-wrap,
+body.pickMode .tvFrame,
+body.pickMode .playerFrameWrap,
+body.pickMode .player-shell,
+body.pickMode iframe{
+  pointer-events: none !important;
+}
+
+/* Overlay & cards stay clickable */
+body.pickMode #sessionOverlay,
+body.pickMode #sessionOverlay *,
+body.pickMode .ep{
+  pointer-events: auto !important;
 }
