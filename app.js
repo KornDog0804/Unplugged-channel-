@@ -1,7 +1,8 @@
-/* Stripped & Turned Up — app.js
-   - Single shared YouTube Player (IFrame API)
-   - Fullshow: plays one video
-   - Queue: plays a playlist of video IDs, auto-advances, loops
+/* Stripped & Turned Up — app.js (LOCKED BASELINE)
+   - Uses #playerWrap + #sessionsList (from index.html)
+   - Creates the shared player EVEN IF #playerWrap already exists
+   - Uses #episodes for cards (CSS .ep styles)
+   - Updates #status pill
    - Debug only when ?debug=1
 */
 (function () {
@@ -9,7 +10,6 @@
 
   const params = new URLSearchParams(location.search);
   const DEBUG = params.get("debug") === "1";
-  const log = (...a) => DEBUG && console.log("[STU]", ...a);
 
   const EPISODES = Array.isArray(window.EPISODES)
     ? window.EPISODES
@@ -19,11 +19,20 @@
 
   const $ = (sel) => document.querySelector(sel);
 
-  const list = $("#episodes");
-  const status = $("#status");
-  const app = $("#app") || document.body;
+  const main = $("main.wrap") || $("main") || document.body;
 
-  // ---------- helpers ----------
+  // We support BOTH layouts:
+  // - New HTML: #playerWrap + #sessionsList
+  // - Older HTML: #status + #episodes inside a card
+  const sessionsList = $("#sessionsList");
+  const list = $("#episodes") || $("#sessionsList") || sessionsList;
+  const status = $("#status") || $("#loadedCount");
+
+  function logLine(line) {
+    if (!DEBUG) return;
+    console.log("[STU]", line);
+  }
+
   function el(tag, attrs = {}, kids = []) {
     const node = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
@@ -47,27 +56,100 @@
   function ytIdFrom(url) {
     const u = safeText(url);
     if (!u) return "";
-
-    // already embed
     if (u.includes("/embed/")) {
       const m = u.match(/\/embed\/([a-zA-Z0-9_-]{6,})/);
       return m ? m[1] : "";
     }
-
     try {
       const parsed = new URL(u);
       if (parsed.hostname.includes("youtu.be")) {
-        // youtu.be/ID?si=...
-        const id = parsed.pathname.replace("/", "").trim();
-        return id || "";
+        return parsed.pathname.replace("/", "").trim();
       }
-      // youtube.com/watch?v=ID
       return parsed.searchParams.get("v") || "";
     } catch {
       const m1 = u.match(/v=([a-zA-Z0-9_-]{6,})/);
       const m2 = u.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
       return (m1 && m1[1]) || (m2 && m2[1]) || "";
     }
+  }
+
+  function toEmbed(url) {
+    const id = ytIdFrom(url);
+    if (!id) return "";
+    return `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
+  }
+
+  // ---------- Shared player (ALWAYS ensure it exists) ----------
+  let playerWrap = $("#playerWrap");
+  if (!playerWrap) {
+    playerWrap = el("section", { id: "playerWrap" });
+    main.insertBefore(playerWrap, main.firstChild);
+  }
+
+  let playerTitle = $("#nowPlayingTitle");
+  let playerFrame = $("#playerFrame");
+
+  // If wrapper exists but children don’t, BUILD THEM.
+  if (!playerTitle || !playerFrame) {
+    playerWrap.innerHTML = "";
+
+    playerTitle = el(
+      "div",
+      { id: "nowPlayingTitle", class: "now-playing-title" },
+      "Tap a session to play"
+    );
+
+    playerFrame = el("iframe", {
+      id: "playerFrame",
+      class: "player-frame",
+      src: "about:blank",
+      allow:
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+      allowfullscreen: "true",
+      frameborder: "0",
+      title: "Stripped & Turned Up Player",
+    });
+
+    const shell = el("div", { class: "player-shell" }, playerFrame);
+
+    // (Optional) TV look wrapper if your CSS supports it — safe even if not
+    const tv = el("div", { class: "tvFrame" }, [
+      el("div", { class: "tvTopBar" }, [
+        el("div", { class: "tvLED" }, ""),
+        el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
+        el("div", { class: "tvKnob" }, ""),
+      ]),
+      el("div", { class: "playerFrameWrap" }, shell),
+      el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready."),
+    ]);
+
+    // If your tvFrame styles exist, use it. If not, it just becomes a normal div.
+    playerWrap.className = "player-wrap";
+    playerWrap.appendChild(tv);
+    playerWrap.insertBefore(playerTitle, tv);
+
+    logLine("Player built inside existing #playerWrap.");
+  }
+
+  const nowPlayingLine = $("#nowPlayingLine");
+
+  function setNowPlaying(title, url) {
+    if (playerTitle) playerTitle.textContent = title || "Tap a session to play";
+    if (nowPlayingLine) nowPlayingLine.textContent = title ? "Playing now." : "Ready.";
+
+    if (!playerFrame) return;
+
+    if (!url) {
+      playerFrame.src = "about:blank";
+      return;
+    }
+    const embed = toEmbed(url);
+    if (!embed) {
+      playerFrame.src = "about:blank";
+      logLine("BAD LINK: " + url);
+      return;
+    }
+    playerFrame.src = embed;
   }
 
   function normalizeEpisodes(arr) {
@@ -78,24 +160,17 @@
       const title = safeText(ep.title) || `Session ${idx + 1}`;
       const artist = safeText(ep.artist) || "";
       const year = ep.year != null ? String(ep.year) : "";
-      const mode = safeText(ep.mode) || "fullshow";
       const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
-
-      // Collect IDs for all tracks (queue) or first track (fullshow)
-      const ids = tracks
-        .map((t) => ytIdFrom(t && t.url))
-        .filter(Boolean);
-
-      if (!ids.length) return;
+      const streamUrl = tracks[0] ? safeText(tracks[0].url) : "";
+      if (!streamUrl) return;
 
       out.push({
         id: `ep_${idx}_${title.replace(/\s+/g, "_").slice(0, 30)}`,
         title,
         artist,
         year,
-        mode,
-        videoIds: ids,
-        tracksCount: ids.length
+        streamUrl,
+        tracksCount: tracks.length,
       });
     });
     return out;
@@ -106,166 +181,42 @@
   if (status) status.textContent = sessions.length ? `Loaded ${sessions.length} sessions` : "No sessions found";
 
   if (!list) {
-    log("Missing #episodes container.");
+    logLine("Missing list container (#episodes or #sessionsList).");
     return;
   }
 
-  // ---------- shared player UI ----------
-  let playerWrap = $("#playerWrap");
-  if (!playerWrap) {
-    playerWrap = el("section", { id: "playerWrap" });
-    app.insertBefore(playerWrap, app.firstChild);
-  }
-
-  // Nice TV player shell using YOUR existing CSS class names
-  playerWrap.innerHTML = "";
-  const nowTitle = el("div", { id: "nowPlayingTitle", class: "playerTitle" }, "Tap a session to play");
-  const tv = el("div", { class: "tvFrame" }, [
-    el("div", { class: "tvTopBar" }, [
-      el("div", { class: "tvLED", id: "tvLED", "aria-hidden": "true" }),
-      el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
-      el("div", { class: "tvKnob", "aria-hidden": "true" })
-    ]),
-    el("div", { class: "playerFrameWrap" }, [
-      // IMPORTANT: Player API mounts into a DIV, not an iframe
-      el("div", { id: "ytPlayer", class: "playerFrame" })
-    ]),
-    el("div", { id: "nowPlayingSub", class: "nowPlaying" }, "Ready.")
-  ]);
-
-  const playerCard = el("section", { class: "card player" }, [nowTitle, tv]);
-  playerWrap.appendChild(playerCard);
-
-  const nowSub = $("#nowPlayingSub");
-  const led = $("#tvLED");
-
-  // ---------- YouTube Player API wiring ----------
-  let YT_PLAYER = null;
-
-  // Keep current session info to handle queue looping
-  let CURRENT = {
-    mode: "fullshow",
-    title: "",
-    ids: []
-  };
-
-  function pulseLed() {
-    if (!led) return;
-    led.classList.add("pulse");
-    setTimeout(() => led.classList.remove("pulse"), 280);
-  }
-
-  function setNowPlayingText(title, sub) {
-    nowTitle.textContent = title || "Tap a session to play";
-    if (nowSub) nowSub.textContent = sub || "";
-  }
-
-  function playSession(session) {
-    if (!YT || !YT_PLAYER) {
-      setNowPlayingText("Player not ready yet…", "Try again in 1 second.");
-      return;
-    }
-
-    CURRENT = {
-      mode: session.mode,
-      title: session.title,
-      ids: session.videoIds.slice()
-    };
-
-    pulseLed();
-
-    if (session.mode === "queue") {
-      setNowPlayingText(session.title, `Queue • ${session.tracksCount} tracks • Autoplay ON`);
-      // Load as playlist and start immediately
-      YT_PLAYER.loadPlaylist({
-        playlist: session.videoIds,
-        index: 0,
-        startSeconds: 0
-      });
-      return;
-    }
-
-    // Fullshow: single video
-    setNowPlayingText(session.title, "Full session stream");
-    YT_PLAYER.loadVideoById(session.videoIds[0], 0);
-  }
-
-  // Global callback the YT API looks for
-  window.onYouTubeIframeAPIReady = function () {
-    log("YT API ready");
-
-    YT_PLAYER = new YT.Player("ytPlayer", {
-      width: "100%",
-      height: "100%",
-      videoId: "", // start empty
-      playerVars: {
-        autoplay: 1,
-        playsinline: 1,
-        rel: 0,
-        modestbranding: 1
-      },
-      events: {
-        onReady: () => {
-          log("YT player ready");
-          setNowPlayingText("Tap a session to play", "Autoplay is armed.");
-        },
-        onStateChange: (e) => {
-          // 0 = ended
-          if (e.data === 0 && CURRENT.mode === "queue") {
-            // If it ended, YouTube often auto-advances.
-            // But if it hits the end of the list, we loop back to start.
-            try {
-              const idx = YT_PLAYER.getPlaylistIndex();
-              const len = (YT_PLAYER.getPlaylist() || []).length;
-
-              // If it ended on last track, loop to first.
-              if (len && idx === len - 1) {
-                log("Queue ended, looping to start");
-                YT_PLAYER.playVideoAt(0);
-              }
-            } catch (err) {
-              log("Queue loop check error:", err);
-            }
-          }
-        },
-        onError: (e) => {
-          setNowPlayingText(CURRENT.title || "Playback error", `YouTube error code: ${e.data}`);
-          log("YT error:", e.data);
-        }
-      }
-    });
-  };
-
-  // ---------- render session cards ----------
+  // Clear old tiles/cards
   list.innerHTML = "";
 
+  // Render as .ep cards (matches your CSS)
   sessions.forEach((s) => {
     const meta = [s.artist, s.year].filter(Boolean).join(" • ");
-    const small = s.mode === "queue" ? `${s.tracksCount} tracks` : "Full session";
 
-    const card = el("div", { class: "ep", tabindex: "0" }, [
+    const card = el("div", { class: "ep", tabindex: "0", "data-id": s.id }, [
       el("div", { class: "epHead" }, [
         el("div", {}, [
           el("div", { class: "epTitle" }, s.title),
           el("div", { class: "epMeta" }, meta),
-          el("div", { class: "epSmall" }, small)
+          el("div", { class: "epSmall" }, s.tracksCount > 1 ? `${s.tracksCount} tracks` : "Full session"),
         ]),
-        el("div", { class: "chev", "aria-hidden": "true" }, "›")
-      ])
+        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
+      ]),
     ]);
 
-    const go = () => playSession(s);
+    const play = () => setNowPlaying(s.title, s.streamUrl);
 
-    card.addEventListener("click", go);
+    card.addEventListener("click", play);
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        go();
+        play();
       }
     });
 
     list.appendChild(card);
   });
 
-  log("Sessions rendered:", sessions.length);
+  logLine("Debug = " + DEBUG);
+  logLine("EPISODES length = " + EPISODES.length);
+  logLine("Sessions rendered = " + sessions.length);
 })();
