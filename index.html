@@ -37,13 +37,36 @@
       });
     })();
   </script>
+
+  <!-- ONE-PAGE "TWO SCREEN" behavior (safe, no player logic touched) -->
+  <style>
+    html { scroll-behavior: smooth; }
+    #home { scroll-margin-top: 16px; }
+    #sessions { scroll-margin-top: 16px; }
+
+    /* When hash is #sessions we hide the landing to feel like a new page */
+    body.at-sessions #home { display: none; }
+
+    /* Back button styling (simple + matches your glass vibe) */
+    .backTop{
+      display:inline-flex;
+      margin: 14px 6px 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration:none;
+      font-weight: 700;
+      color: rgba(255,255,255,.9);
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .backTop:active{ transform: scale(.98); }
+  </style>
 </head>
 
-<body class="landing sessionsPage">
-  <!-- =========================
-       LANDING / HERO (TOP)
-       ========================= -->
-  <main class="landingWrap">
+<body class="landing">
+  <!-- LANDING "PAGE" -->
+  <main class="landingWrap" id="home">
     <header class="landingTop">
       <div class="landingBrand">
         <div class="landingMark" aria-hidden="true"></div>
@@ -67,8 +90,8 @@
         </p>
 
         <div class="landingButtons">
-          <a class="landingBtn primary" href="#sessions">Enter Sessions</a>
-          <a class="landingBtn ghost" href="#sessions">Browse Sessions</a>
+          <!-- Keep only ONE button -->
+          <a class="landingBtn primary" href="#sessions" data-nav="sessions">Enter Sessions</a>
         </div>
 
         <div class="landingFine">
@@ -89,13 +112,10 @@
     </section>
   </main>
 
-  <!-- =========================
-       SESSIONS (APP AREA)
-       app.js will build player + list here
-       ========================= -->
-  <main class="wrap" id="app">
-    <!-- Anchor target for buttons -->
-    <div id="sessions"></div>
+  <!-- SESSIONS "PAGE" (same file) -->
+  <main class="wrap" id="sessions">
+    <!-- Back nav (brings landing back) -->
+    <a class="backTop" href="#home">← Back to home</a>
 
     <!-- app.js will build the full player UI inside here -->
     <section id="playerWrap"></section>
@@ -121,20 +141,22 @@
 
   <script src="app.js?v=24" defer></script>
 
-  <!-- Smooth scroll (safe: does NOT touch autoplay logic) -->
+  <!-- Hash-based "two-page" mode toggle -->
   <script>
-    (function(){
-      const go = (e) => {
-        const a = e.target.closest('a[href^="#"]');
-        if(!a) return;
-        const id = a.getAttribute("href");
-        if(!id || id === "#") return;
-        const el = document.querySelector(id);
-        if(!el) return;
-        e.preventDefault();
-        el.scrollIntoView({behavior:"smooth", block:"start"});
+    (function () {
+      const setMode = () => {
+        const inSessions = location.hash === "#sessions";
+        document.body.classList.toggle("at-sessions", inSessions);
+
+        // OPTIONAL: when coming back home, scroll to top cleanly
+        // (keeps the "page" feel)
+        if (!inSessions && location.hash === "#home") {
+          // nothing needed; browser will jump to #home
+        }
       };
-      document.addEventListener("click", go);
+
+      window.addEventListener("hashchange", setMode);
+      setMode();
     })();
   </script>
 </body>
