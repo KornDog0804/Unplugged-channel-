@@ -1,8 +1,5 @@
 /* Stripped & Turned Up — Sessions data
-   IMPORTANT:
-   - Keep this file as pure JavaScript (no HTML, no CSS)
-   - Every string MUST be in quotes
-   - Every item MUST have commas in the right places
+   LOCKED BASELINE
 */
 
 window.EPISODES = [
@@ -14,24 +11,23 @@ window.EPISODES = [
     tracks: [
       {
         title: "Full Session Stream",
-        // FULL SHOW (not the 6 min song)
         url: "https://youtu.be/pOTkCgkxqyg"
       }
     ]
   },
 
   {
-  title: "Alice In Chains — MTV Unplugged (Full Session)",
-  artist: "Alice In Chains",
-  year: 1996,
-  mode: "fullshow",
-  tracks: [
-    {
-      title: "Full Session Stream",
-      url: "https://youtu.be/Jprla2NvHY0"
-    }
-  ]
-},
+    title: "Alice In Chains — MTV Unplugged (Full Session)",
+    artist: "Alice In Chains",
+    year: 1996,
+    mode: "fullshow",
+    tracks: [
+      {
+        title: "Full Session Stream",
+        url: "https://youtu.be/Jprla2NvHY0"
+      }
+    ]
+  },
 
   {
     title: "JAY-Z — Unplugged / Live (Full Session)",
@@ -39,7 +35,10 @@ window.EPISODES = [
     year: 2001,
     mode: "fullshow",
     tracks: [
-      { title: "Full Session Stream", url: "https://youtu.be/r2I_pGlvtAY" }
+      {
+        title: "Full Session Stream",
+        url: "https://youtu.be/r2I_pGlvtAY"
+      }
     ]
   },
 
@@ -49,7 +48,10 @@ window.EPISODES = [
     year: 2025,
     mode: "fullshow",
     tracks: [
-      { title: "Full Session Stream", url: "https://www.youtube.com/watch?v=f4BK60WVPac" }
+      {
+        title: "Full Session Stream",
+        url: "https://www.youtube.com/watch?v=f4BK60WVPac"
+      }
     ]
   },
 
@@ -74,7 +76,10 @@ window.EPISODES = [
     year: 2023,
     mode: "fullshow",
     tracks: [
-      { title: "Full Session Stream", url: "https://youtu.be/EGB3xoa7Cus" }
+      {
+        title: "Full Session Stream",
+        url: "https://youtu.be/EGB3xoa7Cus"
+      }
     ]
   },
 
@@ -103,5 +108,5 @@ window.EPISODES = [
   }
 ];
 
-// Compatibility alias (in case app.js checks window.episodes)
+// compatibility alias
 window.episodes = window.EPISODES;
