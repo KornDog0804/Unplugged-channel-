@@ -120,6 +120,7 @@ body{
   box-shadow: 0 0 18px rgba(255,77,77,.55);
   animation: livePulse 1.2s ease-in-out infinite;
 }
+
 @keyframes livePulse{
   0%,100%{ transform: scale(1); opacity: 1; }
   50%{ transform: scale(1.25); opacity: .75; }
@@ -422,6 +423,7 @@ body{
   gap:10px;
   align-items:center;
 }
+
 .track:active{ transform: scale(.99); }
 .trackNum{ opacity:.75; font-variant-numeric: tabular-nums; }
 .trackPlay{ opacity:.9; font-weight: 900; }
@@ -555,7 +557,6 @@ body:not(.debug) [data-debug] {
   .playerAspect{
     max-height: 34vh;
   }
-}
 
 /* --- Make tiles feel tappable and remove any ugly button vibes --- */
 .epTile{
@@ -575,7 +576,7 @@ body:not(.debug) [data-debug] {
 .session-tile.open .session-play {
   display: none;
 }
-}
+  
 #debugBtn,
 #sessionsPanel,
 #debugTip {
