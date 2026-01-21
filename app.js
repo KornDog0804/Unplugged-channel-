@@ -48,11 +48,10 @@
   }
 
   // =========================
-  // Device detection / strategy
+  // Device detection
   // =========================
   function ua() { return navigator.userAgent || ""; }
   function isOculus() { return /OculusBrowser/i.test(ua()); }
-
   function isLikelyTV() {
     const U = ua();
     const tvUA =
@@ -62,19 +61,13 @@
     return (tvUA || bigScreen) && !isOculus();
   }
 
-  // Strategy:
-  // - On TV/Shield browsers: default to "external" (YouTube app/site). It's the only reliable option.
-  // - Elsewhere: use embed, fallback to external if blocked.
-  const PREFER_EXTERNAL = isLikelyTV();
+  const IS_TV = isLikelyTV();
 
   function ytWatchUrl(id) {
     return "https://www.youtube.com/watch?v=" + encodeURIComponent(id);
   }
 
-  // Android/Shield deep link to YouTube (may work better than plain https)
   function ytIntentUrl(id) {
-    // This often opens the YouTube app on Android/Android TV if available
-    // Safe fallback is always the https watch URL
     return (
       "intent://www.youtube.com/watch?v=" +
       encodeURIComponent(id) +
@@ -85,19 +78,13 @@
   function openExternal(id) {
     if (!id) return;
     const url = ytWatchUrl(id);
-
-    // Prefer intent on Android/Shield-like devices; otherwise use https.
-    // If intent fails, browser usually just ignores and stays put, so we try https after a short delay.
     const useIntent = /Android/i.test(ua()) && !isOculus();
 
     if (useIntent) {
       try { window.location.href = ytIntentUrl(id); } catch {}
-      setTimeout(() => {
-        try { window.location.href = url; } catch {}
-      }, 600);
+      setTimeout(() => { try { window.location.href = url; } catch {} }, 600);
       return;
     }
-
     try { window.location.href = url; } catch {}
   }
 
@@ -117,24 +104,65 @@
       fb = document.createElement("div");
       fb.id = "ytFallback";
       fb.className = "ytFallback";
+      fb.style.cssText = `
+        position:absolute; inset:0; display:none; place-items:center;
+        background:rgba(0,0,0,.65); z-index:50;
+      `;
       fb.innerHTML = `
-        <div class="ytFallbackCard">
-          <div class="ytFallbackTitle">Open in YouTube</div>
-          <div class="ytFallbackText" id="ytFallbackReason"></div>
-          <a class="ytFallbackBtn" id="ytFallbackLink" target="_blank" rel="noopener">Open</a>
+        <div class="ytFallbackCard" style="
+          width:min(520px,92%); border-radius:18px; padding:16px 16px 14px;
+          background:rgba(18,18,22,.92);
+          border:1px solid rgba(255,255,255,.10);
+          box-shadow:0 18px 60px rgba(0,0,0,.55);
+          text-align:left;
+        ">
+          <div class="ytFallbackTitle" style="font-weight:900; font-size:18px; color:rgba(255,255,255,.92);">
+            Open in YouTube
+          </div>
+          <div class="ytFallbackText" id="ytFallbackReason" style="margin-top:6px; color:rgba(255,255,255,.75); line-height:1.35;">
+          </div>
+          <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+            <a class="ytFallbackBtn" id="ytFallbackLink" target="_blank" rel="noopener"
+              style="
+                display:inline-flex; align-items:center; justify-content:center;
+                padding:10px 14px; border-radius:999px;
+                background:rgba(140,255,140,.18);
+                border:1px solid rgba(140,255,140,.35);
+                color:rgba(255,255,255,.92);
+                font-weight:900; text-decoration:none;
+              "
+            >Open</a>
+            <button id="ytFallbackOpenNow" type="button"
+              style="
+                display:inline-flex; align-items:center; justify-content:center;
+                padding:10px 14px; border-radius:999px;
+                background:rgba(255,255,255,.08);
+                border:1px solid rgba(255,255,255,.14);
+                color:rgba(255,255,255,.9);
+                font-weight:900; cursor:pointer;
+              "
+            >Open now</button>
+          </div>
         </div>
       `;
       const shell =
         document.querySelector(".playerFrameWrap") ||
         document.querySelector(".player-shell") ||
         document.getElementById("playerWrap");
-      if (shell) shell.appendChild(fb);
+      if (shell) {
+        // ensure relative positioning so absolute fallback works
+        try { shell.style.position = shell.style.position || "relative"; } catch {}
+        shell.appendChild(fb);
+      }
     }
 
     const reason = fb.querySelector("#ytFallbackReason");
     const link = fb.querySelector("#ytFallbackLink");
-    if (reason) reason.textContent = reasonText || "This device blocks embedded playback.";
+    const btnNow = fb.querySelector("#ytFallbackOpenNow");
+
+    if (reason) reason.textContent = reasonText || "This device blocked embedded playback.";
     if (link) link.href = ytWatchUrl(id);
+    if (btnNow) btnNow.onclick = () => openExternal(id);
 
     fb.style.display = "grid";
   }
@@ -151,7 +179,14 @@
     btn.type = "button";
     btn.innerHTML = `<span class="dot"></span> Change session`;
 
+    // ✅ NEW: On TV, open overlay picker instead of scrolling behind the player.
     btn.addEventListener("click", () => {
+      if (IS_TV) {
+        openSessionsOverlay();
+        return;
+      }
+
+      // Non-TV keeps the old behavior
       setFocusMode(false);
       stopPlayAll();
 
@@ -291,19 +326,9 @@
   function playById(id) {
     if (!id) return;
 
-    // If we're on TV, do external reliably (YouTube app/site).
-    if (PREFER_EXTERNAL) {
-      setNow("Opening in YouTube…");
-      showYTFallback(id, "TV browsers often block embedded playback.");
-      // Optional: auto-jump on TV instead of making them click:
-      openExternal(id);
-      return;
-    }
-
-    // Normal browsers: use embed if available; fallback on error.
+    // Prefer embed everywhere; fallback to external if blocked.
     if (!ytPlayer) {
-      // If YT player isn't ready yet, external is safer.
-      showYTFallback(id, "Player is still loading. Open in YouTube for now.");
+      showYTFallback(id, "Player is still loading. If it doesn’t start, open in YouTube.");
       return;
     }
 
@@ -312,7 +337,7 @@
       ytPlayer.loadVideoById(id);
     } catch (e) {
       logLine("loadVideoById failed");
-      showYTFallback(id, "This device blocked embedded playback.");
+      showYTFallback(id, "This device blocked embedded playback. Open in YouTube.");
     }
   }
 
@@ -339,6 +364,7 @@
     }
 
     setFocusMode(true);
+    closeSessionsOverlay();
 
     const id = session.tracks[currentIndex].id;
     playById(id);
@@ -378,7 +404,7 @@
       events: {
         onReady: function () {
           logLine("YT Player ready");
-          setNow(PREFER_EXTERNAL ? "TV mode: opens in YouTube." : "Ready.");
+          setNow("Ready.");
         },
         onStateChange: function (e) {
           if (!e) return;
@@ -400,7 +426,7 @@
             currentSession.tracks[currentIndex] &&
             currentSession.tracks[currentIndex].id;
 
-          showYTFallback(id, "Embed blocked on this browser/device.");
+          showYTFallback(id, "Embed blocked on this browser/device. Open in YouTube.");
         },
       },
     });
@@ -410,6 +436,148 @@
     window.onYouTubeIframeAPIReady();
   }
 
+  // =========================
+  // TV-safe Sessions Overlay (always clickable on top)
+  // =========================
+  let overlayEl = null;
+  let overlayBody = null;
+
+  function ensureSessionsOverlay() {
+    if (overlayEl) return;
+
+    overlayEl = document.createElement("div");
+    overlayEl.id = "sessionOverlay";
+    overlayEl.style.cssText = `
+      position:fixed; inset:0; z-index:9999; display:none; place-items:center;
+      padding:24px; background:rgba(0,0,0,.82); backdrop-filter:blur(6px);
+    `;
+
+    overlayEl.innerHTML = `
+      <div style="
+        width:min(1100px,92vw); max-height:86vh; overflow:hidden;
+        border-radius:24px; background:rgba(25,25,28,.92);
+        border:1px solid rgba(255,255,255,.08);
+        box-shadow:0 20px 70px rgba(0,0,0,.55);
+      ">
+        <div style="
+          display:flex; align-items:center; justify-content:space-between; gap:12px;
+          padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.08);
+        ">
+          <div style="font-size:18px; font-weight:900; color:rgba(255,255,255,.92);">Choose a session</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="overlayStopPlayAll" type="button" style="
+              border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
+              color:rgba(255,255,255,.9); border-radius:999px; padding:10px 14px;
+              font-weight:900; cursor:pointer;
+            ">Stop Play All</button>
+            <button id="closeSessionsOverlay" type="button" style="
+              border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
+              color:rgba(255,255,255,.9); border-radius:999px; padding:10px 14px;
+              font-weight:900; cursor:pointer;
+            ">Close</button>
+          </div>
+        </div>
+        <div id="sessionsOverlayBody" style="padding:14px; max-height:calc(86vh - 62px); overflow:auto;"></div>
+      </div>
+    `;
+
+    document.body.appendChild(overlayEl);
+    overlayBody = document.getElementById("sessionsOverlayBody");
+
+    document.getElementById("closeSessionsOverlay").addEventListener("click", closeSessionsOverlay);
+    document.getElementById("overlayStopPlayAll").addEventListener("click", () => {
+      stopPlayAll();
+      setNow("Play All stopped.");
+    });
+
+    overlayEl.addEventListener("click", (e) => {
+      if (e.target === overlayEl) closeSessionsOverlay();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeSessionsOverlay();
+    });
+  }
+
+  function openSessionsOverlay() {
+    ensureSessionsOverlay();
+    overlayBody.innerHTML = "";
+
+    // Build fresh clickable cards based on sessions (no cloning quirks)
+    overlayBody.appendChild(buildOverlayCard_PlayAll());
+    sessions.forEach((s) => overlayBody.appendChild(buildOverlayCard_Session(s)));
+
+    overlayEl.style.display = "grid";
+
+    const first = overlayBody.querySelector(".ep");
+    if (first) first.focus();
+  }
+
+  function closeSessionsOverlay() {
+    if (overlayEl) overlayEl.style.display = "none";
+  }
+
+  function buildOverlayCard_PlayAll() {
+    if (!sessions.length) return document.createElement("div");
+
+    const featured = sessions[0];
+    const meta = [featured.artist, featured.year].filter(Boolean).join(" • ");
+
+    const card = el("div", { class: "ep epFeatured", tabindex: "0" }, [
+      el("div", { class: "epHead" }, [
+        el("div", {}, [
+          el("div", { class: "epTitle" }, "Play All — Autoplay Everything"),
+          el("div", { class: "epMeta" }, meta ? `Starts with: ${featured.title} • ${meta}` : `Starts with: ${featured.title}`),
+          el("div", { class: "epSmall" }, "Hands-free mode: it keeps rolling."),
+        ]),
+        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
+      ]),
+    ]);
+
+    const playAll = () => {
+      closeSessionsOverlay();
+      startPlayAll(true);
+    };
+
+    card.addEventListener("click", playAll);
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); playAll(); }
+    });
+
+    return card;
+  }
+
+  function buildOverlayCard_Session(s) {
+    const meta = [s.artist, s.year].filter(Boolean).join(" • ");
+    const small = s.mode === "queue" ? `${s.tracks.length} tracks` : "Full session";
+
+    const card = el("div", { class: "ep", tabindex: "0" }, [
+      el("div", { class: "epHead" }, [
+        el("div", {}, [
+          el("div", { class: "epTitle" }, s.title),
+          el("div", { class: "epMeta" }, meta),
+          el("div", { class: "epSmall" }, small),
+        ]),
+        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
+      ]),
+    ]);
+
+    const play = () => {
+      closeSessionsOverlay();
+      startSession(s, 0);
+    };
+
+    card.addEventListener("click", play);
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); play(); }
+    });
+
+    return card;
+  }
+
+  // =========================
+  // Render: Main list (normal page)
+  // =========================
   function renderPlayAllCard() {
     if (!sessions.length) return;
     const featured = sessions[0];
@@ -420,7 +588,7 @@
         el("div", {}, [
           el("div", { class: "epTitle" }, "Play All — Autoplay Everything"),
           el("div", { class: "epMeta" }, meta ? `Starts with: ${featured.title} • ${meta}` : `Starts with: ${featured.title}`),
-          el("div", { class: "epSmall" }, PREFER_EXTERNAL ? "TV mode: opens in YouTube." : "Hands-free mode: it keeps rolling."),
+          el("div", { class: "epSmall" }, "Hands-free mode: it keeps rolling."),
         ]),
         el("div", { class: "chev", "aria-hidden": "true" }, "›"),
       ]),
@@ -462,4 +630,5 @@
 
     list.appendChild(card);
   });
+
 })();
