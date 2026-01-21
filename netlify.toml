@@ -2,3 +2,9 @@
   publish = "."
   command = ""
   functions = "netlify/functions"
+
+[[redirects]]
+  from = "/"
+  to = "/home.html"
+  status = 302
+  force = true
