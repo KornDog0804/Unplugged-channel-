@@ -21,14 +21,17 @@ window.EPISODES = [
   },
 
   {
-    title: "Alice In Chains — MTV Unplugged (Full Session)",
-    artist: "Alice In Chains",
-    year: 1996,
-    mode: "fullshow",
-    tracks: [
-      { title: "Full Session Stream", url: "https://www.youtube.com/watch?v=quf9WlL4hIg" }
-    ]
-  },
+  title: "Alice In Chains — MTV Unplugged (Full Session)",
+  artist: "Alice In Chains",
+  year: 1996,
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Full Session Stream",
+      url: "https://youtu.be/Jprla2NvHY0"
+    }
+  ]
+},
 
   {
     title: "JAY-Z — Unplugged / Live (Full Session)",
