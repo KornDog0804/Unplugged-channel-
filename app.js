@@ -1,55 +1,42 @@
-/* Stripped & Turned Up — app.js (MATCHES index.html + styles.css)
-   - Uses #episodes + .ep cards
-   - Updates #status pill
-   - Single shared player at top
-   - Debug only when ?debug=1
+/* Stripped & Turned Up — app.js (FOR index.html v21)
+   - Works with: <section id="playerWrap"></section> + <section id="sessionsList"></section>
+   - Creates ONE shared YouTube player
+   - Renders session tiles (one stream per session: tracks[0].url)
+   - One open tile at a time; click again closes + stops playback
+   - Debug only when ?debug=1 (console only; no UI)
 */
 (function () {
   "use strict";
 
   const params = new URLSearchParams(location.search);
   const DEBUG = params.get("debug") === "1";
+  const log = (...a) => DEBUG && console.log("[STU]", ...a);
 
-  const EPISODES = Array.isArray(window.EPISODES)
+  // ---- Pull data ----
+  const RAW = Array.isArray(window.EPISODES)
     ? window.EPISODES
     : Array.isArray(window.episodes)
     ? window.episodes
     : [];
 
   const $ = (sel) => document.querySelector(sel);
+  const playerHost = $("#playerWrap");
+  const sessionsHost = $("#sessionsList");
 
-  const main = $("main.wrap") || $("main") || document.body;
-  const list = $("#episodes");
-  const status = $("#status");
-  const debugPanel = $("#debugPanel");
-  const btnDiag = $("#btnDiag");
-  const debugLines = $("#debugLines");
-
-  function logLine(line) {
-    if (!DEBUG) return;
-    if (debugLines) {
-      const div = document.createElement("div");
-      div.textContent = line;
-      debugLines.appendChild(div);
-    }
-    console.log("[STU]", line);
+  if (!playerHost || !sessionsHost) {
+    console.error("Missing #playerWrap or #sessionsList in HTML.");
+    return;
   }
 
-  // Debug UI handling
-  if (btnDiag) btnDiag.style.display = DEBUG ? "" : "none";
-  if (debugPanel) debugPanel.classList.toggle("hidden", !DEBUG);
-
-  if (btnDiag && debugPanel) {
-    btnDiag.addEventListener("click", () => {
-      debugPanel.classList.toggle("hidden");
-    });
-  }
+  // ---- Helpers ----
+  const safeText = (s) => (s == null ? "" : String(s)).trim();
 
   function el(tag, attrs = {}, kids = []) {
     const node = document.createElement(tag);
     for (const [k, v] of Object.entries(attrs)) {
       if (k === "class") node.className = v;
       else if (k === "html") node.innerHTML = v;
+      else if (k === "text") node.textContent = v;
       else node.setAttribute(k, v);
     }
     (Array.isArray(kids) ? kids : [kids]).forEach((c) => {
@@ -59,17 +46,16 @@
     return node;
   }
 
-  function safeText(s) {
-    return (s == null ? "" : String(s)).trim();
-  }
-
   function ytIdFrom(url) {
     const u = safeText(url);
     if (!u) return "";
+
+    // embed link
     if (u.includes("/embed/")) {
       const m = u.match(/\/embed\/([a-zA-Z0-9_-]{6,})/);
       return m ? m[1] : "";
     }
+
     try {
       const parsed = new URL(u);
       if (parsed.hostname.includes("youtu.be")) {
@@ -86,51 +72,7 @@
   function toEmbed(url) {
     const id = ytIdFrom(url);
     if (!id) return "";
-    // autoplay + playsinline = better mobile
     return `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
-  }
-
-  // Create shared player (uses CSS classes you have)
-  let playerWrap = $("#playerWrap");
-  let playerTitle = $("#nowPlayingTitle");
-  let playerFrame = $("#playerFrame");
-
-  if (!playerWrap) {
-    playerTitle = el("div", { id: "nowPlayingTitle", class: "now-playing-title" }, "Tap a session to play");
-
-    playerFrame = el("iframe", {
-      id: "playerFrame",
-      class: "player-frame",
-      src: "about:blank",
-      allow:
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-      allowfullscreen: "true",
-      frameborder: "0",
-      title: "Stripped & Turned Up Player",
-    });
-
-    playerWrap = el("section", { id: "playerWrap", class: "player-wrap" }, [
-      playerTitle,
-      el("div", { class: "player-shell" }, playerFrame),
-    ]);
-
-    // Put player ABOVE the Sessions card
-    main.insertBefore(playerWrap, main.firstChild);
-  }
-
-  function setNowPlaying(title, url) {
-    if (playerTitle) playerTitle.textContent = title || "Tap a session to play";
-    if (!url) {
-      playerFrame.src = "about:blank";
-      return;
-    }
-    const embed = toEmbed(url);
-    if (!embed) {
-      playerFrame.src = "about:blank";
-      logLine("BAD LINK: " + url);
-      return;
-    }
-    playerFrame.src = embed;
   }
 
   function normalizeEpisodes(arr) {
@@ -143,56 +85,152 @@
       const year = ep.year != null ? String(ep.year) : "";
       const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
 
-      // SINGLE STREAM: use tracks[0].url
+      // One stream per session: tracks[0].url
       const streamUrl = tracks[0] ? safeText(tracks[0].url) : "";
-
       if (!streamUrl) return;
 
-      out.push({ title, artist, year, streamUrl, tracksCount: tracks.length });
+      out.push({
+        id: `stu_${idx}_${title.replace(/\s+/g, "_").slice(0, 25)}`,
+        title,
+        artist,
+        year,
+        streamUrl,
+      });
     });
     return out;
   }
 
-  const sessions = normalizeEpisodes(EPISODES);
+  const sessions = normalizeEpisodes(RAW);
+  log("RAW episodes:", RAW.length, "normalized:", sessions.length);
 
-  if (status) status.textContent = sessions.length ? `Loaded ${sessions.length} sessions` : "No sessions found";
+  // ---- Build shared player ----
+  playerHost.innerHTML = "";
 
-  if (!list) {
-    logLine("Missing #episodes container in HTML.");
+  const nowTitle = el("div", {
+    id: "nowPlayingTitle",
+    class: "now-playing-title",
+    text: "Tap a session to play",
+  });
+
+  const iframe = el("iframe", {
+    id: "playerFrame",
+    class: "player-frame",
+    src: "about:blank",
+    allow:
+      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
+    allowfullscreen: "true",
+    frameborder: "0",
+    title: "Stripped & Turned Up Player",
+    referrerpolicy: "strict-origin-when-cross-origin",
+  });
+
+  const shell = el("div", { class: "player-shell" }, iframe);
+
+  playerHost.appendChild(nowTitle);
+  playerHost.appendChild(shell);
+
+  function setNowPlaying(session) {
+    if (!session) {
+      nowTitle.textContent = "Tap a session to play";
+      iframe.src = "about:blank";
+      return;
+    }
+
+    const embed = toEmbed(session.streamUrl);
+    if (!embed) {
+      nowTitle.textContent = "Bad link (can’t embed)";
+      iframe.src = "about:blank";
+      log("BAD LINK:", session.streamUrl);
+      return;
+    }
+
+    nowTitle.textContent = session.title;
+    iframe.src = embed;
+  }
+
+  // ---- Build sessions list UI ----
+  sessionsHost.innerHTML = "";
+
+  // Header + status pill
+  const header = el("div", { class: "sectionHead" }, [
+    el("div", {}, [
+      el("div", { class: "h2", text: "Sessions" }),
+      el("div", {
+        class: "mutedTiny",
+        text: "One stream per artist. If it plays clean, it stays.",
+      }),
+    ]),
+    el("div", {
+      id: "status",
+      class: "pill",
+      text: sessions.length ? `Loaded ${sessions.length} sessions` : "No sessions found",
+    }),
+  ]);
+
+  sessionsHost.appendChild(el("div", { class: "card" }, [header, el("div", { id: "tiles" })]));
+
+  const tilesWrap = $("#tiles");
+  if (!tilesWrap) return;
+
+  let ACTIVE_ID = null;
+
+  function closeAll() {
+    tilesWrap.querySelectorAll(".session-tile.open").forEach((n) => n.classList.remove("open"));
+    ACTIVE_ID = null;
+  }
+
+  function openTile(tile, session) {
+    closeAll();
+    tile.classList.add("open");
+    ACTIVE_ID = session.id;
+    setNowPlaying(session);
+    // keep the player visible-ish on phone
+    playerHost.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function toggleTile(tile, session) {
+    const isOpen = tile.classList.contains("open");
+    if (isOpen) {
+      tile.classList.remove("open");
+      ACTIVE_ID = null;
+      setNowPlaying(null); // stop playback when closing
+      return;
+    }
+    openTile(tile, session);
+  }
+
+  if (!sessions.length) {
+    tilesWrap.appendChild(
+      el("div", { class: "empty-msg" }, "No sessions found. Check data/episodes.js formatting.")
+    );
     return;
   }
 
-  list.innerHTML = "";
-
   sessions.forEach((s) => {
     const meta = [s.artist, s.year].filter(Boolean).join(" • ");
-    const small = s.tracksCount ? `${s.tracksCount} tracks` : "";
 
-    const card = el("div", { class: "ep", tabindex: "0" }, [
-      el("div", { class: "epHead" }, [
-        el("div", {}, [
-          el("div", { class: "epTitle" }, s.title),
-          el("div", { class: "epMeta" }, meta),
-          small ? el("div", { class: "epSmall" }, small) : null,
-        ]),
-        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
+    const tile = el("div", { class: "session-tile", "data-id": s.id }, [
+      el("div", { class: "session-top" }, [
+        el("div", { class: "session-title", text: s.title }),
+        el("div", { class: "session-meta", text: meta }),
+        el(
+          "button",
+          { class: "session-play", type: "button" },
+          "Play"
+        ),
       ]),
     ]);
 
-    const play = () => setNowPlaying(s.title, s.streamUrl);
+    // clicking tile toggles open/close
+    tile.addEventListener("click", () => toggleTile(tile, s));
 
-    card.addEventListener("click", play);
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        play();
-      }
+    // play button should only OPEN (not close)
+    tile.querySelector(".session-play").addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openTile(tile, s);
     });
 
-    list.appendChild(card);
+    tilesWrap.appendChild(tile);
   });
-
-  logLine("Debug = " + DEBUG);
-  logLine("EPISODES length = " + EPISODES.length);
-  logLine("Sessions rendered = " + sessions.length);
 })();
