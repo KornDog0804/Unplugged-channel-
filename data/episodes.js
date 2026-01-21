@@ -9,10 +9,7 @@ window.EPISODES = [
     year: 1993,
     mode: "fullshow",
     tracks: [
-      {
-        title: "Full Session Stream",
-        url: "https://youtu.be/pOTkCgkxqyg"
-      }
+      { title: "Full Session Stream", url: "https://youtu.be/pOTkCgkxqyg" }
     ]
   },
 
@@ -22,10 +19,7 @@ window.EPISODES = [
     year: 1996,
     mode: "fullshow",
     tracks: [
-      {
-        title: "Full Session Stream",
-        url: "https://youtu.be/Jprla2NvHY0"
-      }
+      { title: "Full Session Stream", url: "https://youtu.be/Jprla2NvHY0" }
     ]
   },
 
@@ -35,10 +29,7 @@ window.EPISODES = [
     year: 2001,
     mode: "fullshow",
     tracks: [
-      {
-        title: "Full Session Stream",
-        url: "https://youtu.be/r2I_pGlvtAY"
-      }
+      { title: "Full Session Stream", url: "https://youtu.be/r2I_pGlvtAY" }
     ]
   },
 
@@ -48,10 +39,7 @@ window.EPISODES = [
     year: 2025,
     mode: "fullshow",
     tracks: [
-      {
-        title: "Full Session Stream",
-        url: "https://www.youtube.com/watch?v=f4BK60WVPac"
-      }
+      { title: "Full Session Stream", url: "https://www.youtube.com/watch?v=f4BK60WVPac" }
     ]
   },
 
@@ -76,10 +64,7 @@ window.EPISODES = [
     year: 2023,
     mode: "fullshow",
     tracks: [
-      {
-        title: "Full Session Stream",
-        url: "https://youtu.be/EGB3xoa7Cus"
-      }
+      { title: "Full Session Stream", url: "https://youtu.be/EGB3xoa7Cus" }
     ]
   },
 
@@ -105,10 +90,9 @@ window.EPISODES = [
       { title: "Body Bag", url: "https://youtu.be/jkY3QORBHeE" },
       { title: "Hangfire", url: "https://youtu.be/pqWTvbLTV0Q" }
     ]
-  }
-];
+  },
 
-{
+  {
     title: "Sevendust — (Acoustic Session)",
     artist: "Sevendust",
     year: 2025,
@@ -116,6 +100,8 @@ window.EPISODES = [
     tracks: [
       { title: "Full Session Stream", url: "https://youtu.be/Q4s_nIG8rw0" }
     ]
-  },
+  }
+];
+
 // compatibility alias
 window.episodes = window.EPISODES;
