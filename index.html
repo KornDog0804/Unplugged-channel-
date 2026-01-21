@@ -3,14 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>STRIPPED &amp; TURNED UP</title>
+  <title>Joey’s Acoustic Corner</title>
 
-  <link rel="stylesheet" href="styles.css?v=25" />
-
-  <!-- Hide header ONLY on Sessions screen -->
-  <style>
-    body[data-screen="sessions"] header.top { display: none !important; }
-  </style>
+  <link rel="stylesheet" href="styles.css?v=24" />
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -44,142 +39,103 @@
   </script>
 </head>
 
-<body data-screen="landing">
-  <header class="top" id="topBar">
-    <div class="brand">
-      <div class="brandMark" aria-hidden="true"></div>
-      <div class="brandText">
-        <div class="titleRow">
-          <div class="title">STRIPPED <span class="amp">&amp;</span> TURNED UP</div>
-          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
-        </div>
-        <div class="sub">
-          <span class="subStrong">Acoustic &amp; Stripped Performances</span>
-          <span class="subSep">•</span>
-          <span id="tagline">Stripped down. Turned up.</span>
+<body class="landing sessionsPage">
+  <!-- =========================
+       LANDING / HERO (TOP)
+       ========================= -->
+  <main class="landingWrap">
+    <header class="landingTop">
+      <div class="landingBrand">
+        <div class="landingMark" aria-hidden="true"></div>
+        <div class="landingBrandText">
+          <div class="landingTitle">Joey’s Acoustic Corner</div>
+          <div class="landingSub">Stripped &amp; unplugged sessions — handpicked only.</div>
         </div>
       </div>
-    </div>
-  </header>
 
-  <main class="wrap" id="app">
+      <div class="landingBadge"><span class="liveDot"></span> LIVE</div>
+    </header>
 
-    <!-- LANDING -->
-    <section id="landing" style="
-      border-radius: 18px;
-      padding: 18px 16px;
-      margin-bottom: 14px;
-      background: rgba(255,255,255,.06);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255,255,255,.10);
-      box-shadow: 0 18px 60px rgba(0,0,0,.35);
-    ">
-      <div style="font-size: 18px; font-weight: 800; letter-spacing: .2px; margin-bottom: 6px;">
-        Welcome to STRIPPED &amp; TURNED UP
-      </div>
+    <section class="landingHero">
+      <div class="landingLogo">JOEY’S<br/>ACOUSTIC<br/>CORNER</div>
 
-      <div style="opacity:.85; line-height:1.45; margin-bottom: 14px;">
-        Full sessions + acoustic queues. Tap once to unlock audio, then let it ride.
-      </div>
+      <div class="landingCard">
+        <h1>Turn the noise into therapy.</h1>
+        <p>
+          No algorithms. No filler. Just sessions that actually hit.
+          Tap in, pick a set, and let the queue do the work.
+        </p>
 
-      <div style="display:flex; gap:10px; flex-wrap: wrap; align-items:center;">
-        <button id="enterBtn" type="button" style="
-          appearance:none;
-          border: 1px solid rgba(255,255,255,.18);
-          background: rgba(255,255,255,.10);
-          color: inherit;
-          padding: 12px 14px;
-          border-radius: 14px;
-          font-weight: 800;
-          letter-spacing: .2px;
-          cursor: pointer;
-          box-shadow: 0 10px 30px rgba(0,0,0,.25);
-        ">
-          Enter Sessions
-        </button>
+        <div class="landingButtons">
+          <a class="landingBtn primary" href="#sessions">Enter Sessions</a>
+          <a class="landingBtn ghost" href="#sessions">Browse Sessions</a>
+        </div>
 
-        <button id="aboutBtn" type="button" style="
-          appearance:none;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(0,0,0,.12);
-          color: inherit;
-          padding: 12px 14px;
-          border-radius: 14px;
-          font-weight: 700;
-          cursor: pointer;
-        ">
-          What is this?
-        </button>
-      </div>
-
-      <div id="aboutBox" style="
-        display:none;
-        margin-top: 14px;
-        padding: 12px 12px;
-        border-radius: 14px;
-        background: rgba(0,0,0,.18);
-        border: 1px solid rgba(255,255,255,.10);
-        line-height: 1.5;
-        opacity: .92;
-      ">
-        One clean stream per artist. Queues auto-advance when available.
+        <div class="landingFine">
+          Phone rule: first tap unlocks audio. After that, queues can auto-advance.
+        </div>
       </div>
     </section>
 
-    <!-- SESSIONS -->
-    <section id="sessionsScreen" style="display:none;">
-      <section id="playerWrap"></section>
-
-      <section id="sessionsList">
-        <div class="sessionsHead">
-          <div>
-            <div class="sessionsTitle">Sessions</div>
-            <div class="sessionsSub">Tap a session once to unlock audio. Queues will auto-advance.</div>
-          </div>
-          <div id="status">Loading…</div>
-        </div>
-
-        <div id="episodes"></div>
-      </section>
+    <section class="landingMini">
+      <div class="miniItem">
+        <div class="miniLabel">Vibe</div>
+        <div class="miniValue">Unplugged • Acoustic • Stripped</div>
+      </div>
+      <div class="miniItem">
+        <div class="miniLabel">Rule</div>
+        <div class="miniValue">Only keep what plays.</div>
+      </div>
     </section>
   </main>
 
-  <script src="data/episodes.js?v=25"></script>
+  <!-- =========================
+       SESSIONS (APP AREA)
+       app.js will build player + list here
+       ========================= -->
+  <main class="wrap" id="app">
+    <!-- Anchor target for buttons -->
+    <div id="sessions"></div>
 
-  <!-- Landing buttons -->
+    <!-- app.js will build the full player UI inside here -->
+    <section id="playerWrap"></section>
+
+    <!-- sessions list card -->
+    <section id="sessionsList">
+      <div class="sessionsHead">
+        <div>
+          <div class="sessionsTitle">Sessions</div>
+          <div class="sessionsSub">Tap a session once to unlock audio. Queues will auto-advance.</div>
+        </div>
+        <div id="status">Loading…</div>
+      </div>
+
+      <div id="episodes"></div>
+    </section>
+  </main>
+
+  <script src="data/episodes.js?v=24"></script>
+
+  <!-- REQUIRED for queue autoplay -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+
+  <script src="app.js?v=24" defer></script>
+
+  <!-- Smooth scroll (safe: does NOT touch autoplay logic) -->
   <script>
-    (function () {
-      const landing = document.getElementById("landing");
-      const sessions = document.getElementById("sessionsScreen");
-      const enterBtn = document.getElementById("enterBtn");
-      const aboutBtn = document.getElementById("aboutBtn");
-      const aboutBox = document.getElementById("aboutBox");
-
-      function enterSessions() {
-        document.body.setAttribute("data-screen", "sessions");
-        if (landing) landing.style.display = "none";
-        if (sessions) sessions.style.display = "block";
-        window.__STU_ENTERED__ = true;
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }
-
-      if (enterBtn) enterBtn.addEventListener("click", enterSessions);
-
-      if (aboutBtn) aboutBtn.addEventListener("click", function () {
-        if (!aboutBox) return;
-        aboutBox.style.display = aboutBox.style.display === "none" ? "block" : "none";
-      });
-
-      const params = new URLSearchParams(location.search);
-      if (params.get("start") === "1") enterSessions();
+    (function(){
+      const go = (e) => {
+        const a = e.target.closest('a[href^="#"]');
+        if(!a) return;
+        const id = a.getAttribute("href");
+        if(!id || id === "#") return;
+        const el = document.querySelector(id);
+        if(!el) return;
+        e.preventDefault();
+        el.scrollIntoView({behavior:"smooth", block:"start"});
+      };
+      document.addEventListener("click", go);
     })();
   </script>
-
-  <!-- ✅ IMPORTANT: app.js MUST load BEFORE iframe_api so the callback exists -->
-  <script src="app.js?v=25"></script>
-
-  <!-- YouTube API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
 </body>
 </html>
