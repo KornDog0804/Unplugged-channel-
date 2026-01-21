@@ -1062,3 +1062,102 @@ body.focusMode header.top {
     aspect-ratio: 16 / 9;
   }
 }
+/* ===== TV CINEMA MODE + SESSION PICKER OVERLAY ===== */
+
+/* When focused: background hidden vibe */
+body.focusMode {
+  overflow: hidden; /* prevents weird TV scrolling */
+}
+
+/* Keep player visible and centered */
+body.focusMode .player-wrap{
+  position: relative;
+  z-index: 30;
+  margin-bottom: 0;
+}
+
+/* Overlay that contains the session list */
+.sessionOverlay{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: none;
+  place-items: center;
+  padding: 24px;
+  background: rgba(0,0,0,.82);
+  backdrop-filter: blur(6px);
+}
+
+/* Show overlay when active */
+body.showSessions .sessionOverlay{
+  display: grid;
+}
+
+.sessionOverlayCard{
+  width: min(1100px, 92vw);
+  max-height: 86vh;
+  overflow: hidden;
+  border-radius: 24px;
+  background: rgba(25,25,28,.92);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 20px 70px rgba(0,0,0,.55);
+}
+
+/* Header */
+.sessionOverlayHead{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.sessionOverlayTitle{
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,.92);
+}
+
+.sessionOverlayClose{
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.9);
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sessionOverlayClose:focus{
+  outline: 2px solid rgba(140,255,140,.55);
+  outline-offset: 2px;
+}
+
+/* Scrollable list area */
+.sessionOverlayBody{
+  padding: 14px;
+  max-height: calc(86vh - 58px);
+  overflow: auto;
+}
+
+/* Make cards easier to click on TV */
+.sessionOverlayBody .ep{
+  cursor: pointer;
+  transform: translateZ(0);
+}
+
+.sessionOverlayBody .ep:focus{
+  outline: 2px solid rgba(140,255,140,.55);
+  outline-offset: 3px;
+}
+
+/* Optional: when overlay open, prevent any under-click */
+body.showSessions main,
+body.showSessions .player-wrap{
+  pointer-events: none;
+}
+body.showSessions .sessionOverlay{
+  pointer-events: auto;
+}
