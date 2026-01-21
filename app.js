@@ -17,7 +17,7 @@
   const status = $("#status") || $("#loadedCount");
 
   function logLine(line) {
-    if (DEBUG) console.log("[STU]", line);
+    if (DEBUG) console.log("[JAC]", line);
   }
   function safeText(s) {
     return (s == null ? "" : String(s)).trim();
@@ -28,6 +28,8 @@
     for (const [k, v] of Object.entries(attrs)) {
       if (k === "class") node.className = v;
       else if (k === "html") node.innerHTML = v;
+      else if (k.startsWith("on") && typeof v === "function")
+        node.addEventListener(k.slice(2), v);
       else node.setAttribute(k, v);
     }
     (Array.isArray(kids) ? kids : [kids]).forEach((c) => {
@@ -40,10 +42,16 @@
   function ytIdFrom(url) {
     const u = safeText(url);
     if (!u) return "";
+    // supports youtu.be + watch?v= + embed
+    if (u.includes("/embed/")) {
+      const m = u.match(/\/embed\/([a-zA-Z0-9_-]{6,})/);
+      return m ? m[1] : "";
+    }
     try {
       const parsed = new URL(u);
-      if (parsed.hostname.includes("youtu.be"))
+      if (parsed.hostname.includes("youtu.be")) {
         return parsed.pathname.replace("/", "").trim();
+      }
       return parsed.searchParams.get("v") || "";
     } catch {
       const m1 = u.match(/v=([a-zA-Z0-9_-]{6,})/);
@@ -53,7 +61,7 @@
   }
 
   // =========================
-  // Device detection
+  // Device detection (TV-ish)
   // =========================
   function ua() {
     return navigator.userAgent || "";
@@ -68,75 +76,46 @@
         U
       );
     const bigScreen = Math.max(window.innerWidth, window.innerHeight) >= 1100;
-    // Oculus is big-screen but should behave like a normal browser, so exclude it.
     return (tvUA || bigScreen) && !isOculus();
   }
-
   const IS_TV = isLikelyTV();
 
+  // =========================
+  // Inject CSS (NO separate CSS edits)
+  // =========================
+  (function injectPickModeCSS() {
+    const id = "jacPickModeCSS";
+    if (document.getElementById(id)) return;
+    const style = document.createElement("style");
+    style.id = id;
+    style.textContent = `
+      /* Prevent the YT iframe from stealing clicks while the picker overlay is open */
+      body.pickMode { overflow:hidden; }
+
+      body.pickMode #playerWrap,
+      body.pickMode .tvFrame,
+      body.pickMode .playerFrameWrap,
+      body.pickMode .player-shell,
+      body.pickMode #playerFrame,
+      body.pickMode iframe {
+        pointer-events:none !important;
+      }
+
+      body.pickMode #sessionOverlay,
+      body.pickMode #sessionOverlay * {
+        pointer-events:auto !important;
+      }
+    `;
+    document.head.appendChild(style);
+  })();
+
+  // =========================
+  // Fallback overlay in player (if embed blocked)
+  // =========================
   function ytWatchUrl(id) {
     return "https://www.youtube.com/watch?v=" + encodeURIComponent(id);
   }
 
-  function ytIntentUrl(id) {
-    return (
-      "intent://www.youtube.com/watch?v=" +
-      encodeURIComponent(id) +
-      "#Intent;scheme=https;package=com.google.android.youtube;end"
-    );
-  }
-
-  function openExternal(id) {
-    if (!id) return;
-    const url = ytWatchUrl(id);
-    const useIntent = /Android/i.test(ua()) && !isOculus();
-
-    if (useIntent) {
-      try {
-        window.location.href = ytIntentUrl(id);
-      } catch {}
-      setTimeout(() => {
-        try {
-          window.location.href = url;
-        } catch {}
-      }, 600);
-      return;
-    }
-    try {
-      window.location.href = url;
-    } catch {}
-  }
-
-  // =========================
-  // Remove "rules" verbiage if any exists on page
-  // (This is defensive: you may also remove it in HTML, but this ensures it stays gone.)
-  // =========================
-  function stripRuleUI() {
-    // Kill any card that looks like "RULE"
-    const candidates = Array.from(document.querySelectorAll("*"));
-    candidates.forEach((n) => {
-      const t = (n.textContent || "").trim().toLowerCase();
-      if (t === "rule" || t.startsWith("rule\n") || t.includes("phone rule:")) {
-        // remove closest card/container if possible
-        const card =
-          n.closest(".card") ||
-          n.closest(".panel") ||
-          n.closest(".tile") ||
-          n.closest("section") ||
-          n;
-        if (card && card.parentNode) card.parentNode.removeChild(card);
-      }
-    });
-  }
-  try {
-    stripRuleUI();
-    // run again after load in case HTML renders later
-    window.addEventListener("load", stripRuleUI, { once: true });
-  } catch {}
-
-  // =========================
-  // Fallback overlay in player
-  // =========================
   function hideYTFallback() {
     const fb = document.getElementById("ytFallback");
     if (fb) fb.style.display = "none";
@@ -153,22 +132,22 @@
       fb.style.cssText = `
         position:absolute; inset:0; display:none; place-items:center;
         background:rgba(0,0,0,.65); z-index:50;
-        pointer-events:auto;
       `;
       fb.innerHTML = `
-        <div class="ytFallbackCard" style="
+        <div style="
           width:min(520px,92%); border-radius:18px; padding:16px 16px 14px;
           background:rgba(18,18,22,.92);
           border:1px solid rgba(255,255,255,.10);
           box-shadow:0 18px 60px rgba(0,0,0,.55);
           text-align:left;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
         ">
-          <div class="ytFallbackTitle" style="font-weight:900; font-size:18px; color:rgba(255,255,255,.92);">
+          <div style="font-weight:900; font-size:18px; color:rgba(255,255,255,.92);">
             Open in YouTube
           </div>
-          <div class="ytFallbackText" id="ytFallbackReason" style="margin-top:6px; color:rgba(255,255,255,.75); line-height:1.35;"></div>
+          <div id="ytFallbackReason" style="margin-top:6px; color:rgba(255,255,255,.75); line-height:1.35;"></div>
           <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-            <a class="ytFallbackBtn" id="ytFallbackLink" target="_blank" rel="noopener"
+            <a id="ytFallbackLink" target="_blank" rel="noopener"
               style="
                 display:inline-flex; align-items:center; justify-content:center;
                 padding:10px 14px; border-radius:999px;
@@ -178,16 +157,6 @@
                 font-weight:900; text-decoration:none;
               "
             >Open</a>
-            <button id="ytFallbackOpenNow" type="button"
-              style="
-                display:inline-flex; align-items:center; justify-content:center;
-                padding:10px 14px; border-radius:999px;
-                background:rgba(255,255,255,.08);
-                border:1px solid rgba(255,255,255,.14);
-                color:rgba(255,255,255,.9);
-                font-weight:900; cursor:pointer;
-              "
-            >Open now</button>
           </div>
         </div>
       `;
@@ -205,12 +174,8 @@
 
     const reason = fb.querySelector("#ytFallbackReason");
     const link = fb.querySelector("#ytFallbackLink");
-    const btnNow = fb.querySelector("#ytFallbackOpenNow");
-
     if (reason) reason.textContent = reasonText || "This device blocked embedded playback.";
     if (link) link.href = ytWatchUrl(id);
-    if (btnNow) btnNow.onclick = () => openExternal(id);
-
     fb.style.display = "grid";
   }
 
@@ -226,14 +191,14 @@
     btn.type = "button";
     btn.innerHTML = `<span class="dot"></span> Change session`;
 
-    // ✅ On TV: open overlay picker (never scroll list behind iframe)
     btn.addEventListener("click", () => {
+      // TV: open overlay picker (no scrolling behind player)
       if (IS_TV) {
         openSessionsOverlay();
         return;
       }
 
-      // Non-TV keeps old behavior
+      // Non-TV: old behavior
       setFocusMode(false);
       stopPlayAll();
 
@@ -251,15 +216,12 @@
     } else {
       main.insertBefore(btn, main.firstChild);
     }
-
-    // Make sure focus button is always clickable even on TV
-    btn.style.position = btn.style.position || "relative";
-    btn.style.zIndex = "9998";
   }
 
   function setFocusMode(on) {
     ensureFocusButton();
     document.body.classList.toggle("focusMode", !!on);
+
     const btn = document.getElementById("focusToggleBtn");
     if (btn) btn.style.display = on ? "inline-flex" : "none";
   }
@@ -280,12 +242,16 @@
     "Tap a session to play"
   );
   const playerMount = el("div", { id: "playerFrame", class: "player-frame" });
-  const nowLine = el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready.");
+  const nowLine = el(
+    "div",
+    { class: "nowPlaying", id: "nowPlayingLine" },
+    "Ready."
+  );
 
   const tv = el("div", { class: "tvFrame" }, [
     el("div", { class: "tvTopBar" }, [
       el("div", { class: "tvLED" }, ""),
-      el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
+      el("div", { class: "tvLabel" }, "JOEY’S ACOUSTIC CORNER"),
       el("div", { class: "tvKnob" }, ""),
     ]),
     el(
@@ -345,7 +311,9 @@
   if (!list) return;
   list.innerHTML = "";
 
-  // --- YouTube API Player ---
+  // =========================
+  // YouTube API Player
+  // =========================
   let ytPlayer = null;
   let currentSession = null;
   let currentIndex = 0;
@@ -354,7 +322,7 @@
   // PLAY ALL (Autoplay everything)
   // =========================
   let playAllEnabled = false;
-  let playAllFlat = [];
+  let playAllFlat = []; // [{ sIndex, tIndex }]
   let playAllPos = 0;
 
   function buildPlayAllFlat() {
@@ -397,14 +365,20 @@
     if (playAllPos >= playAllFlat.length) playAllPos = 0;
 
     const { sIndex, tIndex } = playAllFlat[playAllPos];
-    startSession(sessions[sIndex], tIndex, { fromPlayAll: true, noScroll: true });
+    startSession(sessions[sIndex], tIndex, {
+      fromPlayAll: true,
+      noScroll: true,
+    });
   }
 
   function playById(id) {
     if (!id) return;
 
     if (!ytPlayer) {
-      showYTFallback(id, "Player is still loading. If it doesn’t start, open in YouTube.");
+      showYTFallback(
+        id,
+        "Player is still loading. If it doesn’t start, open in YouTube."
+      );
       return;
     }
 
@@ -419,15 +393,12 @@
 
   function startSession(session, idx, opts) {
     opts = opts || {};
+
+    // Manual choice turns Play All OFF
     if (!opts.fromPlayAll) stopPlayAll();
 
     currentSession = session;
     currentIndex = Math.max(0, Math.min(idx || 0, session.tracks.length - 1));
-
-    const label =
-      session.mode === "queue"
-        ? `${session.title} — Track ${currentIndex + 1} (${currentIndex + 1}/${session.tracks.length})`
-        : session.title;
 
     if (opts.fromPlayAll) {
       const meta = [session.artist, session.year].filter(Boolean).join(" • ");
@@ -438,14 +409,15 @@
       setTitleLine(`${session.title}${trackLine}`);
       setNow(meta ? `Playing now. • ${meta}` : "Playing now.");
     } else {
+      const label =
+        session.mode === "queue"
+          ? `${session.title} — Track ${currentIndex + 1} (${currentIndex + 1}/${session.tracks.length})`
+          : session.title;
       setTitleLine(label);
       setNow("Playing now.");
     }
 
-    // Focus Mode ON when they choose a session
     setFocusMode(true);
-
-    // Close overlay if open
     closeSessionsOverlay();
 
     const id = session.tracks[currentIndex].id;
@@ -471,7 +443,7 @@
     playById(currentSession.tracks[currentIndex].id);
   }
 
-  // ✅ Define callback IMMEDIATELY
+  // ✅ MUST be defined immediately
   window.onYouTubeIframeAPIReady = function () {
     logLine("YT API ready");
 
@@ -497,10 +469,12 @@
           if (e.data === YT.PlayerState.PLAYING) hideYTFallback();
 
           if (e.data === YT.PlayerState.ENDED) {
+            // Queue sessions do their own thing
             if (currentSession && currentSession.mode === "queue") {
               nextInQueue();
               return;
             }
+            // Play All goes through everything
             if (playAllEnabled) {
               nextInPlayAll();
               return;
@@ -529,10 +503,14 @@
   }
 
   // =========================
-  // TV-safe Sessions Overlay
+  // TV-safe Sessions Overlay (clickable above player)
   // =========================
   let overlayEl = null;
   let overlayBody = null;
+
+  function setPickMode(on) {
+    document.body.classList.toggle("pickMode", !!on);
+  }
 
   function ensureSessionsOverlay() {
     if (overlayEl) return;
@@ -540,9 +518,9 @@
     overlayEl = document.createElement("div");
     overlayEl.id = "sessionOverlay";
     overlayEl.style.cssText = `
-      position:fixed; inset:0; z-index:999999; display:none; place-items:center;
+      position:fixed; inset:0; z-index:9999; display:none; place-items:center;
       padding:24px; background:rgba(0,0,0,.82); backdrop-filter:blur(6px);
-      pointer-events:auto;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
     `;
 
     overlayEl.innerHTML = `
@@ -556,7 +534,9 @@
           display:flex; align-items:center; justify-content:space-between; gap:12px;
           padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.08);
         ">
-          <div style="font-size:18px; font-weight:900; color:rgba(255,255,255,.92);">Choose a session</div>
+          <div style="font-size:18px; font-weight:900; color:rgba(255,255,255,.92);">
+            Choose a session
+          </div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button id="overlayStopPlayAll" type="button" style="
               border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
@@ -577,10 +557,7 @@
     document.body.appendChild(overlayEl);
     overlayBody = document.getElementById("sessionsOverlayBody");
 
-    document
-      .getElementById("closeSessionsOverlay")
-      .addEventListener("click", closeSessionsOverlay);
-
+    document.getElementById("closeSessionsOverlay").addEventListener("click", closeSessionsOverlay);
     document.getElementById("overlayStopPlayAll").addEventListener("click", () => {
       stopPlayAll();
       setNow("Play All stopped.");
@@ -597,6 +574,10 @@
 
   function openSessionsOverlay() {
     ensureSessionsOverlay();
+
+    // THIS is the TV fix: lock iframe clicks while the overlay is open
+    setPickMode(true);
+
     overlayBody.innerHTML = "";
 
     overlayBody.appendChild(buildOverlayCard_PlayAll());
@@ -604,17 +585,13 @@
 
     overlayEl.style.display = "grid";
 
-    // focus first card for TV remotes that can tab
     const first = overlayBody.querySelector(".ep");
-    if (first) {
-      try {
-        first.focus();
-      } catch {}
-    }
+    if (first) first.focus();
   }
 
   function closeSessionsOverlay() {
     if (overlayEl) overlayEl.style.display = "none";
+    setPickMode(false);
   }
 
   function buildOverlayCard_PlayAll() {
@@ -687,11 +664,15 @@
     return card;
   }
 
+  // Safety: if they leave the tab while overlay is open, don't get stuck
+  window.addEventListener("blur", () => setPickMode(false));
+
   // =========================
   // Render: Main list (normal page)
   // =========================
   function renderPlayAllCard() {
     if (!sessions.length) return;
+
     const featured = sessions[0];
     const meta = [featured.artist, featured.year].filter(Boolean).join(" • ");
 
@@ -755,19 +736,4 @@
     list.appendChild(card);
   });
 
-  // =========================
-  // TV quality-of-life:
-  // If focus mode is ON and you're on TV, let "Backspace" open picker
-  // (some TV browsers map remote back differently)
-  // =========================
-  document.addEventListener("keydown", (e) => {
-    if (!IS_TV) return;
-    if (e.key === "Backspace") {
-      // If video is playing, back should give session picker not navigate away
-      try {
-        openSessionsOverlay();
-        e.preventDefault();
-      } catch {}
-    }
-  });
 })();
