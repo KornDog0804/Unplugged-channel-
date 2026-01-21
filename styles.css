@@ -936,3 +936,53 @@ body.focusMode header.top {
 .epFeatured .epTitle{
   letter-spacing: .2px;
 }
+/* ---------- TV / Big screen player control fix ---------- */
+
+/* keep the YouTube area locked to a normal aspect ratio */
+.playerFrameWrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 70vh; /* prevents the player from eating the whole TV */
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+/* make sure the iframe fills that box correctly */
+#playerFrame, 
+.player-frame, 
+.player-shell iframe {
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0;
+}
+
+/* important: don’t let decorative layers block clicks */
+.tvTopBar,
+.nowPlayingTitle,
+.nowPlaying,
+.tvLED,
+.tvLabel,
+.tvKnob {
+  pointer-events: none;
+}
+
+/* the iframe MUST receive clicks */
+.player-shell,
+.playerFrameWrap,
+#playerFrame {
+  pointer-events: auto;
+}
+
+/* optional: keep the whole TV frame from going comically huge */
+.tvFrame {
+  max-width: 1100px;
+  margin-inline: auto;
+}
+
+/* also remove the RULE pill with CSS as a backup (if you missed HTML) */
+.landingMini .miniItem:last-child {
+  display: none;
+}
