@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Unplugged Channel</title>
+  <title>STRIPPED &amp; TURNED UP</title>
 
-  <link rel="stylesheet" href="styles.css?v=11" />
+  <link rel="stylesheet" href="styles.css?v=20" />
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -40,27 +40,24 @@
 </head>
 
 <body>
-  <!-- ✅ POLISHED HEADER -->
   <header class="top">
     <div class="brand">
-      <div class="dot"></div>
-
+      <div class="brandMark" aria-hidden="true"></div>
       <div class="brandText">
         <div class="titleRow">
-          <div class="title">Unplugged Channel</div>
-          <div class="liveBadge" title="Live vibe">
-            <span class="liveDot"></span> LIVE
-          </div>
+          <div class="title">STRIPPED <span class="amp">&amp;</span> TURNED UP</div>
+          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
         </div>
-
-        <div class="sub" id="tagline">MTV vibes. Candles + amps + acoustic damage.</div>
+        <div class="sub">
+          <span class="subStrong">Acoustic &amp; Stripped Performances</span>
+          <span class="subSep">•</span>
+          <span id="tagline">Stripped down. Turned up.</span>
+        </div>
       </div>
     </div>
 
-    <!-- Debug stays hidden unless you use ?debug=1 -->
-    <button id="btnDiag" class="btn btnGhost" type="button" aria-label="Debug">
-      Debug
-    </button>
+    <!-- Hidden unless ?debug=1 -->
+    <button id="btnDiag" class="btn btnGhost" type="button" aria-label="Debug">Debug</button>
   </header>
 
   <main class="wrap">
@@ -70,13 +67,30 @@
     </section>
 
     <section class="card">
-      <div class="h2">Episodes</div>
-      <div id="status" class="pill">Loading…</div>
+      <div class="sectionHead">
+        <div>
+          <div class="h2">Sessions</div>
+          <div class="mutedTiny">One stream per artist. No music videos. If it plays clean, it stays.</div>
+        </div>
+        <div id="status" class="pill">Loading…</div>
+      </div>
+
       <div id="episodes" class="list"></div>
     </section>
+
+    <footer class="foot">
+      <div class="footInner">
+        <div class="footLine">
+          <span class="footTitle">STRIPPED &amp; TURNED UP</span>
+          <span class="footDot">•</span>
+          <span class="footSub">Acoustic &amp; Stripped Performances</span>
+        </div>
+        <div class="footSmall">Tip: add <span class="mono">?debug=1</span> to the URL if you ever need diagnostics.</div>
+      </div>
+    </footer>
   </main>
 
-  <script src="data/episodes.js?v=11"></script>
-  <script src="app.js?v=11" defer></script>
+  <script src="data/episodes.js?v=20"></script>
+  <script src="app.js?v=20" defer></script>
 </body>
 </html>
