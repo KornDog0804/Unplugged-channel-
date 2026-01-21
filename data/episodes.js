@@ -108,5 +108,14 @@ window.EPISODES = [
   }
 ];
 
+{
+    title: "Sevendust — (Acoustic Session)",
+    artist: "Sevendust",
+    year: 2025,
+    mode: "fullshow",
+    tracks: [
+      { title: "Full Session Stream", url: "https://youtu.be/Q4s_nIG8rw0" }
+    ]
+  },
 // compatibility alias
 window.episodes = window.EPISODES;
