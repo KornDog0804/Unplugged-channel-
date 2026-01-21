@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>STRIPPED &amp; TURNED UP</title>
 
-  <link rel="stylesheet" href="styles.css?v=22" />
+  <link rel="stylesheet" href="styles.css?v=23" />
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -40,7 +40,8 @@
 </head>
 
 <body>
-  <header class="top">
+  <!-- HEADER (Landing + Sessions share this) -->
+  <header class="top" id="topBar">
     <div class="brand">
       <div class="brandMark" aria-hidden="true"></div>
       <div class="brandText">
@@ -58,28 +59,131 @@
   </header>
 
   <main class="wrap" id="app">
-    <!-- app.js will build the full player UI inside here -->
-    <section id="playerWrap"></section>
 
-    <!-- sessions list card -->
-    <section id="sessionsList">
-      <div class="sessionsHead">
-        <div>
-          <div class="sessionsTitle">Sessions</div>
-          <div class="sessionsSub">Tap a session once to unlock audio. Queues will auto-advance.</div>
-        </div>
-        <div id="status">Loading…</div>
+    <!-- ✅ LANDING PAGE -->
+    <section id="landing" style="
+      border-radius: 18px;
+      padding: 18px 16px;
+      margin-bottom: 14px;
+      background: rgba(255,255,255,.06);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,.10);
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+    ">
+      <div style="font-size: 18px; font-weight: 800; letter-spacing: .2px; margin-bottom: 6px;">
+        Welcome to STRIPPED &amp; TURNED UP
       </div>
 
-      <div id="episodes"></div>
+      <div style="opacity:.85; line-height:1.45; margin-bottom: 14px;">
+        Full sessions + acoustic queues. Tap once to unlock audio, then let it ride.
+      </div>
+
+      <div style="
+        display:flex;
+        gap:10px;
+        flex-wrap: wrap;
+        align-items: center;
+      ">
+        <button id="enterBtn" type="button" style="
+          appearance:none;
+          border: 1px solid rgba(255,255,255,.18);
+          background: rgba(255,255,255,.10);
+          color: inherit;
+          padding: 12px 14px;
+          border-radius: 14px;
+          font-weight: 800;
+          letter-spacing: .2px;
+          cursor: pointer;
+          box-shadow: 0 10px 30px rgba(0,0,0,.25);
+        ">
+          Enter Sessions
+        </button>
+
+        <button id="aboutBtn" type="button" style="
+          appearance:none;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(0,0,0,.12);
+          color: inherit;
+          padding: 12px 14px;
+          border-radius: 14px;
+          font-weight: 700;
+          cursor: pointer;
+        ">
+          What is this?
+        </button>
+      </div>
+
+      <div id="aboutBox" style="
+        display:none;
+        margin-top: 14px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        background: rgba(0,0,0,.18);
+        border: 1px solid rgba(255,255,255,.10);
+        line-height: 1.5;
+        opacity: .92;
+      ">
+        Think of this like a mini channel: one clean stream per artist. Queues auto-advance when available.
+      </div>
+    </section>
+
+    <!-- ✅ SESSIONS SCREEN (hidden until Enter) -->
+    <section id="sessionsScreen" style="display:none;">
+      <!-- app.js will build the full player UI inside here -->
+      <section id="playerWrap"></section>
+
+      <!-- sessions list card -->
+      <section id="sessionsList">
+        <div class="sessionsHead">
+          <div>
+            <div class="sessionsTitle">Sessions</div>
+            <div class="sessionsSub">Tap a session once to unlock audio. Queues will auto-advance.</div>
+          </div>
+          <div id="status">Loading…</div>
+        </div>
+
+        <div id="episodes"></div>
+      </section>
     </section>
   </main>
 
-  <script src="data/episodes.js?v=22"></script>
+  <script src="data/episodes.js?v=23"></script>
 
   <!-- REQUIRED for queue autoplay -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
-  <script src="app.js?v=22" defer></script>
+  <script>
+    // Landing page controls (simple + safe)
+    (function () {
+      const landing = document.getElementById("landing");
+      const sessions = document.getElementById("sessionsScreen");
+      const enterBtn = document.getElementById("enterBtn");
+      const aboutBtn = document.getElementById("aboutBtn");
+      const aboutBox = document.getElementById("aboutBox");
+
+      function enterSessions() {
+        if (landing) landing.style.display = "none";
+        if (sessions) sessions.style.display = "block";
+        // Let app.js know the user intentionally entered (helps autoplay rules)
+        try { window.__STU_ENTERED__ = true; } catch (e) {}
+        // Scroll to top so the player is right there
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      if (enterBtn) enterBtn.addEventListener("click", enterSessions);
+
+      if (aboutBtn) aboutBtn.addEventListener("click", function () {
+        if (!aboutBox) return;
+        aboutBox.style.display = aboutBox.style.display === "none" ? "block" : "none";
+      });
+
+      // Optional: allow direct link to sessions screen
+      const params = new URLSearchParams(location.search);
+      if (params.get("start") === "1") enterSessions();
+    })();
+  </script>
+
+  <script src="app.js?v=23" defer></script>
 </body>
 </html>
