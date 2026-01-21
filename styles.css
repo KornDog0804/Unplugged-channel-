@@ -1,10 +1,8 @@
 :root{
   --bgA:#0b0b16;
   --bgB:#05050c;
-  --bgC:#0a1412;
 
-  --card: rgba(255,255,255,.05);
-  --card2: rgba(0,0,0,.30);
+  --card: rgba(255,255,255,.06);
   --line: rgba(255,255,255,.14);
 
   --text: rgba(255,255,255,.92);
@@ -16,12 +14,10 @@
 
   --shadow: 0 18px 60px rgba(0,0,0,.35);
   --r16: 16px;
-  --r14: 14px;
 }
 
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
-
 body{
   margin:0;
   color:var(--text);
@@ -49,7 +45,6 @@ body{
 }
 
 .brand{ display:flex; align-items:center; gap:12px; min-width: 0; }
-
 .brandMark{
   width:42px; height:42px;
   border-radius: 14px;
@@ -68,7 +63,6 @@ body{
   gap:10px;
   flex-wrap:wrap;
 }
-
 .title{
   font-weight: 950;
   letter-spacing: .6px;
@@ -77,12 +71,7 @@ body{
   line-height: 1.05;
   text-shadow: 0 10px 30px rgba(0,0,0,.45);
 }
-
-.amp{
-  display:inline-block;
-  color: rgba(255,255,255,.85);
-  opacity:.85;
-}
+.amp{ opacity:.85; }
 
 .sub{
   margin-top:6px;
@@ -93,11 +82,7 @@ body{
   align-items:center;
   flex-wrap:wrap;
 }
-
-.subStrong{
-  color: rgba(255,255,255,.86);
-  font-weight: 700;
-}
+.subStrong{ color: rgba(255,255,255,.86); font-weight: 700; }
 .subSep{ opacity:.5; }
 
 .liveBadge{
@@ -112,7 +97,6 @@ body{
   font-weight: 800;
   letter-spacing:.4px;
 }
-
 .liveDot{
   width:8px; height:8px;
   border-radius:999px;
@@ -120,36 +104,13 @@ body{
   box-shadow: 0 0 18px rgba(255,77,77,.55);
   animation: livePulse 1.2s ease-in-out infinite;
 }
-
 @keyframes livePulse{
   0%,100%{ transform: scale(1); opacity: 1; }
   50%{ transform: scale(1.25); opacity: .75; }
 }
 
-/* ---------- Buttons ---------- */
-.btn{
-  border:1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-  padding:10px 12px;
-  border-radius: 12px;
-  font-weight: 800;
-  letter-spacing:.2px;
-  cursor:pointer;
-}
-
-.btnGhost{ background: rgba(0,0,0,.18); }
-
-/* HARD KILL debug UI by default */
-#btnDiag,
-#debugPanel,
-.debug,
-.debug-btn,
-.debug-panel,
-.debug-tip,
-[data-debug]{
-  display:none !important;
-}
+/* Debug button hidden unless your JS explicitly shows it */
+#btnDiag{ display:none; }
 
 /* ---------- Layout ---------- */
 .wrap{
@@ -176,12 +137,16 @@ body{
   gap:12px;
   margin-bottom: 10px;
 }
-
 .h2{
   font-weight: 950;
   letter-spacing:.3px;
   margin:0 0 6px;
   font-size: 18px;
+}
+.mutedTiny{
+  color: var(--muted2);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .pill{
@@ -202,88 +167,51 @@ body{
   gap:12px;
 }
 
-.mutedTiny{
-  color: var(--muted2);
-  font-size: 12px;
-  line-height: 1.35;
-}
+.hidden{ display:none; }
 
-/* ---------- Shared TV Player (from app.js) ---------- */
-/* app.js creates: #playerWrap.player-wrap > #nowPlayingTitle + .player-shell > iframe.player-frame */
+/* ---------- Shared “TV” Player (used by app.js) ---------- */
 .player-wrap{
-  /* Keep it tight so it doesn't murder mobile */
-  width: 100%;
-  margin: 0 auto 14px;
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.12);
   background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.22));
-  box-shadow: 0 24px 70px rgba(0,0,0,.45);
-  overflow:hidden;
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: var(--shadow);
 }
 
 .now-playing-title{
-  padding: 12px 14px;
   font-weight: 950;
   letter-spacing:.25px;
+  margin: 2px 2px 10px;
   font-size: 14px;
-  border-bottom: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(420px 220px at 10% 20%, rgba(138,92,255,.18), transparent 60%),
-    radial-gradient(380px 220px at 90% 80%, rgba(124,255,178,.12), transparent 65%),
-    rgba(0,0,0,.18);
+  color: rgba(255,255,255,.92);
 }
 
-/* TV bezel + top bar vibe */
 .player-shell{
+  border-radius: 18px;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.42));
+  box-shadow: 0 22px 70px rgba(0,0,0,.55);
   position: relative;
-  width: 100%;
-  background: #000;
 }
 
-/* Create a “TV bezel” and keep the iframe inside it */
+/* This keeps it from eating the whole screen on mobile */
 .player-shell::before{
   content:"";
+  display:block;
+  padding-top:56.25%; /* 16:9 */
+}
+.player-frame{
   position:absolute;
   inset:0;
-  pointer-events:none;
-  box-shadow:
-    inset 0 0 0 1px rgba(255,255,255,.10),
-    inset 0 0 80px rgba(0,0,0,.55);
-}
-
-/* Add a tiny “LED” bottom-right */
-.player-shell::after{
-  content:"";
-  position:absolute;
-  right:14px;
-  bottom:14px;
-  width:10px;
-  height:10px;
-  border-radius:999px;
-  background: var(--accent2);
-  box-shadow: 0 0 18px rgba(124,255,178,.55);
-  opacity:.85;
-  pointer-events:none;
-}
-
-/* The iframe keeps 16:9 and is height-capped on mobile */
-.player-frame{
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  max-height: 46vh;   /* KEY: stops “too big” player */
-  border: 0;
+  width:100%;
+  height:100%;
+  border:0;
   display:block;
 }
 
-/* Smaller phones: cap harder */
-@media (max-width: 420px){
-  .player-frame{
-    max-height: 36vh;
-  }
-}
-
-/* ---------- Episode Cards (your original style) ---------- */
+/* ---------- Episode Cards (your HTML list tiles) ---------- */
 .ep{
   --epAccent: var(--accent);
   border:1px solid rgba(255,255,255,.12);
@@ -301,8 +229,8 @@ body{
   position:absolute;
   inset:-2px;
   background:
-    radial-gradient(380px 220px at 10% 20%, color-mix(in srgb, var(--epAccent) 35%, transparent), transparent 70%),
-    radial-gradient(300px 220px at 90% 80%, color-mix(in srgb, var(--epAccent) 20%, transparent), transparent 70%);
+    radial-gradient(380px 220px at 10% 20%, rgba(138,92,255,.20), transparent 70%),
+    radial-gradient(300px 220px at 90% 80%, rgba(124,255,178,.14), transparent 70%);
   opacity:.9;
   pointer-events:none;
 }
@@ -325,13 +253,11 @@ body{
   letter-spacing:.35px;
   margin-bottom: 4px;
 }
-
 .epMeta{
   color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
 }
-
 .epSmall{
   color: var(--muted2);
   font-size: 12px;
@@ -352,69 +278,7 @@ body{
   transition: transform .15s ease;
   flex: 0 0 auto;
 }
-
 .ep.open .chev{ transform: rotate(180deg); }
-
-.badges{
-  margin-top: 10px;
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-}
-
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.18);
-  font-size: 12px;
-  font-weight: 900;
-  letter-spacing:.25px;
-  text-transform: uppercase;
-}
-
-.badgeDot{
-  width:8px; height:8px;
-  border-radius:999px;
-  background: var(--epAccent);
-  box-shadow: 0 0 18px color-mix(in srgb, var(--epAccent) 45%, transparent);
-}
-
-.badgeMuted{
-  font-weight: 800;
-  color: rgba(255,255,255,.82);
-  opacity:.92;
-}
-
-/* ---------- Details ---------- */
-.hidden{ display:none; }
-
-.epDetails{
-  position: relative;
-  z-index: 1;
-  margin-top: 12px;
-  display:grid;
-  gap:12px;
-  animation: slideDown .18s ease-out;
-}
-@keyframes slideDown{
-  from{ opacity:0; transform: translateY(-6px); }
-  to{ opacity:1; transform: translateY(0); }
-}
-
-.epHint{
-  color: rgba(255,255,255,.84);
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.epIntro{
-  color: var(--muted);
-  font-size: 13px;
-}
 
 /* ---------- Footer ---------- */
 .foot{
@@ -434,7 +298,10 @@ body{
 .footSub{ color: var(--muted); font-weight: 700; }
 .footSmall{ margin-top:8px; color: var(--muted2); font-size: 12px; }
 
-/* ---------- Safety: never let the list vanish ---------- */
-#episodes{
-  min-height: 120px;
+/* ---------- Mobile tuning ---------- */
+@media (max-width: 420px){
+  .wrap{ padding:14px 12px 36px; }
+  .player-wrap{ padding:10px; }
+  .player-shell{ border-radius: 14px; }
+  .card{ padding:12px; }
 }
