@@ -1,79 +1,298 @@
-/* ===== AMPED AMBER OVERRIDES (paste at END of styles.css) ===== */
+/* STRIPPED & TURNED UP — styles.css (APP-STYLE BASELINE)
+   Amber energy, modern UI, readable, mobile-first.
+*/
+
 :root{
-  --accent: #ffb000;     /* amber */
-  --accent2:#ff6a00;     /* hot orange */
-  --text: rgba(255,255,255,.95);
-  --muted: rgba(255,255,255,.78);
-  --muted2: rgba(255,255,255,.62);
+  --bg0:#07070a;
+  --bg1:#0d0d14;
+  --card:rgba(255,255,255,.06);
+  --card2:rgba(255,255,255,.045);
+  --line:rgba(255,255,255,.10);
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.66);
 
-  /* darker base so the amber POPS */
-  --bgA:#07060f;
-  --bgB:#05040b;
+  /* Amber */
+  --a0:#ffb300;     /* primary amber */
+  --a1:#ff7a18;     /* warm accent */
+  --glow:rgba(255,179,0,.35);
+
+  --radius:22px;
+  --radius2:16px;
+
+  --shadow: 0 16px 50px rgba(0,0,0,.55);
+  --shadow2: 0 10px 30px rgba(0,0,0,.45);
+
+  --max: 980px;
 }
 
-/* stronger background glow */
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
 body{
+  margin:0;
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
   background:
-    radial-gradient(1100px 800px at 14% 18%, rgba(255,176,0,.35), transparent 58%),
-    radial-gradient(900px 700px at 86% 82%, rgba(255,106,0,.24), transparent 60%),
-    radial-gradient(900px 700px at 55% 45%, rgba(255,176,0,.12), transparent 62%),
-    linear-gradient(180deg, var(--bgA), var(--bgB) 70%);
+    radial-gradient(1200px 800px at 20% 0%, rgba(255,179,0,.16), transparent 55%),
+    radial-gradient(900px 700px at 90% 20%, rgba(255,122,24,.12), transparent 55%),
+    linear-gradient(180deg, #050507 0%, #0a0a10 40%, #06060a 100%);
+  min-height:100%;
 }
 
-/* cards brighter + more “glass” */
-.card{
-  border: 1px solid rgba(255,176,0,.22);
-  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(0,0,0,.26));
-}
-
-/* header glow */
+/* ---------- Top Bar ---------- */
 .top{
-  background: rgba(0,0,0,.40);
-  border-bottom: 1px solid rgba(255,176,0,.22);
+  position:sticky;
+  top:0;
+  z-index:50;
+  backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(10,10,14,.86), rgba(10,10,14,.50));
+  border-bottom: 1px solid rgba(255,255,255,.08);
 }
 
-/* pill + badge pop */
-.pill, .badge{
-  border: 1px solid rgba(255,176,0,.22);
-  background: rgba(0,0,0,.22);
+.brand{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 14px 14px 12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
 }
 
-/* episode cards: bigger glow + punch */
-.ep{
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,176,0,.18);
+.brandMark{
+  width:44px; height:44px;
+  border-radius:14px;
+  background:
+    radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.18), transparent 60%),
+    linear-gradient(135deg, rgba(255,179,0,.95), rgba(255,122,24,.85));
+  box-shadow: 0 10px 26px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.10) inset;
+  flex:0 0 auto;
 }
 
-.ep::before{
-  opacity: 1;
-  filter: saturate(1.25) contrast(1.05);
+.brandText{ flex:1; min-width:0; }
+
+.titleRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
 }
 
-/* active/hover feels “lit” */
-.ep:hover{
-  border-color: rgba(255,176,0,.30);
+.title{
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-size: 15px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
 }
 
-/* TV player: give it a real frame + glow */
-.tvFrame, .player-shell{
-  border-radius: 18px;
-  box-shadow:
-    0 0 0 1px rgba(255,176,0,.18),
-    0 28px 90px rgba(0,0,0,.65),
-    0 0 80px rgba(255,176,0,.10);
+.amp{
+  color: rgba(255,255,255,.75);
+  font-weight:700;
 }
 
-.tvTopBar{
-  background: rgba(0,0,0,.28);
-  border-bottom: 1px solid rgba(255,176,0,.18);
+.liveBadge{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 8px 20px rgba(0,0,0,.28);
+  font-weight:700;
+  font-size:12px;
+  color: rgba(255,255,255,.85);
+  flex:0 0 auto;
+}
+.liveDot{
+  width:10px; height:10px;
+  border-radius: 999px;
+  background: var(--a0);
+  box-shadow: 0 0 0 4px rgba(255,179,0,.18);
 }
 
-.tvLED{
-  background: var(--accent);
-  box-shadow: 0 0 22px rgba(255,176,0,.55);
+.sub{
+  margin-top:4px;
+  font-size:13px;
+  color: var(--muted);
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.subStrong{ color: rgba(255,255,255,.86); font-weight:650; }
+.subSep{ opacity:.5; }
+
+/* ---------- Main Wrap ---------- */
+.wrap{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 14px;
+  display:grid;
+  gap: 14px;
+}
+
+/* ---------- Player Card ---------- */
+.player-wrap{
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow);
+  overflow:hidden;
 }
 
 .now-playing-title{
-  color: rgba(255,255,255,.96);
-  text-shadow: 0 10px 30px rgba(0,0,0,.55);
+  padding: 14px 14px 10px;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: .01em;
+}
+
+.player-shell{
+  padding: 0 14px 14px;
+}
+
+.player-shell::before{
+  content:"";
+  display:block;
+  height:1px;
+  background: linear-gradient(90deg, transparent, rgba(255,179,0,.25), transparent);
+  margin: 0 0 14px;
+}
+
+.player-frame{
+  width:100%;
+  aspect-ratio: 16 / 9;
+  border:0;
+  border-radius: 18px;
+  background: #000;
+  box-shadow: var(--shadow2);
+}
+
+/* ---------- Sessions Card ---------- */
+#sessionsList{
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+}
+
+.sessionsHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.sessionsTitle{
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+
+.sessionsSub{
+  margin-top:4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+#status{
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.80);
+  font-weight: 700;
+  font-size: 13px;
+  white-space:nowrap;
+}
+
+/* ---------- Episode List ---------- */
+#episodes{
+  padding: 12px;
+  display:grid;
+  gap: 10px;
+}
+
+.ep{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  padding: 12px 12px;
+  cursor:pointer;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  outline:none;
+}
+
+.ep:active{ transform: scale(.99); }
+
+.ep:hover{
+  border-color: rgba(255,179,0,.35);
+  box-shadow: 0 16px 46px rgba(0,0,0,.55);
+}
+
+.ep:focus{
+  border-color: rgba(255,179,0,.55);
+  box-shadow: 0 0 0 4px rgba(255,179,0,.14), 0 18px 50px rgba(0,0,0,.55);
+}
+
+.epHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.epTitle{
+  font-weight: 900;
+  letter-spacing: -.01em;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.epMeta{
+  margin-top:6px;
+  color: rgba(255,255,255,.72);
+  font-weight: 650;
+}
+
+.epSmall{
+  margin-top:6px;
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+}
+
+.chev{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.85);
+  font-size: 20px;
+  flex: 0 0 auto;
+}
+
+/* Selected / playing state (optional hook) */
+.ep.isActive{
+  border-color: rgba(255,179,0,.55);
+  box-shadow: 0 0 0 3px rgba(255,179,0,.12), 0 18px 50px rgba(0,0,0,.55);
+  background:
+    radial-gradient(600px 220px at 25% 0%, rgba(255,179,0,.14), transparent 65%),
+    linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+}
+
+/* ---------- Debug Panel (if you use it) ---------- */
+.hidden{ display:none !important; }
+
+/* ---------- Mobile tweaks ---------- */
+@media (max-width: 420px){
+  .title{ font-size: 14px; }
+  .sessionsTitle{ font-size: 20px; }
+  .epTitle{ font-size: 15px; }
 }
