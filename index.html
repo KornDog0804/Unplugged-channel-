@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>STRIPPED &amp; TURNED UP</title>
 
-  <link rel="stylesheet" href="styles.css?v=21" />
+  <link rel="stylesheet" href="styles.css?v=22" />
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -58,26 +58,28 @@
   </header>
 
   <main class="wrap" id="app">
+    <!-- app.js will build the full player UI inside here -->
     <section id="playerWrap"></section>
 
-    <section class="card">
-      <div class="sectionHead">
+    <!-- sessions list card -->
+    <section id="sessionsList">
+      <div class="sessionsHead">
         <div>
-          <div class="h2">Sessions</div>
-          <div class="mutedTiny">One stream per artist. If it plays clean, it stays.</div>
+          <div class="sessionsTitle">Sessions</div>
+          <div class="sessionsSub">Tap a session once to unlock audio. Queues will auto-advance.</div>
         </div>
-        <div id="status" class="pill">Loading…</div>
+        <div id="status">Loading…</div>
       </div>
 
-      <div id="episodes" class="list"></div>
+      <div id="episodes"></div>
     </section>
   </main>
 
-  <script src="data/episodes.js?v=21"></script>
+  <script src="data/episodes.js?v=22"></script>
 
   <!-- REQUIRED for queue autoplay -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
-  <script src="app.js?v=21" defer></script>
+  <script src="app.js?v=22" defer></script>
 </body>
 </html>
