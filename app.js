@@ -1,54 +1,35 @@
-/* Stripped & Turned Up — app.js
-   Goals:
+/* Stripped & Turned Up — app.js (stable)
+   - No YouTube Iframe API (avoids mobile hangs/blank layout)
+   - Single shared iframe player
+   - Queue mode uses playlist=videoIds so it can continue
    - Debug UI hidden unless ?debug=1
-   - Single shared player (only ONE YouTube iframe on the page)
-   - One “open” tile at a time (no stuck windows)
-   - Clean data intake from window.EPISODES / window.episodes
-   - Queue mode auto-advances tracks (Wage War / Smile Empty Soul / Wind Walkers)
 */
 
 (function () {
   "use strict";
 
-  // ---------- Debug mode (ONLY when ?debug=1) ----------
   const params = new URLSearchParams(location.search);
   const DEBUG = params.get("debug") === "1";
 
-  function log(...args) {
-    if (DEBUG) console.log("[STU]", ...args);
-  }
-
   function hideDebugUI() {
     if (DEBUG) return;
-    document.querySelectorAll("#btnDiag, #debugPanel, .footSmall").forEach((n) => {
-      if (n) n.style.display = "none";
-    });
+    const btn = document.getElementById("btnDiag");
+    const panel = document.getElementById("debugPanel");
+    const footTip = document.querySelector(".footSmall");
+    if (btn) btn.style.display = "none";
+    if (panel) panel.style.display = "none";
+    if (footTip) footTip.style.display = "none";
   }
-
   hideDebugUI();
 
-  // ---------- Grab episodes ----------
   const EPISODES = Array.isArray(window.EPISODES)
     ? window.EPISODES
     : Array.isArray(window.episodes)
     ? window.episodes
     : [];
 
-  // ---------- Helpers ----------
-  function el(tag, attrs = {}, children = []) {
-    const node = document.createElement(tag);
-    Object.entries(attrs).forEach(([k, v]) => {
-      if (k === "class") node.className = v;
-      else if (k === "html") node.innerHTML = v;
-      else if (k.startsWith("on") && typeof v === "function") node.addEventListener(k.slice(2), v);
-      else node.setAttribute(k, v);
-    });
-    (Array.isArray(children) ? children : [children]).forEach((c) => {
-      if (c == null) return;
-      node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
-    });
-    return node;
-  }
+  const listWrap = document.getElementById("episodes");
+  const statusPill = document.getElementById("status");
 
   function safeText(s) {
     return (s == null ? "" : String(s)).trim();
@@ -58,10 +39,10 @@
     const u = safeText(url);
     if (!u) return "";
 
+    // already embed
     if (u.includes("/embed/")) {
-      const parts = u.split("/embed/");
-      const tail = parts[1] || "";
-      return tail.split("?")[0].trim();
+      const tail = (u.split("/embed/")[1] || "").split("?")[0];
+      return safeText(tail);
     }
 
     try {
@@ -72,20 +53,15 @@
       if (parsed.hostname.includes("youtube.com")) {
         return parsed.searchParams.get("v") || "";
       }
-    } catch (e) {
-      // fallback
-      const m1 = u.match(/v=([a-zA-Z0-9_-]{6,})/);
-      const m2 = u.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
-      return (m1 && m1[1]) || (m2 && m2[1]) || "";
-    }
+    } catch (e) {}
 
-    return "";
+    const m1 = u.match(/v=([a-zA-Z0-9_-]{6,})/);
+    const m2 = u.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
+    return (m1 && m1[1]) || (m2 && m2[1]) || "";
   }
 
-  // ---------- Normalize sessions ----------
   function normalizeEpisodes(arr) {
     const out = [];
-
     (arr || []).forEach((ep, idx) => {
       if (!ep || typeof ep !== "object") return;
 
@@ -114,208 +90,97 @@
         tracks,
       });
     });
-
     return out;
   }
 
   let sessions = normalizeEpisodes(EPISODES);
 
-  // Hard block old stuff if it ever sneaks back in
-  const BLOCK_ARTISTS = new Set(["KISS", "Pearl Jam"]);
-  sessions = sessions.filter((s) => !BLOCK_ARTISTS.has(s.artist));
+  // hard block
+  const BLOCK = new Set(["KISS", "Pearl Jam"]);
+  sessions = sessions.filter((s) => !BLOCK.has(s.artist));
 
-  // ---------- DOM ----------
-  const listWrap = document.getElementById("episodes");
-  const statusPill = document.getElementById("status");
+  if (statusPill) statusPill.textContent = `Loaded ${sessions.length} sessions`;
 
-  // Inject one shared player ABOVE the list (inside the Sessions card)
-  // We'll insert it before the list container.
+  // ---------- Player inject (single iframe) ----------
   let playerWrap = document.getElementById("playerWrap");
   if (!playerWrap) {
-    playerWrap = el("div", { id: "playerWrap", class: "playerWrap" }, [
-      el("div", { id: "nowPlayingTitle", class: "nowPlayingTitle" }, "Tap a session to play"),
-      el("div", { class: "playerShell" }, [
-        el("div", { class: "playerAspect" }, [
-          el("div", { id: "playerMount", class: "playerMount" })
-        ])
-      ]),
-    ]);
-
+    playerWrap = document.createElement("div");
+    playerWrap.id = "playerWrap";
+    playerWrap.className = "playerWrap";
+    playerWrap.innerHTML = `
+      <div id="nowPlayingTitle" class="nowPlayingTitle">Tap a session to play</div>
+      <div class="playerShell">
+        <div class="playerAspect">
+          <iframe
+            id="playerFrame"
+            class="playerMount"
+            src="about:blank"
+            title="Stripped & Turned Up Player"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+          ></iframe>
+        </div>
+      </div>
+    `;
     if (listWrap && listWrap.parentElement) {
       listWrap.parentElement.insertBefore(playerWrap, listWrap);
     }
   }
 
   const titleEl = document.getElementById("nowPlayingTitle");
-  const mount = document.getElementById("playerMount");
+  const frame = document.getElementById("playerFrame");
 
-  if (statusPill) statusPill.textContent = `Loaded ${sessions.length} sessions`;
+  function buildEmbedForSession(session) {
+    const ids = session.tracks.map((t) => t.id).filter(Boolean);
+    if (!ids.length) return "about:blank";
 
-  // ---------- YouTube IFrame API (so queues can auto-advance) ----------
-  let ytReady = false;
-  let ytPlayer = null;
+    const first = ids[0];
 
-  function loadYouTubeAPI() {
-    return new Promise((resolve) => {
-      if (window.YT && window.YT.Player) return resolve();
+    // Queue: use playlist=ID2,ID3... so it can keep playing
+    if (session.mode === "queue" && ids.length > 1) {
+      const rest = ids.slice(1).join(",");
+      return `https://www.youtube.com/embed/${first}?autoplay=1&playsinline=1&rel=0&modestbranding=1&playlist=${encodeURIComponent(rest)}`;
+    }
 
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      document.head.appendChild(tag);
-
-      window.onYouTubeIframeAPIReady = function () {
-        resolve();
-      };
-    });
+    // Full show: single ID
+    return `https://www.youtube.com/embed/${first}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
   }
 
-  async function ensurePlayer() {
-    if (ytPlayer) return ytPlayer;
-
-    await loadYouTubeAPI();
-    ytReady = true;
-
-    ytPlayer = new window.YT.Player("playerMount", {
-      width: "100%",
-      height: "100%",
-      videoId: "",
-      playerVars: {
-        autoplay: 1,
-        playsinline: 1,
-        rel: 0,
-        modestbranding: 1
-      },
-      events: {
-        onStateChange: onPlayerStateChange
-      }
-    });
-
-    return ytPlayer;
-  }
-
-  // ---------- Playback state ----------
-  let ACTIVE_SESSION_ID = null;
-  let ACTIVE_TRACK_INDEX = 0;
-
-  function setTitle(session, idx) {
-    if (!titleEl) return;
-
+  function setNowPlaying(session) {
     if (!session) {
-      titleEl.textContent = "Tap a session to play";
+      if (titleEl) titleEl.textContent = "Tap a session to play";
+      if (frame) frame.src = "about:blank";
       return;
     }
 
-    if (session.mode === "queue") {
-      const t = session.tracks[idx] ? session.tracks[idx].title : "";
-      titleEl.textContent = t ? `${session.title} — ${t}` : session.title;
-    } else {
-      titleEl.textContent = session.title;
-    }
-  }
-
-  async function playSession(session, startIndex = 0) {
-    const s = session;
-    ACTIVE_SESSION_ID = s.id;
-    ACTIVE_TRACK_INDEX = Math.max(0, Math.min(startIndex, s.tracks.length - 1));
-
-    setTitle(s, ACTIVE_TRACK_INDEX);
-
-    const player = await ensurePlayer();
-    const vid = s.tracks[ACTIVE_TRACK_INDEX].id;
-
-    try {
-      player.loadVideoById(vid);
-    } catch (e) {
-      log("loadVideoById failed", e);
-    }
-  }
-
-  async function stopPlayback() {
-    setTitle(null, 0);
-    ACTIVE_SESSION_ID = null;
-    ACTIVE_TRACK_INDEX = 0;
-
-    if (ytPlayer && ytReady) {
-      try {
-        ytPlayer.stopVideo();
-      } catch (e) {}
-    }
-  }
-
-  function getActiveSession() {
-    return sessions.find((s) => s.id === ACTIVE_SESSION_ID) || null;
-  }
-
-  function onPlayerStateChange(e) {
-    // 0 = ended
-    if (!e || e.data !== 0) return;
-
-    const s = getActiveSession();
-    if (!s) return;
-
-    if (s.mode !== "queue") return;
-
-    const next = ACTIVE_TRACK_INDEX + 1;
-    if (next >= s.tracks.length) {
-      // End of queue — stop or loop (your call)
-      // We'll stop cleanly.
-      stopPlayback();
-      closeAllTiles();
-      return;
-    }
-
-    ACTIVE_TRACK_INDEX = next;
-    setTitle(s, ACTIVE_TRACK_INDEX);
-
-    try {
-      ytPlayer.loadVideoById(s.tracks[ACTIVE_TRACK_INDEX].id);
-    } catch (err) {
-      log("Next track load failed", err);
-    }
+    if (titleEl) titleEl.textContent = session.title;
+    if (frame) frame.src = buildEmbedForSession(session);
   }
 
   // ---------- Tiles ----------
-  function closeAllTiles() {
-    if (!listWrap) return;
-    listWrap.querySelectorAll(".epTile.open").forEach((n) => n.classList.remove("open"));
-  }
-
-  function openTile(tile, session) {
-    closeAllTiles();
-    tile.classList.add("open");
-    playSession(session, 0);
-  }
-
-  function toggleTile(tile, session) {
-    const isOpen = tile.classList.contains("open");
-    if (isOpen) {
-      tile.classList.remove("open");
-      stopPlayback();
-      return;
-    }
-    openTile(tile, session);
-  }
-
   function render() {
     if (!listWrap) return;
-
     listWrap.innerHTML = "";
 
     sessions.forEach((s) => {
+      const tile = document.createElement("div");
+      tile.className = "epTile";
+      tile.tabIndex = 0;
+
       const metaParts = [s.artist, s.year].filter(Boolean);
       if (s.mode === "queue") metaParts.push(`${s.tracks.length} tracks`);
-      const meta = metaParts.join(" • ");
 
-      const tile = el("div", { class: "epTile", role: "button", tabindex: "0" }, [
-        el("div", { class: "epTitle" }, s.title),
-        el("div", { class: "epMeta" }, meta)
-      ]);
+      tile.innerHTML = `
+        <div class="epTitle">${s.title}</div>
+        <div class="epMeta">${metaParts.join(" • ")}</div>
+      `;
 
-      tile.addEventListener("click", () => toggleTile(tile, s));
+      tile.addEventListener("click", () => setNowPlaying(s));
       tile.addEventListener("keydown", (ev) => {
         if (ev.key === "Enter" || ev.key === " ") {
           ev.preventDefault();
-          toggleTile(tile, s);
+          setNowPlaying(s);
         }
       });
 
@@ -323,31 +188,12 @@
     });
 
     if (!sessions.length) {
-      listWrap.appendChild(el("div", { class: "emptyMsg" }, "No sessions found. Check episodes.js formatting."));
+      const msg = document.createElement("div");
+      msg.className = "emptyMsg";
+      msg.textContent = "No sessions found. Check episodes.js formatting.";
+      listWrap.appendChild(msg);
     }
   }
 
   render();
-
-  // ---------- Debug panel button behavior (only if debug=1) ----------
-  const btnDiag = document.getElementById("btnDiag");
-  const panel = document.getElementById("debugPanel");
-  const lines = document.getElementById("debugLines");
-
-  if (DEBUG && btnDiag && panel && lines) {
-    btnDiag.style.display = "";
-    btnDiag.addEventListener("click", () => {
-      panel.classList.toggle("hidden");
-      lines.textContent = [
-        "DEBUG MODE ON",
-        `Loaded sessions: ${sessions.length}`,
-        "",
-        "Artists:",
-        ...sessions.map((s) => `- ${s.artist} (${s.mode}, ${s.tracks.length} track(s))`)
-      ].join("\n");
-    });
-  }
-
-  log("Debug:", DEBUG);
-  log("Sessions:", sessions);
 })();
