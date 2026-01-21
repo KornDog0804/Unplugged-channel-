@@ -59,3 +59,16 @@ window.EPISODES = [
     ]
   }
 ];
+{
+  title: "WAGE WAR",
+  artist: "Wage War",
+  year: 2021,
+  intro: "lava",
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Stripped Acoustic Session",
+      url: "https://www.youtube.com/embed/HasZm8N83cE?autoplay=1&rel=0&playsinline=1&playlist=quf9WlL4hIg,fT9SJV8KCE8"
+    }
+  ]
+}
