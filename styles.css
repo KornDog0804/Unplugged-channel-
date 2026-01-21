@@ -860,3 +860,66 @@ body.landing{
 @media (max-width: 520px){
   .landingMini{ grid-template-columns: 1fr; }
 }
+/* =========================
+   FOCUS MODE (player prevails)
+   ========================= */
+
+body.focusMode {
+  overflow-x: hidden;
+}
+
+/* Hide the sessions list completely while focused */
+body.focusMode #sessionsList {
+  display: none !important;
+}
+
+/* Make the player area feel like a dedicated screen */
+body.focusMode #playerWrap {
+  position: relative;
+  margin-top: 10px;
+}
+
+/* Optional: tighten the player card to dominate */
+body.focusMode .playerCard,
+body.focusMode .playerShell,
+body.focusMode .playerFrame {
+  max-width: 100%;
+}
+
+/* Floating "Change session" button */
+.focusToggleBtn {
+  position: sticky;
+  top: 12px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(15,16,20,.72);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: rgba(255,255,255,.92);
+  font-weight: 700;
+  width: fit-content;
+  margin: 12px auto 0;
+  box-shadow: 0 14px 40px rgba(0,0,0,.35);
+}
+
+.focusToggleBtn:active {
+  transform: scale(.99);
+}
+
+.focusToggleBtn .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(120, 255, 120, .9);
+  box-shadow: 0 0 16px rgba(120,255,120,.55);
+}
+
+/* When focus mode is ON, hide the header (feels like a "now playing" screen) */
+body.focusMode header.top {
+  display: none !important;
+}
