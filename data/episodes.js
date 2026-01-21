@@ -103,5 +103,18 @@ window.EPISODES = [
   }
 ];
 
+{
+  title: "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
+  artist: "Stevie Ray Vaughan • Joe Satriani",
+  year: "1980s",
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "SRV & Satriani Live Jam",
+      url: "https://youtu.be/e_UASyYu1iA?si=T6Y8ZF1icJLBG7XA"
+    }
+  ]
+}
+
 // compatibility alias
 window.episodes = window.EPISODES;
