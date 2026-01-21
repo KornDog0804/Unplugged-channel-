@@ -1,118 +1,99 @@
-/* Stripped & Turned Up — app.js
-   Works with your current HTML:
-   - #status (pill)
-   - #episodes (list)
-   - Optional debug UI stays hidden unless ?debug=1
-   - Adds ONE shared player at top (single iframe)
-   - Preserves playlist/list params so queues autoplay
-   - Prefers "Full Session" track when available (fixes Nirvana if present in tracks)
+/* Stripped & Turned Up — app.js (MATCHES index.html + styles.css)
+   - Uses #episodes + .ep cards
+   - Updates #status pill
+   - Single shared player at top
+   - Debug only when ?debug=1
 */
-
 (function () {
   "use strict";
 
   const params = new URLSearchParams(location.search);
   const DEBUG = params.get("debug") === "1";
 
-  function log(...args) {
-    if (DEBUG) console.log("[STU]", ...args);
-  }
-
-  // ---------- Data intake ----------
   const EPISODES = Array.isArray(window.EPISODES)
     ? window.EPISODES
     : Array.isArray(window.episodes)
     ? window.episodes
     : [];
 
-  function safeText(s) {
-    return (s == null ? "" : String(s)).trim();
+  const $ = (sel) => document.querySelector(sel);
+
+  const main = $("main.wrap") || $("main") || document.body;
+  const list = $("#episodes");
+  const status = $("#status");
+  const debugPanel = $("#debugPanel");
+  const btnDiag = $("#btnDiag");
+  const debugLines = $("#debugLines");
+
+  function logLine(line) {
+    if (!DEBUG) return;
+    if (debugLines) {
+      const div = document.createElement("div");
+      div.textContent = line;
+      debugLines.appendChild(div);
+    }
+    console.log("[STU]", line);
   }
 
-  function el(tag, attrs = {}, children = []) {
+  // Debug UI handling
+  if (btnDiag) btnDiag.style.display = DEBUG ? "" : "none";
+  if (debugPanel) debugPanel.classList.toggle("hidden", !DEBUG);
+
+  if (btnDiag && debugPanel) {
+    btnDiag.addEventListener("click", () => {
+      debugPanel.classList.toggle("hidden");
+    });
+  }
+
+  function el(tag, attrs = {}, kids = []) {
     const node = document.createElement(tag);
-    Object.entries(attrs).forEach(([k, v]) => {
+    for (const [k, v] of Object.entries(attrs)) {
       if (k === "class") node.className = v;
       else if (k === "html") node.innerHTML = v;
-      else if (k.startsWith("on") && typeof v === "function")
-        node.addEventListener(k.slice(2), v);
       else node.setAttribute(k, v);
-    });
-    (Array.isArray(children) ? children : [children]).forEach((c) => {
+    }
+    (Array.isArray(kids) ? kids : [kids]).forEach((c) => {
       if (c == null) return;
       node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
     });
     return node;
   }
 
-  // ---------- YouTube embed builder (PRESERVE playlist/list) ----------
-  function toYouTubeEmbed(url) {
+  function safeText(s) {
+    return (s == null ? "" : String(s)).trim();
+  }
+
+  function ytIdFrom(url) {
     const u = safeText(url);
     if (!u) return "";
-
-    // already embed -> keep, but ensure autoplay/playsinline exist
     if (u.includes("/embed/")) {
-      // add autoplay if missing
-      if (u.includes("autoplay=")) return u;
-      return u + (u.includes("?") ? "&" : "?") + "autoplay=1&playsinline=1&rel=0&modestbranding=1";
+      const m = u.match(/\/embed\/([a-zA-Z0-9_-]{6,})/);
+      return m ? m[1] : "";
     }
-
-    let videoId = "";
-    let listId = "";
-
     try {
       const parsed = new URL(u);
-
-      // playlist param
-      listId = parsed.searchParams.get("list") || "";
-
       if (parsed.hostname.includes("youtu.be")) {
-        videoId = parsed.pathname.replace("/", "").trim();
-      } else {
-        videoId = parsed.searchParams.get("v") || "";
+        return parsed.pathname.replace("/", "").trim();
       }
-    } catch (e) {
-      // fallback regex
+      return parsed.searchParams.get("v") || "";
+    } catch {
       const m1 = u.match(/v=([a-zA-Z0-9_-]{6,})/);
       const m2 = u.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
-      const mL = u.match(/[?&]list=([a-zA-Z0-9_-]{6,})/);
-      videoId = (m1 && m1[1]) || (m2 && m2[1]) || "";
-      listId = (mL && mL[1]) || "";
+      return (m1 && m1[1]) || (m2 && m2[1]) || "";
     }
-
-    // If it’s a playlist-only URL (no v=), embed the playlist directly
-    if (!videoId && listId) {
-      return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(
-        listId
-      )}&autoplay=1&playsinline=1&rel=0&modestbranding=1`;
-    }
-
-    if (!videoId) return "";
-
-    // If list exists, KEEP IT so it continues through the queue
-    const listPart = listId ? `&list=${encodeURIComponent(listId)}` : "";
-
-    return `https://www.youtube.com/embed/${encodeURIComponent(
-      videoId
-    )}?autoplay=1&playsinline=1&rel=0&modestbranding=1${listPart}`;
   }
 
-  // ---------- Find existing HTML targets ----------
-  const statusEl = document.getElementById("status");
-  const episodesEl = document.getElementById("episodes");
-
-  if (!episodesEl) {
-    console.error("Missing #episodes in HTML");
-    return;
+  function toEmbed(url) {
+    const id = ytIdFrom(url);
+    if (!id) return "";
+    // autoplay + playsinline = better mobile
+    return `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
   }
 
-  // ---------- Insert ONE shared player ABOVE sessions card ----------
-  // We mount it inside <main class="wrap"> as the first element.
-  const wrap = document.querySelector("main.wrap") || document.body;
-
-  let playerWrap = document.getElementById("playerWrap");
-  let playerTitle = document.getElementById("nowPlayingTitle");
-  let playerFrame = document.getElementById("playerFrame");
+  // Create shared player (uses CSS classes you have)
+  let playerWrap = $("#playerWrap");
+  let playerTitle = $("#nowPlayingTitle");
+  let playerFrame = $("#playerFrame");
 
   if (!playerWrap) {
     playerTitle = el("div", { id: "nowPlayingTitle", class: "now-playing-title" }, "Tap a session to play");
@@ -133,65 +114,27 @@
       el("div", { class: "player-shell" }, playerFrame),
     ]);
 
-    wrap.prepend(playerWrap);
+    // Put player ABOVE the Sessions card
+    main.insertBefore(playerWrap, main.firstChild);
   }
 
-  function setNowPlaying(session) {
-    if (!session) {
-      playerTitle.textContent = "Tap a session to play";
+  function setNowPlaying(title, url) {
+    if (playerTitle) playerTitle.textContent = title || "Tap a session to play";
+    if (!url) {
       playerFrame.src = "about:blank";
       return;
     }
-
-    playerTitle.textContent = session.title;
-    const embed = toYouTubeEmbed(session.streamUrl);
-
+    const embed = toEmbed(url);
     if (!embed) {
       playerFrame.src = "about:blank";
-      if (DEBUG) alert("Bad YouTube link: " + session.streamUrl);
+      logLine("BAD LINK: " + url);
       return;
     }
-
-    // Changing src stops previous and starts new
     playerFrame.src = embed;
-  }
-
-  // ---------- Normalize episodes ----------
-  function pickStreamUrl(ep) {
-    // Prefer direct streamUrl fields first (if you ever add them)
-    const direct =
-      safeText(ep.streamUrl) ||
-      safeText(ep.fullUrl) ||
-      safeText(ep.url);
-
-    if (direct) return direct;
-
-    const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
-    if (!tracks.length) return "";
-
-    // Prefer a track that screams "Full Session"
-    const full = tracks.find((t) => {
-      const tt = safeText(t && t.title).toLowerCase();
-      const uu = safeText(t && t.url);
-      return (
-        uu &&
-        (tt.includes("full") ||
-          tt.includes("session") ||
-          tt.includes("unplugged") && tt.includes("full") ||
-          /full\s*session/i.test(safeText(t && t.title)))
-      );
-    });
-
-    if (full && safeText(full.url)) return safeText(full.url);
-
-    // Otherwise take first track
-    const first = tracks[0] || {};
-    return safeText(first.url);
   }
 
   function normalizeEpisodes(arr) {
     const out = [];
-
     (arr || []).forEach((ep, idx) => {
       if (!ep || typeof ep !== "object") return;
 
@@ -200,92 +143,56 @@
       const year = ep.year != null ? String(ep.year) : "";
       const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
 
-      const streamUrl = pickStreamUrl(ep);
+      // SINGLE STREAM: use tracks[0].url
+      const streamUrl = tracks[0] ? safeText(tracks[0].url) : "";
+
       if (!streamUrl) return;
 
-      out.push({
-        id: `ep_${idx}_${title.replace(/\s+/g, "_").slice(0, 30)}`,
-        title,
-        artist,
-        year,
-        trackCount: tracks.length,
-        streamUrl,
-      });
+      out.push({ title, artist, year, streamUrl, tracksCount: tracks.length });
     });
-
     return out;
   }
 
-  let sessions = normalizeEpisodes(EPISODES);
+  const sessions = normalizeEpisodes(EPISODES);
 
-  // Optional blocklist if you want it
-  const BLOCK_ARTISTS = new Set(["KISS", "Pearl Jam"]);
-  sessions = sessions.filter((s) => !BLOCK_ARTISTS.has(s.artist));
+  if (status) status.textContent = sessions.length ? `Loaded ${sessions.length} sessions` : "No sessions found";
 
-  if (statusEl) statusEl.textContent = `Loaded ${sessions.length} sessions`;
-  log("Sessions:", sessions);
-
-  // ---------- Render list into #episodes (your existing UI) ----------
-  episodesEl.innerHTML = "";
-
-  let ACTIVE_ID = null;
-
-  function closeAll() {
-    episodesEl.querySelectorAll(".ep.open").forEach((n) => n.classList.remove("open"));
-    ACTIVE_ID = null;
+  if (!list) {
+    logLine("Missing #episodes container in HTML.");
+    return;
   }
 
-  function openEpisode(tile, session) {
-    closeAll();
-    tile.classList.add("open");
-    ACTIVE_ID = session.id;
-    setNowPlaying(session);
-  }
-
-  function toggleEpisode(tile, session) {
-    const isOpen = tile.classList.contains("open");
-    if (isOpen) {
-      tile.classList.remove("open");
-      ACTIVE_ID = null;
-      setNowPlaying(null);
-      return;
-    }
-    openEpisode(tile, session);
-  }
+  list.innerHTML = "";
 
   sessions.forEach((s) => {
     const meta = [s.artist, s.year].filter(Boolean).join(" • ");
-    const tracksLine = s.trackCount ? `${s.trackCount} track${s.trackCount === 1 ? "" : "s"}` : "";
+    const small = s.tracksCount ? `${s.tracksCount} tracks` : "";
 
-    const tile = el("div", { class: "ep", tabindex: "0" }, [
+    const card = el("div", { class: "ep", tabindex: "0" }, [
       el("div", { class: "epHead" }, [
         el("div", {}, [
           el("div", { class: "epTitle" }, s.title),
           el("div", { class: "epMeta" }, meta),
-          tracksLine ? el("div", { class: "epSmall" }, tracksLine) : null,
+          small ? el("div", { class: "epSmall" }, small) : null,
         ]),
-        el("div", { class: "chev" }, "⌄"),
+        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
       ]),
     ]);
 
-    tile.addEventListener("click", () => toggleEpisode(tile, s));
-    tile.addEventListener("keydown", (e) => {
+    const play = () => setNowPlaying(s.title, s.streamUrl);
+
+    card.addEventListener("click", play);
+    card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        toggleEpisode(tile, s);
+        play();
       }
     });
 
-    episodesEl.appendChild(tile);
+    list.appendChild(card);
   });
 
-  if (!sessions.length) {
-    episodesEl.appendChild(
-      el("div", { class: "ep" }, [
-        el("div", { class: "epTitle" }, "No sessions found"),
-        el("div", { class: "epMeta" }, "Check data/episodes.js formatting (EPISODES array)."),
-      ])
-    );
-  }
-
+  logLine("Debug = " + DEBUG);
+  logLine("EPISODES length = " + EPISODES.length);
+  logLine("Sessions rendered = " + sessions.length);
 })();
