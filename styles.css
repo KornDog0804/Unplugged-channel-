@@ -302,3 +302,28 @@ body:not(.debug) #btnDiag,
 body:not(.debug) #debugPanel{
   display:none !important;
 }
+:root{
+  /* ---- CORE BACKGROUNDS ---- */
+  --bgA:#0b0b0b;      /* true near-black */
+  --bgB:#0f0f0f;      /* subtle depth */
+  --bgC:#141414;      /* card depth */
+
+  /* ---- SURFACES ---- */
+  --card: rgba(255,255,255,.04);
+  --card2: rgba(0,0,0,.55);
+  --line: rgba(255,255,255,.12);
+
+  /* ---- TEXT ---- */
+  --text: rgba(255,255,255,.95);
+  --muted: rgba(255,255,255,.72);
+  --muted2: rgba(255,255,255,.52);
+
+  /* ---- ACCENT (AMBER ENERGY) ---- */
+  --accent: #ffb300;     /* main amber */
+  --accent2: #ff9f1a;    /* warmer glow */
+
+  /* ---- FX ---- */
+  --shadow: 0 18px 60px rgba(0,0,0,.55);
+  --r16: 16px;
+  --r14: 14px;
+}
