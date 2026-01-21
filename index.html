@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>STRIPPED &amp; TURNED UP</title>
 
-  <link rel="stylesheet" href="styles.css?v=23" />
+  <link rel="stylesheet" href="styles.css?v=24" />
+
+  <!-- Hide header ONLY on Sessions screen -->
+  <style>
+    body[data-screen="sessions"] header.top { display: none !important; }
+  </style>
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -39,8 +44,8 @@
   </script>
 </head>
 
-<body>
-  <!-- HEADER (Landing + Sessions share this) -->
+<body data-screen="landing">
+  <!-- HEADER (shows on landing, hidden on sessions by CSS above) -->
   <header class="top" id="topBar">
     <div class="brand">
       <div class="brandMark" aria-hidden="true"></div>
@@ -79,12 +84,7 @@
         Full sessions + acoustic queues. Tap once to unlock audio, then let it ride.
       </div>
 
-      <div style="
-        display:flex;
-        gap:10px;
-        flex-wrap: wrap;
-        align-items: center;
-      ">
+      <div style="display:flex; gap:10px; flex-wrap: wrap; align-items:center;">
         <button id="enterBtn" type="button" style="
           appearance:none;
           border: 1px solid rgba(255,255,255,.18);
@@ -124,16 +124,14 @@
         line-height: 1.5;
         opacity: .92;
       ">
-        Think of this like a mini channel: one clean stream per artist. Queues auto-advance when available.
+        One clean stream per artist. Queues auto-advance when available.
       </div>
     </section>
 
     <!-- ✅ SESSIONS SCREEN (hidden until Enter) -->
     <section id="sessionsScreen" style="display:none;">
-      <!-- app.js will build the full player UI inside here -->
       <section id="playerWrap"></section>
 
-      <!-- sessions list card -->
       <section id="sessionsList">
         <div class="sessionsHead">
           <div>
@@ -148,13 +146,12 @@
     </section>
   </main>
 
-  <script src="data/episodes.js?v=23"></script>
+  <script src="data/episodes.js?v=24"></script>
 
-  <!-- REQUIRED for queue autoplay -->
+  <!-- REQUIRED for autoplay + queue advance -->
   <script src="https://www.youtube.com/iframe_api"></script>
 
   <script>
-    // Landing page controls (simple + safe)
     (function () {
       const landing = document.getElementById("landing");
       const sessions = document.getElementById("sessionsScreen");
@@ -163,11 +160,13 @@
       const aboutBox = document.getElementById("aboutBox");
 
       function enterSessions() {
+        document.body.setAttribute("data-screen", "sessions");
         if (landing) landing.style.display = "none";
         if (sessions) sessions.style.display = "block";
-        // Let app.js know the user intentionally entered (helps autoplay rules)
-        try { window.__STU_ENTERED__ = true; } catch (e) {}
-        // Scroll to top so the player is right there
+
+        // Tell app.js the user intentionally entered (helps autoplay rules)
+        window.__STU_ENTERED__ = true;
+
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
@@ -178,12 +177,12 @@
         aboutBox.style.display = aboutBox.style.display === "none" ? "block" : "none";
       });
 
-      // Optional: allow direct link to sessions screen
+      // Optional direct link to sessions
       const params = new URLSearchParams(location.search);
       if (params.get("start") === "1") enterSessions();
     })();
   </script>
 
-  <script src="app.js?v=23" defer></script>
+  <script src="app.js?v=24" defer></script>
 </body>
 </html>
