@@ -923,3 +923,9 @@ body.focusMode .playerFrame {
 body.focusMode header.top {
   display: none !important;
 }
+/* Hide the RULE card on landing */
+.miniItem:has(.miniLabel:contains("Rule")),
+.miniItem.rule,
+.rule {
+  display: none !important;
+}
