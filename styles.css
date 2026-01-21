@@ -975,6 +975,69 @@ body.focusMode header.top {
 #playerFrame {
   pointer-events: auto;
 }
+/* --- TV sizing: keep player controllable on big screens --- */
+@media (min-width: 1100px) {
+  .player-wrap,
+  #playerWrap {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .tvFrame {
+    max-width: 980px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  /* keep the video area a sane size */
+  .playerFrameWrap {
+    aspect-ratio: 16 / 9;
+    height: auto !important;
+    max-height: 560px;
+  }
+}
+
+/* --- YouTube embed fallback overlay --- */
+.ytFallback {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  background: rgba(0,0,0,.72);
+  z-index: 50;
+  padding: 18px;
+}
+
+.ytFallbackCard{
+  width: min(520px, 92%);
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  background: rgba(18,18,22,.92);
+  border: 1px solid rgba(255,255,255,.12);
+  text-align: center;
+}
+
+.ytFallbackTitle{
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.ytFallbackText{
+  opacity: .85;
+  margin-bottom: 14px;
+}
+
+.ytFallbackBtn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-weight: 800;
+  text-decoration: none;
+  background: #fff;
+  color: #000;
+}
 
 /* optional: keep the whole TV frame from going comically huge */
 .tvFrame {
