@@ -1049,3 +1049,16 @@ body.focusMode header.top {
 .landingMini .miniItem:last-child {
   display: none;
 }
+/* Shield/TV: keep the player from taking over the whole screen */
+@media (min-width: 1100px) {
+  #playerWrap, .player-wrap, .tvFrame {
+    max-width: 980px;
+    margin: 0 auto;
+  }
+
+  .playerFrameWrap {
+    max-height: 560px;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+  }
+}
