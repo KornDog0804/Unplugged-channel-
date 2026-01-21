@@ -929,3 +929,10 @@ body.focusMode header.top {
 .rule {
   display: none !important;
 }
+.epFeatured{
+  border: 1px solid rgba(140,255,140,.18);
+  box-shadow: 0 0 0 1px rgba(140,255,140,.10), 0 18px 60px rgba(0,0,0,.35);
+}
+.epFeatured .epTitle{
+  letter-spacing: .2px;
+}
