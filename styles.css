@@ -539,5 +539,9 @@ body:not(.debug) [data-debug] {
   display: none;
 }
 }
-
+#debugBtn,
+#sessionsPanel,
+#debugTip {
+  display: none !important;
+}
 /* If you have your Kitty CSS already, paste it BELOW this line so it overrides anything above. */
