@@ -1,19 +1,21 @@
 :root{
-  --bgA:#0b0b16;
-  --bgB:#05050c;
+  --bgA:#070707;
+  --bgB:#0c0c0c;
 
-  --card: rgba(255,255,255,.06);
-  --line: rgba(255,255,255,.14);
+  --card: rgba(255,255,255,.05);
+  --line: rgba(255,255,255,.12);
 
-  --text: rgba(255,255,255,.92);
+  --text: rgba(255,255,255,.93);
   --muted: rgba(255,255,255,.72);
-;
+  --muted2: rgba(255,255,255,.54);
 
-  --accent: #8A5CFF;
-  --accent2: #7CFFB2;
+  /* AMBER ENERGY */
+  --accent: #ffb300;
+  --accent2:#ff8f00;
 
-  --shadow: 0 18px 60px rgba(0,0,0,.35);
+  --shadow: 0 18px 60px rgba(0,0,0,.55);
   --r16: 16px;
+  --r14: 14px;
 }
 
 *{ box-sizing:border-box; }
@@ -24,8 +26,8 @@ body{
   color:var(--text);
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   background:
-    radial-gradient(1200px 900px at 15% 15%, rgba(138,92,255,.18), transparent 55%),
-    radial-gradient(1200px 900px at 85% 85%, rgba(124,255,178,.12), transparent 55%),
+    radial-gradient(1200px 900px at 20% 10%, rgba(255,179,0,.10), transparent 55%),
+    radial-gradient(1200px 900px at 85% 90%, rgba(255,143,0,.08), transparent 55%),
     linear-gradient(180deg, var(--bgA), var(--bgB) 70%);
   overflow-x:hidden;
 }
@@ -37,7 +39,7 @@ body{
   z-index:10;
   padding:14px 14px;
   backdrop-filter: blur(10px);
-  background: rgba(0,0,0,.32);
+  background: rgba(0,0,0,.45);
   border-bottom: 1px solid var(--line);
   display:flex;
   align-items:center;
@@ -46,23 +48,25 @@ body{
 }
 
 .brand{ display:flex; align-items:center; gap:12px; min-width: 0; }
+.brandText{ min-width:0; }
+
 .brandMark{
   width:42px; height:42px;
   border-radius: 14px;
   border:1px solid rgba(255,255,255,.16);
   background:
     radial-gradient(18px 18px at 30% 30%, rgba(255,255,255,.28), transparent 60%),
-    linear-gradient(135deg, rgba(138,92,255,.75), rgba(124,255,178,.55));
+    linear-gradient(135deg, rgba(255,179,0,.75), rgba(255,143,0,.55));
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
 }
 
-.brandText{ min-width:0; }
 .titleRow{
   display:flex;
   align-items:center;
   gap:10px;
   flex-wrap:wrap;
 }
+
 .title{
   font-weight: 950;
   letter-spacing: .6px;
@@ -71,18 +75,20 @@ body{
   line-height: 1.05;
   text-shadow: 0 10px 30px rgba(0,0,0,.45);
 }
+
 .amp{ opacity:.85; }
 
 .sub{
   margin-top:6px;
   font-size: 12px;
-  color: rgba(255,255,255,.72);
+  color: var(--muted);
   display:flex;
   gap:8px;
   align-items:center;
   flex-wrap:wrap;
 }
-.subStrong{ font-weight: 700; color: rgba(255,255,255,.86); }
+
+.subStrong{ color: rgba(255,255,255,.86); font-weight: 700; }
 .subSep{ opacity:.5; }
 
 .liveBadge{
@@ -97,29 +103,19 @@ body{
   font-weight: 800;
   letter-spacing:.4px;
 }
+
 .liveDot{
   width:8px; height:8px;
   border-radius:999px;
-  background: #ff4d4d;
-  box-shadow: 0 0 18px rgba(255,77,77,.55);
+  background: var(--accent);
+  box-shadow: 0 0 22px rgba(255,179,0,.75);
   animation: livePulse 1.2s ease-in-out infinite;
 }
+
 @keyframes livePulse{
   0%,100%{ transform: scale(1); opacity: 1; }
   50%{ transform: scale(1.25); opacity: .75; }
 }
-
-/* Buttons */
-.btn{
-  border:1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: var(--text);
-  padding:10px 12px;
-  border-radius: 12px;
-  font-weight: 800;
-  cursor:pointer;
-}
-.btnGhost{ background: rgba(0,0,0,.18); }
 
 /* ---------- Layout ---------- */
 .wrap{
@@ -133,7 +129,7 @@ body{
 
 .card{
   border:1px solid rgba(255,255,255,.12);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18));
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.26));
   border-radius: var(--r16);
   padding:14px;
   box-shadow: var(--shadow);
@@ -149,15 +145,9 @@ body{
 
 .h2{
   font-weight: 950;
+  letter-spacing:.3px;
   margin:0 0 6px;
   font-size: 18px;
-  letter-spacing:.3px;
-}
-
-.mutedTiny{
-  color: rgba(255,255,255,.56);
-  font-size: 12px;
-  line-height: 1.35;
 }
 
 .pill{
@@ -166,7 +156,7 @@ body{
   padding:6px 10px;
   border-radius:999px;
   border:1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.18);
+  background: rgba(0,0,0,.25);
   font-size: 13px;
   color: rgba(255,255,255,.88);
   white-space:nowrap;
@@ -178,7 +168,81 @@ body{
   gap:12px;
 }
 
-/* ---------- Episode Cards (your HTML uses these) ---------- */
+.mutedTiny{
+  color: var(--muted2);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* ---------- Shared Player (TV style) ---------- */
+.player-wrap{
+  border:1px solid rgba(255,255,255,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.35));
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+
+.now-playing-title{
+  font-weight: 900;
+  letter-spacing:.2px;
+  margin: 0 0 10px;
+  color: rgba(255,255,255,.92);
+}
+
+/* TV bezel */
+.player-shell{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(700px 350px at 50% 20%, rgba(255,179,0,.08), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.55));
+  box-shadow:
+    0 0 0 1px rgba(255,179,0,.16),
+    0 30px 90px rgba(0,0,0,.70);
+}
+
+/* subtle top bar */
+.player-shell::before{
+  content:"";
+  position:absolute;
+  left:0; right:0; top:0;
+  height:44px;
+  background: rgba(0,0,0,.28);
+  border-bottom:1px solid rgba(255,255,255,.10);
+  pointer-events:none;
+  z-index:1;
+}
+
+/* amber LED */
+.player-shell::after{
+  content:"";
+  position:absolute;
+  top:14px; left:14px;
+  width:10px; height:10px;
+  border-radius:999px;
+  background: var(--accent);
+  box-shadow: 0 0 18px rgba(255,179,0,.75);
+  z-index:2;
+  pointer-events:none;
+}
+
+.player-frame{
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display:block;
+}
+
+/* keep player from eating the whole screen on mobile */
+@media (max-width: 520px){
+  .player-shell{ max-height: 42vh; }
+}
+
+/* ---------- Episodes (your .ep cards) ---------- */
 .ep{
   border:1px solid rgba(255,255,255,.12);
   background: rgba(255,255,255,.04);
@@ -187,17 +251,31 @@ body{
   cursor:pointer;
   position: relative;
   overflow:hidden;
-  transition: transform .12s ease, border-color .12s ease;
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
 }
+
+.ep::before{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  background:
+    radial-gradient(380px 220px at 10% 20%, rgba(255,179,0,.10), transparent 70%),
+    radial-gradient(300px 220px at 90% 80%, rgba(255,143,0,.08), transparent 70%);
+  opacity:.95;
+  pointer-events:none;
+}
+
 .ep:hover{ transform: translateY(-1px); border-color: rgba(255,255,255,.18); }
 .ep:active{ transform: translateY(0px) scale(.995); }
-.ep:focus{ outline: 2px solid rgba(140,255,220,.35); outline-offset: 2px; }
+.ep:focus{ outline: 2px solid rgba(255,179,0,.35); outline-offset: 2px; }
 
 .epHead{
   display:flex;
   align-items:flex-start;
   justify-content:space-between;
   gap:12px;
+  position: relative;
+  z-index: 1;
 }
 
 .epTitle{
@@ -205,125 +283,39 @@ body{
   letter-spacing:.35px;
   margin-bottom: 4px;
 }
+
 .epMeta{
-  color: rgba(255,255,255,.72);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.35;
 }
+
 .epSmall{
-  color: rgba(255,255,255,.56);
+  color: var(--muted2);
   font-size: 12px;
   margin-top: 6px;
 }
 
 .chev{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
   display:flex;
   align-items:center;
   justify-content:center;
   border:1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.18);
+  background: rgba(0,0,0,.20);
   font-weight: 950;
   user-select:none;
   flex: 0 0 auto;
 }
 
-/* ---------- Shared Player (injected by app.js) ---------- */
-.player-wrap{
-  width: 100%;
-  max-width: 860px;
-  margin: 0 auto;
-}
-
-.now-playing-title{
-  font-weight: 950;
-  letter-spacing:.3px;
-  margin: 0 0 10px;
-  font-size: 16px;
-  color: rgba(255,255,255,.90);
-}
-
-.player-shell{
-  position: relative;
-  width: 100%;
-  border-radius: 18px;
-  overflow: hidden;
-  background: #000;
+.ep.open{
+  border-color: rgba(255,179,0,.45);
   box-shadow:
-    0 0 0 1px rgba(255,255,255,0.08),
-    0 26px 80px rgba(0,0,0,0.55);
+    0 0 0 1px rgba(255,179,0,.16),
+    0 18px 60px rgba(0,0,0,.65);
 }
 
-/* Key: keep it big but not “take over the phone” */
-.player-shell::before{
-  content:"";
-  display:block;
-  padding-top: 56.25%; /* 16:9 */
-  max-height: 42vh;
-}
-@media (max-width: 420px){
-  .player-shell::before{ max-height: 34vh; }
-}
-
-.player-frame{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  border:0;
-  display:block;
-}
-
-/* ---------- Footer ---------- */
-.foot{
-  border:1px solid rgba(255,255,255,.10);
-  border-radius: 18px;
-  background: rgba(0,0,0,.18);
-}
-.footInner{ padding:14px; }
-.footLine{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.footTitle{ font-weight: 950; letter-spacing:.35px; text-transform: uppercase; }
-.footDot{ opacity:.4; }
-.footSub{ color: rgba(255,255,255,.72); font-weight: 700; }
-.footSmall{ margin-top:8px; color: rgba(255,255,255,.56); font-size: 12px; }
-
-/* ---------- Debug gating ---------- */
+/* ---------- Hard kill debug UI unless ?debug=1 adds body.debug (optional) ---------- */
 .hidden{ display:none; }
-
-/* Only show debug UI when body has class "debug" */
-body:not(.debug) #btnDiag,
-body:not(.debug) #debugPanel{
-  display:none !important;
-}
-:root{
-  /* ---- CORE BACKGROUNDS ---- */
-  --bgA:#0b0b0b;      /* true near-black */
-  --bgB:#0f0f0f;      /* subtle depth */
-  --bgC:#141414;      /* card depth */
-
-  /* ---- SURFACES ---- */
-  --card: rgba(255,255,255,.04);
-  --card2: rgba(0,0,0,.55);
-  --line: rgba(255,255,255,.12);
-
-  /* ---- TEXT ---- */
-  --text: rgba(255,255,255,.95);
-  --muted: rgba(255,255,255,.72);
-  --muted2: rgba(255,255,255,.52);
-
-  /* ---- ACCENT (AMBER ENERGY) ---- */
-  --accent: #ffb300;     /* main amber */
-  --accent2: #ff9f1a;    /* warmer glow */
-
-  /* ---- FX ---- */
-  --shadow: 0 18px 60px rgba(0,0,0,.55);
-  --r16: 16px;
-  --r14: 14px;
-}
