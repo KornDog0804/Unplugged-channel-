@@ -47,6 +47,42 @@
     }
   }
 
+  // =========================
+  // Focus Mode (player prevails)
+  // =========================
+  function ensureFocusButton() {
+    if (document.getElementById("focusToggleBtn")) return;
+
+    const btn = document.createElement("button");
+    btn.id = "focusToggleBtn";
+    btn.className = "focusToggleBtn";
+    btn.type = "button";
+    btn.innerHTML = `<span class="dot"></span> Change session`;
+
+    btn.addEventListener("click", () => {
+      setFocusMode(false);
+      const sessionsEl = document.getElementById("sessionsList") || document.getElementById("episodes") || list;
+      if (sessionsEl) sessionsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    // Place button right above the playerWrap (so it feels like a screen control)
+    const playerWrapEl = document.getElementById("playerWrap");
+    if (playerWrapEl && playerWrapEl.parentNode) {
+      playerWrapEl.parentNode.insertBefore(btn, playerWrapEl);
+    } else {
+      // fallback: shove it at top of main
+      main.insertBefore(btn, main.firstChild);
+    }
+  }
+
+  function setFocusMode(on) {
+    ensureFocusButton();
+    document.body.classList.toggle("focusMode", !!on);
+
+    const btn = document.getElementById("focusToggleBtn");
+    if (btn) btn.style.display = on ? "inline-flex" : "none";
+  }
+
   // Build player UI shell
   let playerWrap = $("#playerWrap");
   if (!playerWrap) {
@@ -73,6 +109,10 @@
   playerWrap.className = "player-wrap";
   playerWrap.appendChild(playerTitle);
   playerWrap.appendChild(tv);
+
+  // Make sure focus button exists, but hidden until they pick a session
+  ensureFocusButton();
+  setFocusMode(false);
 
   function setTitleLine(t) { playerTitle.textContent = t || "Tap a session to play"; }
   function setNow(t) { nowLine.textContent = t || "Ready."; }
@@ -130,7 +170,16 @@
 
     setTitleLine(label);
     setNow("Playing now.");
+
+    // 🔥 Focus Mode ON when they choose a session
+    setFocusMode(true);
+
     playById(session.tracks[currentIndex].id);
+
+    // Smooth scroll up to player after selection (feels like a page transition)
+    try {
+      playerWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {}
   }
 
   function nextInQueue() {
