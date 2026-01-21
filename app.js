@@ -53,6 +53,55 @@
   }
 
   // =========================
+  // TV / embed fallback helpers
+  // =========================
+  function isLikelyTV() {
+    const ua = navigator.userAgent || "";
+    const isTVUA =
+      /SmartTV|SMART-TV|HbbTV|NetCast|Viera|AFT|CrKey|Roku|Tizen|Web0S|Android TV|GoogleTV/i.test(
+        ua
+      );
+    const bigScreen = Math.max(window.innerWidth, window.innerHeight) >= 1100;
+    return isTVUA || bigScreen;
+  }
+  function ytWatchUrl(id) {
+    return "https://www.youtube.com/watch?v=" + encodeURIComponent(id);
+  }
+
+  function hideYTFallback() {
+    const fb = document.getElementById("ytFallback");
+    if (fb) fb.style.display = "none";
+  }
+
+  function showYTFallback(id) {
+    if (!id) return;
+
+    let fb = document.getElementById("ytFallback");
+    if (!fb) {
+      fb = document.createElement("div");
+      fb.id = "ytFallback";
+      fb.className = "ytFallback";
+      fb.innerHTML = `
+        <div class="ytFallbackCard">
+          <div class="ytFallbackTitle">Can’t play here.</div>
+          <div class="ytFallbackText">This device blocks embedded YouTube playback.</div>
+          <a class="ytFallbackBtn" target="_blank" rel="noopener">Open on YouTube</a>
+        </div>
+      `;
+      // Put it inside the player area so it feels like part of the screen
+      const shell =
+        document.querySelector(".playerFrameWrap") ||
+        document.querySelector(".player-shell") ||
+        document.getElementById("playerWrap");
+      if (shell) shell.appendChild(fb);
+    }
+
+    const link = fb.querySelector("a");
+    link.href = ytWatchUrl(id);
+    fb.style.display = "grid";
+  }
+
+  // =========================
   // Focus Mode (player prevails)
   // =========================
   function ensureFocusButton() {
@@ -116,7 +165,11 @@
       el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
       el("div", { class: "tvKnob" }, ""),
     ]),
-    el("div", { class: "playerFrameWrap" }, el("div", { class: "player-shell" }, playerMount)),
+    el(
+      "div",
+      { class: "playerFrameWrap" },
+      el("div", { class: "player-shell" }, playerMount)
+    ),
     nowLine,
   ]);
 
@@ -204,7 +257,9 @@
     if (!playAllFlat.length) return;
 
     playAllEnabled = true;
-    playAllPos = fromStart ? 0 : Math.max(0, Math.min(playAllPos, playAllFlat.length - 1));
+    playAllPos = fromStart
+      ? 0
+      : Math.max(0, Math.min(playAllPos, playAllFlat.length - 1));
 
     const { sIndex, tIndex } = playAllFlat[playAllPos];
     startSession(sessions[sIndex], tIndex, { fromPlayAll: true });
@@ -229,6 +284,7 @@
   function playById(id) {
     if (!ytPlayer || !id) return;
     try {
+      hideYTFallback();
       ytPlayer.loadVideoById(id);
     } catch (e) {
       logLine("loadVideoById failed");
@@ -267,7 +323,11 @@
     // Focus Mode ON when they choose a session
     setFocusMode(true);
 
-    playById(session.tracks[currentIndex].id);
+    const id = session.tracks[currentIndex].id;
+
+    // If it’s likely a TV and embeds keep failing, we still TRY first.
+    // If YouTube blocks it, onError will show the fallback button.
+    playById(id);
 
     // Smooth scroll up to player after selection (feels like a page transition)
     if (!opts.noScroll) {
@@ -313,6 +373,11 @@
         onStateChange: function (e) {
           if (!e) return;
 
+          // Hide fallback if playback starts
+          if (e.data === YT.PlayerState.PLAYING) {
+            hideYTFallback();
+          }
+
           // When a video ends:
           if (e.data === YT.PlayerState.ENDED) {
             // 1) Queue sessions keep their own behavior
@@ -329,6 +394,19 @@
         },
         onError: function (e) {
           logLine("YT error: " + (e && e.data));
+          setNow("This device blocked embedded playback.");
+
+          const id =
+            currentSession &&
+            currentSession.tracks &&
+            currentSession.tracks[currentIndex] &&
+            currentSession.tracks[currentIndex].id;
+
+          showYTFallback(id);
+
+          // Don’t auto-redirect (popups/TV browsers can freak out). Button is safer.
+          // If you WANT hard redirect on TVs, uncomment:
+          // if (isLikelyTV() && id) window.location.href = ytWatchUrl(id);
         },
       },
     });
@@ -352,7 +430,13 @@
       el("div", { class: "epHead" }, [
         el("div", {}, [
           el("div", { class: "epTitle" }, "Play All — Autoplay Everything"),
-          el("div", { class: "epMeta" }, meta ? `Starts with: ${featured.title} • ${meta}` : `Starts with: ${featured.title}`),
+          el(
+            "div",
+            { class: "epMeta" },
+            meta
+              ? `Starts with: ${featured.title} • ${meta}`
+              : `Starts with: ${featured.title}`
+          ),
           el("div", { class: "epSmall" }, "Hands-free mode: it keeps rolling."),
         ]),
         el("div", { class: "chev", "aria-hidden": "true" }, "›"),
@@ -360,7 +444,6 @@
     ]);
 
     const playAll = () => {
-      // Focus mode on + jump to player will happen inside startSession
       startPlayAll(true);
     };
 
