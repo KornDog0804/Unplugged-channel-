@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>STRIPPED &amp; TURNED UP</title>
 
-  <link rel="stylesheet" href="styles.css?v=20" />
+  <link rel="stylesheet" href="styles.css?v=21" />
 
   <!-- Crash overlay (only shows if something breaks) -->
   <script>
@@ -55,42 +55,17 @@
         </div>
       </div>
     </div>
-
-    <!-- Hidden unless ?debug=1 -->
-    <button id="btnDiag" class="btn btnGhost" type="button" aria-label="Debug">Debug</button>
   </header>
 
-  <main class="wrap">
-    <section id="debugPanel" class="card hidden">
-      <div class="h2">Debug Panel</div>
-      <div id="debugLines" class="mono"></div>
-    </section>
+  <main class="wrap" id="app">
+    <!-- app.js will fill this with the ONE shared player -->
+    <section id="playerWrap"></section>
 
-    <section class="card">
-      <div class="sectionHead">
-        <div>
-          <div class="h2">Sessions</div>
-          <div class="mutedTiny">One stream per artist. No music videos. If it plays clean, it stays.</div>
-        </div>
-        <div id="status" class="pill">Loading…</div>
-      </div>
-
-      <div id="episodes" class="list"></div>
-    </section>
-
-    <footer class="foot">
-      <div class="footInner">
-        <div class="footLine">
-          <span class="footTitle">STRIPPED &amp; TURNED UP</span>
-          <span class="footDot">•</span>
-          <span class="footSub">Acoustic &amp; Stripped Performances</span>
-        </div>
-        <div class="footSmall">Tip: add <span class="mono">?debug=1</span> to the URL if you ever need diagnostics.</div>
-      </div>
-    </footer>
+    <!-- app.js will fill this with your sessions list -->
+    <section id="sessionsList"></section>
   </main>
 
-  <script src="data/episodes.js?v=20"></script>
-  <script src="app.js?v=20" defer></script>
+  <script src="data/episodes.js?v=21"></script>
+  <script src="app.js?v=21" defer></script>
 </body>
 </html>
