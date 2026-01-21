@@ -1,9 +1,10 @@
-/* Stripped & Turned Up — app.js (LOCKED BASELINE)
-   - Uses #playerWrap + #sessionsList (from index.html)
-   - Creates the shared player EVEN IF #playerWrap already exists
-   - Uses #episodes for cards (CSS .ep styles)
-   - Updates #status pill
-   - Debug only when ?debug=1
+/* STRIPPED & TURNED UP — app.js (LOCKED BASELINE v22)
+   - Real YouTube Iframe API player (YT.Player)
+   - Queue autoplay/auto-advance for mode:"queue"
+   - Fullshow plays single video
+   - One tap unlocks audio (required by browsers)
+   - Highlights active session card
+   - Updates #status
 */
 (function () {
   "use strict";
@@ -18,15 +19,13 @@
     : [];
 
   const $ = (sel) => document.querySelector(sel);
-
   const main = $("main.wrap") || $("main") || document.body;
 
-  // We support BOTH layouts:
-  // - New HTML: #playerWrap + #sessionsList
-  // - Older HTML: #status + #episodes inside a card
-  const sessionsList = $("#sessionsList");
-  const list = $("#episodes") || $("#sessionsList") || sessionsList;
-  const status = $("#status") || $("#loadedCount");
+  const playerWrap = $("#playerWrap");
+  const list = $("#episodes");
+  const status = $("#status");
+
+  const LS_LAST = "stu_last_session_v1";
 
   function logLine(line) {
     if (!DEBUG) return;
@@ -38,8 +37,6 @@
     for (const [k, v] of Object.entries(attrs)) {
       if (k === "class") node.className = v;
       else if (k === "html") node.innerHTML = v;
-      else if (k.startsWith("on") && typeof v === "function")
-        node.addEventListener(k.slice(2), v);
       else node.setAttribute(k, v);
     }
     (Array.isArray(kids) ? kids : [kids]).forEach((c) => {
@@ -73,85 +70,6 @@
     }
   }
 
-  function toEmbed(url) {
-    const id = ytIdFrom(url);
-    if (!id) return "";
-    return `https://www.youtube.com/embed/${id}?autoplay=1&playsinline=1&rel=0&modestbranding=1`;
-  }
-
-  // ---------- Shared player (ALWAYS ensure it exists) ----------
-  let playerWrap = $("#playerWrap");
-  if (!playerWrap) {
-    playerWrap = el("section", { id: "playerWrap" });
-    main.insertBefore(playerWrap, main.firstChild);
-  }
-
-  let playerTitle = $("#nowPlayingTitle");
-  let playerFrame = $("#playerFrame");
-
-  // If wrapper exists but children don’t, BUILD THEM.
-  if (!playerTitle || !playerFrame) {
-    playerWrap.innerHTML = "";
-
-    playerTitle = el(
-      "div",
-      { id: "nowPlayingTitle", class: "now-playing-title" },
-      "Tap a session to play"
-    );
-
-    playerFrame = el("iframe", {
-      id: "playerFrame",
-      class: "player-frame",
-      src: "about:blank",
-      allow:
-        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share",
-      allowfullscreen: "true",
-      frameborder: "0",
-      title: "Stripped & Turned Up Player",
-    });
-
-    const shell = el("div", { class: "player-shell" }, playerFrame);
-
-    // (Optional) TV look wrapper if your CSS supports it — safe even if not
-    const tv = el("div", { class: "tvFrame" }, [
-      el("div", { class: "tvTopBar" }, [
-        el("div", { class: "tvLED" }, ""),
-        el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
-        el("div", { class: "tvKnob" }, ""),
-      ]),
-      el("div", { class: "playerFrameWrap" }, shell),
-      el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready."),
-    ]);
-
-    // If your tvFrame styles exist, use it. If not, it just becomes a normal div.
-    playerWrap.className = "player-wrap";
-    playerWrap.appendChild(tv);
-    playerWrap.insertBefore(playerTitle, tv);
-
-    logLine("Player built inside existing #playerWrap.");
-  }
-
-  const nowPlayingLine = $("#nowPlayingLine");
-
-  function setNowPlaying(title, url) {
-    if (playerTitle) playerTitle.textContent = title || "Tap a session to play";
-    if (nowPlayingLine) nowPlayingLine.textContent = title ? "Playing now." : "Ready.";
-
-    if (!playerFrame) return;
-
-    if (!url) {
-      playerFrame.src = "about:blank";
-      return;
-    }
-    const embed = toEmbed(url);
-    if (!embed) {
-      playerFrame.src = "about:blank";
-      logLine("BAD LINK: " + url);
-      return;
-    }
-    playerFrame.src = embed;
-  }
-
   function normalizeEpisodes(arr) {
     const out = [];
     (arr || []).forEach((ep, idx) => {
@@ -160,17 +78,26 @@
       const title = safeText(ep.title) || `Session ${idx + 1}`;
       const artist = safeText(ep.artist) || "";
       const year = ep.year != null ? String(ep.year) : "";
-      const tracks = Array.isArray(ep.tracks) ? ep.tracks : [];
-      const streamUrl = tracks[0] ? safeText(tracks[0].url) : "";
-      if (!streamUrl) return;
+      const mode = safeText(ep.mode) || "fullshow";
+      const tracksRaw = Array.isArray(ep.tracks) ? ep.tracks : [];
+
+      const tracks = tracksRaw
+        .map((t, ti) => {
+          const tTitle = safeText(t && t.title) || `Track ${ti + 1}`;
+          const id = ytIdFrom(t && t.url);
+          return id ? { title: tTitle, id } : null;
+        })
+        .filter(Boolean);
+
+      if (!tracks.length) return;
 
       out.push({
-        id: `ep_${idx}_${title.replace(/\s+/g, "_").slice(0, 30)}`,
+        key: `s_${idx}_${title.replace(/\s+/g, "_").slice(0, 28)}`,
         title,
         artist,
         year,
-        streamUrl,
-        tracksCount: tracks.length,
+        mode: mode === "queue" ? "queue" : "fullshow",
+        tracks
       });
     });
     return out;
@@ -180,41 +107,237 @@
 
   if (status) status.textContent = sessions.length ? `Loaded ${sessions.length} sessions` : "No sessions found";
 
+  if (!playerWrap) {
+    logLine("Missing #playerWrap");
+    return;
+  }
   if (!list) {
-    logLine("Missing list container (#episodes or #sessionsList).");
+    logLine("Missing #episodes container");
     return;
   }
 
-  // Clear old tiles/cards
+  // ---------- Build player UI (clean + app-like) ----------
+  playerWrap.className = "player-wrap";
+  playerWrap.innerHTML = "";
+
+  const nowTitle = el("div", { id: "nowPlayingTitle", class: "now-playing-title" }, "Tap a session to play");
+  const shell = el("div", { class: "player-shell" }, [
+    // this is where YT.Player mounts
+    el("div", { id: "playerMount", style: "border-radius:18px; overflow:hidden; background:#000; width:100%; aspect-ratio:16/9;" })
+  ]);
+
+  // small helper button for when autoplay gets blocked mid-queue
+  const resumeBtn = el("button", {
+    id: "resumeBtn",
+    style: `
+      display:none;
+      margin: 12px 14px 14px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(0,0,0,.25);
+      color: rgba(255,255,255,.90);
+      font-weight: 800;
+      letter-spacing: .01em;
+    `
+  }, "Tap to resume audio");
+
+  playerWrap.appendChild(nowTitle);
+  playerWrap.appendChild(shell);
+  playerWrap.appendChild(resumeBtn);
+
+  // ---------- Render session cards ----------
   list.innerHTML = "";
 
-  // Render as .ep cards (matches your CSS)
+  function setActiveCard(sessionKey) {
+    const cards = list.querySelectorAll(".ep");
+    cards.forEach((c) => c.classList.toggle("isActive", c.getAttribute("data-key") === sessionKey));
+  }
+
   sessions.forEach((s) => {
     const meta = [s.artist, s.year].filter(Boolean).join(" • ");
+    const small = s.mode === "queue" ? `${s.tracks.length} tracks` : "Full session";
 
-    const card = el("div", { class: "ep", tabindex: "0", "data-id": s.id }, [
+    const card = el("div", { class: "ep", tabindex: "0", "data-key": s.key }, [
       el("div", { class: "epHead" }, [
         el("div", {}, [
           el("div", { class: "epTitle" }, s.title),
           el("div", { class: "epMeta" }, meta),
-          el("div", { class: "epSmall" }, s.tracksCount > 1 ? `${s.tracksCount} tracks` : "Full session"),
+          el("div", { class: "epSmall" }, small),
         ]),
         el("div", { class: "chev", "aria-hidden": "true" }, "›"),
       ]),
     ]);
 
-    const play = () => setNowPlaying(s.title, s.streamUrl);
-
-    card.addEventListener("click", play);
+    card.addEventListener("click", () => startSession(s.key));
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        play();
+        startSession(s.key);
       }
     });
 
     list.appendChild(card);
   });
+
+  // ---------- YouTube Player logic ----------
+  let ytPlayer = null;
+  let ytReady = false;
+
+  let currentSession = null;
+  let currentIndex = 0;
+  let pendingSessionKey = null;
+
+  function findSession(key) {
+    return sessions.find((s) => s.key === key) || null;
+  }
+
+  function setNowPlayingText(text) {
+    nowTitle.textContent = text || "Tap a session to play";
+  }
+
+  function showResume(show) {
+    resumeBtn.style.display = show ? "" : "none";
+  }
+
+  function playTrackAt(index) {
+    if (!currentSession) return;
+    const track = currentSession.tracks[index];
+    if (!track) return;
+
+    currentIndex = index;
+
+    const label =
+      currentSession.mode === "queue"
+        ? `${currentSession.title} — ${track.title} (${index + 1}/${currentSession.tracks.length})`
+        : currentSession.title;
+
+    setNowPlayingText(label);
+    setActiveCard(currentSession.key);
+    showResume(false);
+
+    try {
+      // loadVideoById triggers playback (subject to user-gesture rules)
+      ytPlayer.loadVideoById({
+        videoId: track.id,
+        startSeconds: 0
+      });
+      // remember last session
+      localStorage.setItem(LS_LAST, currentSession.key);
+    } catch (e) {
+      logLine("loadVideoById failed: " + (e && e.message ? e.message : e));
+    }
+  }
+
+  function startSession(sessionKey) {
+    const s = findSession(sessionKey);
+    if (!s) return;
+
+    currentSession = s;
+    currentIndex = 0;
+
+    if (!ytReady || !ytPlayer) {
+      // if player isn't ready yet, queue it
+      pendingSessionKey = sessionKey;
+      setNowPlayingText("Player loading… tap again in a second.");
+      setActiveCard(sessionKey);
+      return;
+    }
+
+    playTrackAt(0);
+  }
+
+  // Resume button for when autoplay is blocked mid-queue
+  resumeBtn.addEventListener("click", () => {
+    if (!ytPlayer) return;
+    showResume(false);
+    // attempt to play current video again
+    try {
+      ytPlayer.playVideo();
+    } catch {}
+  });
+
+  function onPlayerStateChange(e) {
+    // 0 ended, 1 playing, 2 paused
+    const state = e && typeof e.data === "number" ? e.data : null;
+
+    // If ended and it's a queue, auto-advance
+    if (state === 0 && currentSession && currentSession.mode === "queue") {
+      const next = currentIndex + 1;
+      if (next < currentSession.tracks.length) {
+        playTrackAt(next);
+      } else {
+        setNowPlayingText("Queue finished. Tap another session.");
+      }
+      return;
+    }
+
+    // If paused unexpectedly during queue, offer resume
+    if (state === 2 && currentSession && currentSession.mode === "queue") {
+      showResume(true);
+    }
+
+    if (state === 1) {
+      showResume(false);
+    }
+  }
+
+  function initYTPlayer() {
+    if (ytPlayer) return;
+
+    if (!window.YT || !window.YT.Player) {
+      logLine("YT API not ready yet… retrying");
+      setTimeout(initYTPlayer, 150);
+      return;
+    }
+
+    ytPlayer = new window.YT.Player("playerMount", {
+      width: "100%",
+      height: "100%",
+      videoId: "",
+      playerVars: {
+        autoplay: 1,
+        playsinline: 1,
+        rel: 0,
+        modestbranding: 1
+      },
+      events: {
+        onReady: () => {
+          ytReady = true;
+          logLine("YT Player ready");
+
+          // If we had a pending click before ready, play it now
+          if (pendingSessionKey) {
+            const key = pendingSessionKey;
+            pendingSessionKey = null;
+            startSession(key);
+            return;
+          }
+
+          // Auto-restore last session (does NOT auto-play without user tap, but sets UI ready)
+          const last = safeText(localStorage.getItem(LS_LAST));
+          if (last && findSession(last)) {
+            currentSession = findSession(last);
+            setActiveCard(last);
+            setNowPlayingText("Tap to resume last session");
+          }
+        },
+        onStateChange: onPlayerStateChange
+      }
+    });
+  }
+
+  // If iframe_api calls this, hook in without fighting anything else
+  const prevReady = window.onYouTubeIframeAPIReady;
+  window.onYouTubeIframeAPIReady = function () {
+    try {
+      if (typeof prevReady === "function") prevReady();
+    } catch {}
+    initYTPlayer();
+  };
+
+  // In case the API loads before our override (rare), try init anyway
+  initYTPlayer();
 
   logLine("Debug = " + DEBUG);
   logLine("EPISODES length = " + EPISODES.length);
