@@ -73,3 +73,17 @@ window.EPISODES = [
     }
   ]
 }
+
+{
+  title: "PAPA ROACH — WRIF Acoustic Set",
+  artist: "Papa Roach",
+  year: 2025,
+  intro: "lava",
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Full Acoustic Session at WRIF Studios",
+      url: "https://www.youtube.com/embed/f4BK60WVPac?autoplay=1&rel=0&playsinline=1"
+    }
+  ]
+}
