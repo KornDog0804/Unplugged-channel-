@@ -1,6 +1,6 @@
 /* Joey’s Acoustic Corner — app.js
    Crash-proof renderer + stitched queue autoplay (no YT API)
-   + Pro controls (collapse + Watch on TV)
+   + Watch on TV opens YouTube app (Cast lives there)
 */
 
 (function () {
@@ -13,7 +13,7 @@
     nowTitle: $("#nowPlayingTitle"),
     nowLine: $("#nowPlayingLine"),
     toggleBtn: $("#playerToggleBtn"),
-    watchOnTvBtn: document.getElementById("watchOnTvBtn")
+    watchOnTvBtn: $("#watchOnTvBtn")
   };
 
   function setStatus(msg) {
@@ -56,22 +56,25 @@
     }
   }
 
+  // --- EMBEDS ---
+
   function buildEmbedForSingle(videoUrl) {
     const id = getVideoId(videoUrl);
     if (!id) return "";
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
+  // IMPORTANT:
+  // Some devices act like the first video is "preload" and skip it when playlist= excludes it.
+  // So we include ALL ids in playlist= (including the first) for reliable “first song starts”.
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
 
     const first = ids[0];
-    const rest = ids.slice(1);
+    const playlistAll = ids.join(",");
 
-    // NOTE: We do NOT repeat the first ID in playlist= (prevents skipping/odd behavior)
-    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
-    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&playlist=${encodeURIComponent(playlistAll)}`;
   }
 
   function buildEmbedForPlaylist(playlistUrl) {
@@ -80,26 +83,47 @@
     return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
+  // --- WATCH ON TV (CAST) ---
+  // Cast icon is unreliable inside iframe. This opens YouTube app where casting works.
   function setWatchOnTvFromFirstUrl(url) {
-    const id = getVideoId(url || "");
     if (!el.watchOnTvBtn) return;
 
+    const id = getVideoId(url || "");
     if (!id) {
       el.watchOnTvBtn.style.display = "none";
       el.watchOnTvBtn.href = "#";
+      el.watchOnTvBtn.dataset.fallback = "";
       return;
     }
 
-    // Opens YouTube page where Cast icon works reliably
-    el.watchOnTvBtn.href = `https://www.youtube.com/watch?v=${id}`;
+    // Android YouTube app deep-link
+    const appIntent = `intent://www.youtube.com/watch?v=${id}#Intent;scheme=https;package=com.google.android.youtube;end`;
+    const webUrl = `https://www.youtube.com/watch?v=${id}`;
+
     el.watchOnTvBtn.style.display = "inline-flex";
+    el.watchOnTvBtn.href = appIntent;
+    el.watchOnTvBtn.dataset.fallback = webUrl;
+  }
+
+  function highlightActive(ep) {
+    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
+    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
+    if (card) card.classList.add("isActive");
+  }
+
+  function ensurePlayerShown() {
+    document.body.classList.remove("playerCollapsed");
+    if (el.toggleBtn) {
+      el.toggleBtn.textContent = "Hide player";
+      el.toggleBtn.setAttribute("aria-expanded", "true");
+    }
   }
 
   function playEpisode(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return;
 
     const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = (ep.tracks || []).map(t => t && t.url).filter(Boolean);
+    const trackUrls = ep.tracks.map(t => (t && t.url) ? t.url : "").filter(Boolean);
 
     let src = "";
     if (mode === "queue") {
@@ -117,28 +141,19 @@
 
     // Update UI
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
-    if (el.nowLine) {
-      const line = `Playing now: ${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
-      el.nowLine.textContent = line || "Playing now.";
-    }
 
-    // Watch on TV uses the FIRST playable track of the set
-    setWatchOnTvFromFirstUrl(trackUrls[0] || "");
+    const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
+    if (el.nowLine) el.nowLine.textContent = meta ? `Playing now: ${meta}` : "Playing now.";
 
-    // Make sure player is visible when you pick a session
-    document.body.classList.remove("playerCollapsed");
-    if (el.toggleBtn) {
-      el.toggleBtn.textContent = "Hide player";
-      el.toggleBtn.setAttribute("aria-expanded", "true");
-    }
+    // Watch on TV: first playable URL
+    setWatchOnTvFromFirstUrl(trackUrls[0]);
+
+    ensurePlayerShown();
 
     // Set player
     if (el.playerFrame) el.playerFrame.src = src;
 
-    // Highlight active
-    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
-    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
-    if (card) card.classList.add("isActive");
+    highlightActive(ep);
 
     setStatus("Ready");
   }
@@ -152,11 +167,11 @@
     div.dataset.key = ep.__key;
 
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
+    const m = safeText(ep.mode).toLowerCase();
 
-    const mode = safeText(ep.mode).toLowerCase();
-    const small = (mode === "queue")
+    const small = (m === "queue")
       ? `${(ep.tracks || []).length} tracks • stitched queue`
-      : (mode === "playlist")
+      : (m === "playlist")
         ? `playlist`
         : `full show`;
 
@@ -188,7 +203,7 @@
     const urls = [];
     list.forEach(ep => {
       const mode = safeText(ep.mode).toLowerCase();
-      if (mode === "playlist") return; // skip playlists in mega-stitch
+      if (mode === "playlist") return; // can't safely merge playlists
       (ep.tracks || []).forEach(t => {
         if (t && t.url) urls.push(t.url);
       });
@@ -212,17 +227,44 @@
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
 
-      // TV handoff uses first item
-      setWatchOnTvFromFirstUrl(urls[0] || "");
+      setWatchOnTvFromFirstUrl(urls[0]);
 
-      document.body.classList.remove("playerCollapsed");
-      if (el.toggleBtn) {
-        el.toggleBtn.textContent = "Hide player";
-        el.toggleBtn.setAttribute("aria-expanded", "true");
-      }
+      ensurePlayerShown();
 
       if (el.playerFrame) el.playerFrame.src = src;
       setStatus("Ready");
+    });
+  }
+
+  function initPlayerToggle() {
+    if (!el.toggleBtn) return;
+
+    function setCollapsed(isCollapsed) {
+      document.body.classList.toggle("playerCollapsed", isCollapsed);
+      el.toggleBtn.textContent = isCollapsed ? "Show player" : "Hide player";
+      el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+    }
+
+    // Start collapsed so it never blocks the list
+    setCollapsed(true);
+
+    el.toggleBtn.addEventListener("click", () => {
+      setCollapsed(!document.body.classList.contains("playerCollapsed"));
+    });
+  }
+
+  function initWatchOnTvFallback() {
+    if (!el.watchOnTvBtn) return;
+
+    // If intent:// is blocked, fall back to web watch URL
+    el.watchOnTvBtn.addEventListener("click", () => {
+      const fb = el.watchOnTvBtn.dataset.fallback || "";
+      if (!fb) return;
+
+      setTimeout(() => {
+        // If the app didn't open, user stays here and this will fire.
+        window.location.href = fb;
+      }, 450);
     });
   }
 
@@ -244,10 +286,8 @@
         return;
       }
 
-      // Hide TV button until something plays
-      if (el.watchOnTvBtn) el.watchOnTvBtn.style.display = "none";
-
       if (!el.episodes) return;
+
       el.episodes.innerHTML = "";
       episodes.forEach((ep, idx) => el.episodes.appendChild(buildCard(ep, idx)));
 
@@ -260,26 +300,9 @@
     }
   }
 
-  // Player collapse toggle
-  function initPlayerToggle() {
-    if (!el.toggleBtn) return;
-
-    function setCollapsed(isCollapsed) {
-      document.body.classList.toggle("playerCollapsed", isCollapsed);
-      el.toggleBtn.textContent = isCollapsed ? "Show player" : "Hide player";
-      el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
-    }
-
-    // Start collapsed so it never blocks the list
-    setCollapsed(true);
-
-    el.toggleBtn.addEventListener("click", () => {
-      setCollapsed(!document.body.classList.contains("playerCollapsed"));
-    });
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     initPlayerToggle();
+    initWatchOnTvFallback();
     init();
   });
 })();
