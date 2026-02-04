@@ -4,14 +4,14 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Joey’s Acoustic Corner</title>
-  <link rel="stylesheet" href="styles.css?v=300" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body class="landing">
+
   <header class="top">
     <div class="brand">
       <div class="brandMark"></div>
-
       <div class="brandText">
         <div class="titleRow">
           <div class="title">Joey’s Acoustic Corner</div>
@@ -26,27 +26,75 @@
     </div>
   </header>
 
-  <main class="landingWrap">
-    <section class="landingHero" id="landing">
-      <div class="landingLogo">JOEY’S<br/>ACOUSTIC<br/>CORNER</div>
+  <main class="wrap landingWrap">
 
-      <div class="landingCard">
-        <h1>Turn the noise into therapy.</h1>
-        <p>
-          No algorithms. No filler. Just sessions that actually hit.
-          Tap in, pick a set, and let the queue do the work.
-        </p>
+    <section class="heroCard">
+      <div class="heroGlow"></div>
 
-        <div class="landingButtons">
-          <a class="landingBtn primary" href="sessions.html">Enter Sessions</a>
-          <a class="landingBtn" href="sessions.html?autoplay=1">Play All</a>
+      <div class="heroTop">
+        <div class="heroStamp">VINYL THERAPY ENERGY • ACOUSTIC EDITION</div>
+      </div>
+
+      <h1 class="heroTitle">
+        Turn the noise<br />
+        into <span class="heroPop">therapy</span>.
+      </h1>
+
+      <p class="heroSub">
+        No algorithms. No filler. Just sessions that actually hit.
+        Tap in, pick a set, and let the queue do the work.
+      </p>
+
+      <div class="heroActions">
+        <a class="btnPrimary" href="./sessions.html">Enter Sessions</a>
+        <a class="btnGhost" href="./sessions.html?playall=1">Play All</a>
+      </div>
+
+      <div class="heroChips">
+        <div class="chip">🔥 Stitched queues (auto-advance)</div>
+        <div class="chip">📺 Watch on TV button inside Sessions</div>
+        <div class="chip">🎧 Built for phones • works on TV too</div>
+      </div>
+
+      <div class="heroFinePrint">
+        Pro tip: if a TV browser acts goofy, that’s the TV being dramatic — not your taste. 😎
+      </div>
+    </section>
+
+    <section class="landingGrid">
+      <div class="tile">
+        <div class="tileTitle">How it works</div>
+        <div class="tileBody">
+          Pick a session → player pops open → stitched sets run like a playlist.
+          Want to browse? Hit <b>Hide player</b>. Want the big screen? Hit <b>Watch on TV</b>.
         </div>
+      </div>
 
-        <div class="landingFine">
-          Built for phones first. If a TV browser gets weird, that’s on the TV — not your taste. 😎
+      <div class="tile">
+        <div class="tileTitle">Joey-fied rule</div>
+        <div class="tileBody">
+          If it doesn’t <b>feel</b> something, it doesn’t make the list.
+          This corner is for the “turn it down / turn it up” moments.
+        </div>
+      </div>
+
+      <div class="tile">
+        <div class="tileTitle">What’s inside</div>
+        <div class="tileBody">
+          MTV Unplugged-style full sessions + stitched acoustic runs
+          (Wage War, Dayseeker, Bad Omens, I Prevail, and more).
         </div>
       </div>
     </section>
+
   </main>
+
+  <footer class="foot">
+    <div class="footInner">
+      <div class="footLeft">JOEY’S ACOUSTIC CORNER</div>
+      <div class="footRight">Handpicked only • No filler</div>
+    </div>
+  </footer>
+
 </body>
 </html>
