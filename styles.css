@@ -645,3 +645,55 @@ main,
 #nowPlayingLine{
   background: #000;
 }
+/* --- Player: hard stop scroll bleed + non-blocking collapse --- */
+
+/* Keeps the player area from letting text bleed behind it */
+#playerWrap.player-wrap {
+  position: sticky;
+  top: 0;              /* if you want it below header, set this to your header height */
+  z-index: 50;
+  background: #000;    /* blackout */
+  isolation: isolate;  /* prevents weird blend/stack behavior */
+}
+
+/* Blackout “cap” above the player so nothing shows through while scrolling */
+#playerWrap.player-wrap::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: -80px;          /* adjust if needed */
+  height: 80px;
+  background: #000;
+}
+
+/* The TV frame should be the visual container */
+#playerWrap .tvFrame {
+  background: #000;
+}
+
+/* Make the iframe fill the box (no weird letterbox gaps) */
+#playerWrap .playerFrameWrap {
+  width: 100%;
+  aspect-ratio: 16 / 9;  /* keeps it clean on phones */
+  overflow: hidden;
+  border-radius: 18px;
+  background: #000;
+}
+
+#playerWrap iframe.player-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+/* COLLAPSE: hide the actual video area so it stops blocking the page */
+body.playerCollapsed #playerWrap .playerFrameWrap {
+  display: none;
+}
+
+/* COLLAPSE: keep only the top bar + “Now Playing” line visible */
+body.playerCollapsed #playerWrap .now-playing-title,
+body.playerCollapsed #playerWrap #nowPlayingLine {
+  display: none; /* optional — remove these if you want them visible */
+}
