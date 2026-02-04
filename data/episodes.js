@@ -93,7 +93,7 @@ window.EPISODES = [
   },
 
   {
-    title: "Sevendust — Acoustic Session (Full Stream)",
+    title: "Sevendust — Acoustic Session",
     artist: "Sevendust",
     year: 2025,
     mode: "fullshow",
@@ -108,27 +108,17 @@ window.EPISODES = [
     year: "1980s",
     mode: "fullshow",
     tracks: [
-      { title: "SRV & Satriani Live Jam", url: "https://youtu.be/e_UASyYu1iA" }
+      { title: "SRV & Satriani Live Jam", url: "https://youtu.be/e_UASyYu1iA?si=T6Y8ZF1icJLBG7XA" }
     ]
   },
 
   {
-    title: "Chris Cornell — Acoustic / Live (Single)",
+    title: "Chris Cornell — Acoustic Collection (Linked Queue)",
     artist: "Chris Cornell",
-    year: "Live",
+    year: "Various",
     mode: "fullshow",
     tracks: [
-      { title: "Chris Cornell Live", url: "https://youtu.be/2xxonKSQ-1M" }
-    ]
-  },
-
-  {
-    title: "Chris Cornell — Acoustic / Live (Playlist)",
-    artist: "Chris Cornell",
-    year: "Playlist",
-    mode: "fullshow",
-    tracks: [
-      { title: "Cornell Playlist", url: "https://youtu.be/nqtO7-bE23E" }
+      { title: "Collection Stream", url: "https://youtu.be/2xxonKSQ-1M?si=GYn3H-Ru0RnDLwxH" }
     ]
   },
 
@@ -138,38 +128,38 @@ window.EPISODES = [
     year: "Acoustic",
     mode: "queue",
     tracks: [
-      { title: "45", url: "https://youtu.be/PGiLaRC_U0g" },
-      { title: "Call Me", url: "https://youtu.be/r2xsItCZqoo" },
-      { title: "I’ll Follow You", url: "https://youtu.be/ECEK-g7xayc" },
-      { title: "If You Only Knew", url: "https://youtu.be/fyZStLSFGZY" },
-      { title: "Second Chance", url: "https://youtu.be/6OJcBSvP40I" },
-      { title: "Simple Man", url: "https://youtu.be/4pS84gSQ_OI" },
-      { title: "Runaway Train", url: "https://youtu.be/JMT3x0e5F1Y" },
-      { title: "Monster", url: "https://youtu.be/2vRHIILUp48" }
+      { title: "45", url: "https://youtu.be/PGiLaRC_U0g?si=gpc5H-plNcsA3zn-" },
+      { title: "Call Me", url: "https://youtu.be/r2xsItCZqoo?si=dHnh4IxSDQdRm274" },
+      { title: "I'll Follow You", url: "https://youtu.be/ECEK-g7xayc?si=WInLr6NW7lKJYw0d" },
+      { title: "If You Only Knew", url: "https://youtu.be/fyZStLSFGZY?si=prFt7IvhSwW_DmQt" },
+      { title: "Second Chance", url: "https://youtu.be/6OJcBSvP40I?si=qjHzVGLx0sNG10XQ" },
+      { title: "Simple Man", url: "https://youtu.be/4pS84gSQ_OI?si=kQEnHvFRKag9RSFR" },
+      { title: "Runaway Train", url: "https://youtu.be/JMT3x0e5F1Y?si=ldjVHdZitB1qJ4Bo" },
+      { title: "Monster", url: "https://youtu.be/2vRHIILUp48?si=sa6YOZVX_FSFLXaw" }
     ]
   },
 
   {
-    title: "Dayseeker — Acoustic Queue (5 Songs)",
+    title: "Dayseeker — Stripped Queue (5 Songs)",
     artist: "Dayseeker",
     year: "Stripped",
     mode: "queue",
     tracks: [
-      { title: "My Immortal", url: "https://youtu.be/rnJEV8tVSJc" },
-      { title: "Neon Grave", url: "https://youtu.be/dYf3psotQMQ" },
-      { title: "Sleep Talk (Stripped)", url: "https://youtu.be/2OEmJel7g5I" },
-      { title: "Burial Plot", url: "https://youtu.be/X1LW7ROGTLE" },
-      { title: "Pale Moonlight", url: "https://youtu.be/rGKZ2X1WxJ4" }
+      { title: "My Immortal", url: "https://youtu.be/rnJEV8tVSJc?si=WGOliX4O3WNvGb-F" },
+      { title: "Neon Grave", url: "https://youtu.be/dYf3psotQMQ?si=aBEUNM2FKAfNNMk2" },
+      { title: "Sleep Talk (Stripped)", url: "https://youtu.be/2OEmJel7g5I?si=1niWO04zAaQ1cN3a" },
+      { title: "Burial Plot", url: "https://youtu.be/X1LW7ROGTLE?si=AwjFqBmvI1nfBhQl" },
+      { title: "Pale Moonlight", url: "https://youtu.be/rGKZ2X1WxJ4?si=_wSDiP2bV6qju4jQ" }
     ]
   },
 
   {
-    title: "KISS — Unplugged (Playlist)",
+    title: "KISS — MTV Unplugged (Playlist)",
     artist: "KISS",
-    year: "Unplugged",
-    mode: "fullshow",
+    year: 1995,
+    mode: "playlist",
     tracks: [
-      { title: "KISS Unplugged Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
+      { title: "Playlist Stream", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N&si=JiH6QVpHnG7eZBzr" }
     ]
   },
 
@@ -179,12 +169,12 @@ window.EPISODES = [
     year: "Acoustic",
     mode: "queue",
     tracks: [
-      { title: "Never Know", url: "https://youtu.be/tIDxdXRvtLg" },
-      { title: "Limits", url: "https://youtu.be/BDMt9gnvMe0" },
-      { title: "Careful What You Wish For", url: "https://youtu.be/KlfSm9GZY5Y" },
-      { title: "Mercy", url: "https://youtu.be/_5CaAIFdT2c" },
-      { title: "Burning Out", url: "https://youtu.be/noGwAB46Bhk" },
-      { title: "If I’m There", url: "https://youtu.be/7vkBQFjrorU" }
+      { title: "Never Know", url: "https://youtu.be/tIDxdXRvtLg?si=Y3MR79UwABL48HrT" },
+      { title: "Limits", url: "https://youtu.be/BDMt9gnvMe0?si=8SCbfWbDTrIkKfBi" },
+      { title: "Careful What You Wish For", url: "https://youtu.be/KlfSm9GZY5Y?si=hS5d_Yzq7qui1_g0" },
+      { title: "Mercy", url: "https://youtu.be/_5CaAIFdT2c?si=HnAfBOpNZtMV8nkB" },
+      { title: "Burning Out", url: "https://youtu.be/noGwAB46Bhk?si=eVrD_5MYwQcpx97U" },
+      { title: "If I'm There", url: "https://youtu.be/7vkBQFjrorU?si=nftZJnPUL20WClz1" }
     ]
   },
 
@@ -194,11 +184,11 @@ window.EPISODES = [
     year: "Acoustic",
     mode: "queue",
     tracks: [
-      { title: "Deep End", url: "https://youtu.be/wFXJapoQRBw" },
-      { title: "Everytime You Leave", url: "https://youtu.be/rABqYJAiFTA" },
-      { title: "Stuck In Your Head", url: "https://youtu.be/NUcvAirmEm4" },
-      { title: "Scars", url: "https://youtu.be/vadGCs66ing" },
-      { title: "My Heart I Surrender", url: "https://youtu.be/CqOgxKsIA88" }
+      { title: "Deep End", url: "https://youtu.be/wFXJapoQRBw?si=x5ng4joP63UaUHF2" },
+      { title: "Everytime You Leave", url: "https://youtu.be/rABqYJAiFTA?si=wP53zjFG40EZIdDF" },
+      { title: "Stuck In Your Head", url: "https://youtu.be/NUcvAirmEm4?si=1Rzz85NsKNj_cG4C" },
+      { title: "Scars", url: "https://youtu.be/vadGCs66ing?si=Z7xgurHTQUONsiUE" },
+      { title: "My Heart I Surrender", url: "https://youtu.be/CqOgxKsIA88?si=90fIDzps92lQqP33" }
     ]
   }
 ];
