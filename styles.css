@@ -576,3 +576,72 @@ body.playerCollapsed .tvFrame{
 body {
   background: #0b0b0b;
 }
+/* =========================
+   SPOTIFY-STYLE PLAYER DOCK
+   (Fixes scroll bleed + blocking)
+========================= */
+
+/* Player becomes a fixed bottom dock (not in scroll layer) */
+.playerWrap{
+  position: fixed !important;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  top: auto !important;
+  z-index: 9999;
+
+  background: #000;
+  border-radius: 18px;
+  overflow: hidden;
+  isolation: isolate;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,.65);
+}
+
+/* Make sure nothing can “show through” behind the dock */
+.playerWrap *{
+  position: relative;
+  z-index: 2;
+}
+
+/* The actual video area fills the whole black box cleanly */
+.playerBox{
+  background: #000;
+  overflow: hidden;
+  border-radius: 18px;
+}
+
+/* Fill the player area */
+#playerFrame{
+  width: 100%;
+  height: 240px;          /* adjust if you want taller */
+  display: block;
+  background: #000;
+  border: 0;
+}
+
+/* Reserve space so the sessions list NEVER scrolls underneath */
+main,
+#episodes,
+.episodes,
+.sessions,
+.page{
+  padding-bottom: 290px;  /* should be a bit bigger than iframe height */
+}
+
+/* Collapse = slide down off-screen (mini-player behavior) */
+.playerCollapsed .playerWrap{
+  transform: translateY(calc(100% + 20px));
+}
+
+/* Smooth, premium feel */
+.playerWrap{
+  transform: translateY(0);
+  transition: transform .22s ease;
+}
+
+/* Optional: make “Now Playing” text area not float over anything */
+#nowPlayingTitle,
+#nowPlayingLine{
+  background: #000;
+}
