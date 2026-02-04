@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sessions — Joey’s Acoustic Corner</title>
+  <link rel="stylesheet" href="styles.css?v=200" />
+</head>
+<body>
+
+  <header class="top">
+    <div class="brand">
+      <div class="brandMark" aria-hidden="true"></div>
+      <div class="brandText">
+        <div class="titleRow">
+          <div class="title">Joey’s Acoustic Corner</div>
+          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
+        </div>
+        <div class="sub">
+          <span class="subStrong">Stripped & unplugged sessions</span>
+          <span class="subSep">—</span>
+          <span>handpicked only.</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- Player injects here -->
+    <section id="playerWrap"></section>
+
+    <section id="sessionsList">
+      <div class="sessionsHead">
+        <div>
+          <div class="sessionsTitle">Sessions</div>
+          <div class="sessionsSub">Pick a set. If it’s a queue, it stitches tracks together for you.</div>
+        </div>
+        <div id="status">Loading…</div>
+      </div>
+
+      <div id="episodes"></div>
+    </section>
+  </main>
+
+  <!-- Data + App -->
+  <script src="episodes.js?v=200"></script>
+  <script src="app.js?v=200"></script>
+
+  <!-- YouTube IFrame API -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
