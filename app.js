@@ -16,12 +16,8 @@
   const list = $("#episodes") || $("#sessionsList");
   const status = $("#status") || $("#loadedCount");
 
-  function logLine(line) {
-    if (DEBUG) console.log("[STU]", line);
-  }
-  function safeText(s) {
-    return (s == null ? "" : String(s)).trim();
-  }
+  function logLine(line) { if (DEBUG) console.log("[STU]", line); }
+  function safeText(s) { return (s == null ? "" : String(s)).trim(); }
 
   function el(tag, attrs = {}, kids = []) {
     const node = document.createElement(tag);
@@ -54,149 +50,82 @@
   // =========================
   // Device detection
   // =========================
-  function ua() {
-    return navigator.userAgent || "";
-  }
-  function isOculus() {
-    return /OculusBrowser/i.test(ua());
-  }
+  function ua() { return navigator.userAgent || ""; }
+  function isOculus() { return /OculusBrowser/i.test(ua()); }
   function isLikelyTV() {
     const U = ua();
     const tvUA =
-      /SmartTV|SMART-TV|HbbTV|NetCast|Viera|AFT|CrKey|Roku|Tizen|Web0S|Android TV|GoogleTV|BRAVIA|SHIELD/i.test(U);
+      /SmartTV|SMART-TV|HbbTV|NetCast|Viera|AFT|CrKey|Roku|Tizen|Web0S|Android TV|GoogleTV|BRAVIA/i.test(U);
     const bigScreen = Math.max(window.innerWidth, window.innerHeight) >= 1100;
     return (tvUA || bigScreen) && !isOculus();
   }
   const IS_TV = isLikelyTV();
 
-  // =========================
-  // YouTube URLs
-  // =========================
   function ytWatchUrl(id) {
     return "https://www.youtube.com/watch?v=" + encodeURIComponent(id);
   }
 
-  // YouTube queue URL (this preserves your stitched queues!)
-  function ytQueueUrlFromIds(ids) {
-    const clean = (ids || []).map((x) => String(x || "").trim()).filter(Boolean);
-    if (!clean.length) return "";
-    // YouTube queue link:
-    // https://www.youtube.com/watch_videos?video_ids=ID1,ID2,ID3
-    return "https://www.youtube.com/watch_videos?video_ids=" + clean.map(encodeURIComponent).join(",");
+  // =========================
+  // Collapsible Player (NEW)
+  // =========================
+  const PLAYER_STATE_KEY = "stu_player_collapsed_v1";
+
+  function isCollapsed() {
+    try { return sessionStorage.getItem(PLAYER_STATE_KEY) === "1"; } catch { return false; }
   }
-
-  // Android / Shield intent handoff (opens YouTube app)
-  function ytIntentUrlFromHttps(httpsUrl) {
-    // Convert https://www.youtube.com/... to intent://www.youtube.com/...#Intent...
-    // Works well on Android TV / Shield
-    const stripped = String(httpsUrl).replace(/^https?:\/\//i, "");
-    return "intent://" + stripped + "#Intent;scheme=https;package=com.google.android.youtube;end";
+  function setCollapsed(v) {
+    try { sessionStorage.setItem(PLAYER_STATE_KEY, v ? "1" : "0"); } catch {}
+    document.body.classList.toggle("playerCollapsed", !!v);
+    syncPlayerToggleBtn();
   }
+  function openPlayer() { setCollapsed(false); }
+  function collapsePlayer() { setCollapsed(true); }
+  function togglePlayer() { setCollapsed(!document.body.classList.contains("playerCollapsed")); }
 
-  function openExternalUrl(url) {
-    if (!url) return;
-
-    const useIntent = /Android/i.test(ua()) && !isOculus();
-
-    if (useIntent) {
-      try {
-        window.location.href = ytIntentUrlFromHttps(url);
-      } catch {}
-      setTimeout(() => {
-        try {
-          window.location.href = url;
-        } catch {}
-      }, 600);
-      return;
-    }
-
-    try {
-      window.location.href = url;
-    } catch {}
-  }
-
-  function openExternalVideo(id) {
-    if (!id) return;
-    openExternalUrl(ytWatchUrl(id));
+  function syncPlayerToggleBtn() {
+    const btn = document.getElementById("playerToggleBtn");
+    if (!btn) return;
+    const collapsed = document.body.classList.contains("playerCollapsed");
+    btn.textContent = collapsed ? "Show Player" : "Hide Player";
+    btn.setAttribute("aria-pressed", collapsed ? "true" : "false");
   }
 
   // =========================
-  // Fallback overlay in player (for devices that block embeds)
+  // Fallback overlay in player
   // =========================
   function hideYTFallback() {
     const fb = document.getElementById("ytFallback");
     if (fb) fb.style.display = "none";
   }
 
-  function showYTFallback(openUrl, reasonText) {
-    if (!openUrl) return;
+  function showYTFallback(id, reasonText) {
+    if (!id) return;
 
     let fb = document.getElementById("ytFallback");
     if (!fb) {
       fb = document.createElement("div");
       fb.id = "ytFallback";
       fb.className = "ytFallback";
-      fb.style.cssText = `
-        position:absolute; inset:0; display:none; place-items:center;
-        background:rgba(0,0,0,.65); z-index:50;
-      `;
       fb.innerHTML = `
-        <div class="ytFallbackCard" style="
-          width:min(520px,92%); border-radius:18px; padding:16px 16px 14px;
-          background:rgba(18,18,22,.92);
-          border:1px solid rgba(255,255,255,.10);
-          box-shadow:0 18px 60px rgba(0,0,0,.55);
-          text-align:left;
-        ">
-          <div class="ytFallbackTitle" style="font-weight:900; font-size:18px; color:rgba(255,255,255,.92);">
-            Open in YouTube
-          </div>
-          <div class="ytFallbackText" id="ytFallbackReason" style="margin-top:6px; color:rgba(255,255,255,.75); line-height:1.35;"></div>
-          <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
-            <a class="ytFallbackBtn" id="ytFallbackLink" target="_blank" rel="noopener"
-              style="
-                display:inline-flex; align-items:center; justify-content:center;
-                padding:10px 14px; border-radius:999px;
-                background:rgba(140,255,140,.18);
-                border:1px solid rgba(140,255,140,.35);
-                color:rgba(255,255,255,.92);
-                font-weight:900; text-decoration:none;
-              "
-            >Open</a>
-            <button id="ytFallbackOpenNow" type="button"
-              style="
-                display:inline-flex; align-items:center; justify-content:center;
-                padding:10px 14px; border-radius:999px;
-                background:rgba(255,255,255,.08);
-                border:1px solid rgba(255,255,255,.14);
-                color:rgba(255,255,255,.9);
-                font-weight:900; cursor:pointer;
-              "
-            >Open now</button>
+        <div class="ytFallbackCard">
+          <div class="ytFallbackTitle">Open in YouTube</div>
+          <div class="ytFallbackText" id="ytFallbackReason"></div>
+          <div class="ytFallbackBtns">
+            <a class="ytFallbackBtn" id="ytFallbackLink" target="_blank" rel="noopener">Open</a>
           </div>
         </div>
       `;
-
       const shell =
         document.querySelector(".playerFrameWrap") ||
         document.querySelector(".player-shell") ||
         document.getElementById("playerWrap");
-
-      if (shell) {
-        try {
-          shell.style.position = shell.style.position || "relative";
-        } catch {}
-        shell.appendChild(fb);
-      }
+      if (shell) shell.appendChild(fb);
     }
 
     const reason = fb.querySelector("#ytFallbackReason");
     const link = fb.querySelector("#ytFallbackLink");
-    const btnNow = fb.querySelector("#ytFallbackOpenNow");
-
     if (reason) reason.textContent = reasonText || "This device blocked embedded playback.";
-    if (link) link.href = openUrl;
-    if (btnNow) btnNow.onclick = () => openExternalUrl(openUrl);
+    if (link) link.href = ytWatchUrl(id);
 
     fb.style.display = "grid";
   }
@@ -214,13 +143,10 @@
     btn.innerHTML = `<span class="dot"></span> Change session`;
 
     btn.addEventListener("click", () => {
-      if (IS_TV) {
-        openSessionsOverlay();
-        return;
-      }
-
       setFocusMode(false);
       stopPlayAll();
+      // When leaving focus mode, collapse player so it never blocks the list
+      collapsePlayer();
 
       const sessionsEl =
         document.getElementById("sessionsList") ||
@@ -254,35 +180,19 @@
   }
   playerWrap.innerHTML = "";
 
-  const playerTitle = el("div", { id: "nowPlayingTitle", class: "now-playing-title" }, "Tap a session to play");
+  // Title row with NEW toggle button
+  const playerTitleRow = el("div", { class: "now-playing-row" }, [
+    el("div", { id: "nowPlayingTitle", class: "now-playing-title" }, "Tap a session to play"),
+    el("button", { id: "playerToggleBtn", class: "playerToggleBtn", type: "button" }, "Hide Player"),
+  ]);
 
-  // NEW: TV button row (shows on all devices, helpful on Shield)
-  const actionsRow = el("div", { class: "playerActions", id: "playerActions" }, []);
-  actionsRow.style.cssText = `
-    display:flex; gap:10px; flex-wrap:wrap;
-    padding: 0 14px 12px;
-  `;
-
-  const castBtn = el("button", { id: "castToTvBtn", type: "button" }, "📺 Watch on TV");
-  castBtn.style.cssText = `
-    border:1px solid rgba(255,255,255,.14);
-    background: rgba(0,0,0,.20);
-    color: rgba(255,255,255,.92);
-    font-weight: 900;
-    border-radius: 999px;
-    padding: 10px 14px;
-    cursor: pointer;
-  `;
-  castBtn.disabled = true;
-  castBtn.title = "Opens the current session in the YouTube app (queues stay stitched).";
-
-  const nowLine = el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready.");
   const playerMount = el("div", { id: "playerFrame", class: "player-frame" });
+  const nowLine = el("div", { class: "nowPlaying", id: "nowPlayingLine" }, "Ready.");
 
   const tv = el("div", { class: "tvFrame" }, [
     el("div", { class: "tvTopBar" }, [
       el("div", { class: "tvLED" }, ""),
-      el("div", { class: "tvLabel" }, "STRIPPED & TURNED UP"),
+      el("div", { class: "tvLabel" }, "JOEY’S ACOUSTIC CORNER"),
       el("div", { class: "tvKnob" }, ""),
     ]),
     el("div", { class: "playerFrameWrap" }, el("div", { class: "player-shell" }, playerMount)),
@@ -290,20 +200,26 @@
   ]);
 
   playerWrap.className = "player-wrap";
-  playerWrap.appendChild(playerTitle);
-  playerWrap.appendChild(actionsRow);
-  actionsRow.appendChild(castBtn);
+  playerWrap.appendChild(playerTitleRow);
   playerWrap.appendChild(tv);
 
   ensureFocusButton();
   setFocusMode(false);
 
+  // Apply remembered collapsed state on load
+  setCollapsed(isCollapsed());
+
+  $("#playerToggleBtn")?.addEventListener("click", () => {
+    togglePlayer();
+    // If user collapses player, don't stop playback (keeps audio going)
+    // It simply stops blocking the page.
+  });
+
   function setTitleLine(t) {
-    playerTitle.textContent = t || "Tap a session to play";
+    const titleEl = document.getElementById("nowPlayingTitle");
+    if (titleEl) titleEl.textContent = t || "Tap a session to play";
   }
-  function setNow(t) {
-    nowLine.textContent = t || "Ready.";
-  }
+  function setNow(t) { nowLine.textContent = t || "Ready."; }
 
   function normalizeEpisodes(arr) {
     const out = [];
@@ -375,62 +291,19 @@
 
   function nextInPlayAll() {
     if (!playAllEnabled) return;
-    if (!playAllFlat.length) {
-      stopPlayAll();
-      return;
-    }
+    if (!playAllFlat.length) { stopPlayAll(); return; }
     playAllPos += 1;
     if (playAllPos >= playAllFlat.length) playAllPos = 0;
     const { sIndex, tIndex } = playAllFlat[playAllPos];
     startSession(sessions[sIndex], tIndex, { fromPlayAll: true, noScroll: true });
   }
 
-  // =========================
-  // TV handoff (keeps stitched queues)
-  // =========================
-  function getCurrentSessionOpenUrl() {
-    if (!currentSession) return "";
-
-    // If queue session, build queue URL of ALL ids
-    if (currentSession.mode === "queue") {
-      const ids = currentSession.tracks.map((t) => t.id).filter(Boolean);
-      return ytQueueUrlFromIds(ids);
-    }
-
-    // Fullshow: open current track id
-    const id =
-      currentSession &&
-      currentSession.tracks &&
-      currentSession.tracks[currentIndex] &&
-      currentSession.tracks[currentIndex].id;
-
-    return id ? ytWatchUrl(id) : "";
-  }
-
-  function updateCastBtnState() {
-    const url = getCurrentSessionOpenUrl();
-    castBtn.disabled = !url;
-  }
-
-  castBtn.addEventListener("click", () => {
-    const url = getCurrentSessionOpenUrl();
-    if (!url) return;
-
-    // On TV, this is THE move (no fighting the iframe controls).
-    setNow("Opening in YouTube…");
-    showYTFallback(url, "Opening the session in the YouTube app. Queues will autoplay.");
-    openExternalUrl(url);
-  });
-
-  // =========================
-  // Playback
-  // =========================
   function playById(id) {
     if (!id) return;
 
-    // Prefer embed everywhere; fallback overlay if blocked.
+    // If player isn't ready yet, show fallback
     if (!ytPlayer) {
-      showYTFallback(ytWatchUrl(id), "Player is still loading. If it doesn’t start, open in YouTube.");
+      showYTFallback(id, "Player is still loading. If it doesn’t start, open in YouTube.");
       return;
     }
 
@@ -439,7 +312,7 @@
       ytPlayer.loadVideoById(id);
     } catch (e) {
       logLine("loadVideoById failed");
-      showYTFallback(ytWatchUrl(id), "This device blocked embedded playback. Open in YouTube.");
+      showYTFallback(id, "This device blocked embedded playback. Open in YouTube.");
     }
   }
 
@@ -465,22 +338,17 @@
       setNow("Playing now.");
     }
 
-    setFocusMode(true);
-    closeSessionsOverlay();
+    // ✅ NEW: auto-open player when starting anything
+    openPlayer();
 
-    updateCastBtnState();
+    // Keep focus mode on for the clean "now playing" view
+    setFocusMode(true);
 
     const id = session.tracks[currentIndex].id;
-
-    // If TV, you can still embed, but the user hates the controls.
-    // We do NOT auto-jump to YouTube (because you want normal devices to keep working),
-    // but the "📺 Watch on TV" button is always ready.
     playById(id);
 
     if (!opts.noScroll) {
-      try {
-        playerWrap.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch {}
+      try { playerWrap.scrollIntoView({ behavior: "smooth", block: "start" }); } catch {}
     }
   }
 
@@ -494,13 +362,9 @@
     const label = `${currentSession.title} — Track ${currentIndex + 1} (${currentIndex + 1}/${currentSession.tracks.length})`;
     setTitleLine(label);
     setNow("Playing now.");
-    updateCastBtnState();
     playById(currentSession.tracks[currentIndex].id);
   }
 
-  // =========================
-  // YouTube iframe API
-  // =========================
   window.onYouTubeIframeAPIReady = function () {
     logLine("YT API ready");
 
@@ -526,23 +390,21 @@
           if (e.data === YT.PlayerState.PLAYING) hideYTFallback();
 
           if (e.data === YT.PlayerState.ENDED) {
-            if (currentSession && currentSession.mode === "queue") {
-              nextInQueue();
-              return;
-            }
-            if (playAllEnabled) {
-              nextInPlayAll();
-              return;
-            }
+            if (currentSession && currentSession.mode === "queue") { nextInQueue(); return; }
+            if (playAllEnabled) { nextInPlayAll(); return; }
           }
         },
         onError: function (e) {
           logLine("YT error: " + (e && e.data));
           setNow("This device blocked embedded playback.");
 
-          const url = getCurrentSessionOpenUrl() || "";
+          const id =
+            currentSession &&
+            currentSession.tracks &&
+            currentSession.tracks[currentIndex] &&
+            currentSession.tracks[currentIndex].id;
 
-          showYTFallback(url, "Embed blocked on this browser/device. Open in YouTube.");
+          showYTFallback(id, "Embed blocked on this browser/device. Open in YouTube.");
         },
       },
     });
@@ -550,154 +412,6 @@
 
   if (window.YT && window.YT.Player) {
     window.onYouTubeIframeAPIReady();
-  }
-
-  // =========================
-  // TV-safe Sessions Overlay (big clickable list on top)
-  // =========================
-  let overlayEl = null;
-  let overlayBody = null;
-
-  function ensureSessionsOverlay() {
-    if (overlayEl) return;
-
-    overlayEl = document.createElement("div");
-    overlayEl.id = "sessionOverlay";
-    overlayEl.style.cssText = `
-      position:fixed; inset:0; z-index:9999; display:none; place-items:center;
-      padding:24px; background:rgba(0,0,0,.82); backdrop-filter:blur(6px);
-    `;
-
-    overlayEl.innerHTML = `
-      <div style="
-        width:min(1100px,92vw); max-height:86vh; overflow:hidden;
-        border-radius:24px; background:rgba(25,25,28,.92);
-        border:1px solid rgba(255,255,255,.08);
-        box-shadow:0 20px 70px rgba(0,0,0,.55);
-      ">
-        <div style="
-          display:flex; align-items:center; justify-content:space-between; gap:12px;
-          padding:16px 18px; border-bottom:1px solid rgba(255,255,255,.08);
-        ">
-          <div style="font-size:18px; font-weight:900; color:rgba(255,255,255,.92);">Choose a session</div>
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="overlayStopPlayAll" type="button" style="
-              border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
-              color:rgba(255,255,255,.9); border-radius:999px; padding:10px 14px;
-              font-weight:900; cursor:pointer;
-            ">Stop Play All</button>
-            <button id="closeSessionsOverlay" type="button" style="
-              border:1px solid rgba(255,255,255,.15); background:rgba(255,255,255,.06);
-              color:rgba(255,255,255,.9); border-radius:999px; padding:10px 14px;
-              font-weight:900; cursor:pointer;
-            ">Close</button>
-          </div>
-        </div>
-        <div id="sessionsOverlayBody" style="padding:14px; max-height:calc(86vh - 62px); overflow:auto;"></div>
-      </div>
-    `;
-
-    document.body.appendChild(overlayEl);
-    overlayBody = document.getElementById("sessionsOverlayBody");
-
-    document.getElementById("closeSessionsOverlay").addEventListener("click", closeSessionsOverlay);
-    document.getElementById("overlayStopPlayAll").addEventListener("click", () => {
-      stopPlayAll();
-      setNow("Play All stopped.");
-    });
-
-    overlayEl.addEventListener("click", (e) => {
-      if (e.target === overlayEl) closeSessionsOverlay();
-    });
-
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeSessionsOverlay();
-    });
-  }
-
-  function openSessionsOverlay() {
-    ensureSessionsOverlay();
-    overlayBody.innerHTML = "";
-
-    overlayBody.appendChild(buildOverlayCard_PlayAll());
-    sessions.forEach((s) => overlayBody.appendChild(buildOverlayCard_Session(s)));
-
-    overlayEl.style.display = "grid";
-
-    const first = overlayBody.querySelector(".ep");
-    if (first) first.focus();
-  }
-
-  function closeSessionsOverlay() {
-    if (overlayEl) overlayEl.style.display = "none";
-  }
-
-  function buildOverlayCard_PlayAll() {
-    if (!sessions.length) return document.createElement("div");
-
-    const featured = sessions[0];
-    const meta = [featured.artist, featured.year].filter(Boolean).join(" • ");
-
-    const card = el("div", { class: "ep epFeatured", tabindex: "0" }, [
-      el("div", { class: "epHead" }, [
-        el("div", {}, [
-          el("div", { class: "epTitle" }, "Play All — Autoplay Everything"),
-          el(
-            "div",
-            { class: "epMeta" },
-            meta ? `Starts with: ${featured.title} • ${meta}` : `Starts with: ${featured.title}`
-          ),
-          el("div", { class: "epSmall" }, "Hands-free mode: it keeps rolling."),
-        ]),
-        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
-      ]),
-    ]);
-
-    const playAll = () => {
-      closeSessionsOverlay();
-      startPlayAll(true);
-    };
-
-    card.addEventListener("click", playAll);
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        playAll();
-      }
-    });
-
-    return card;
-  }
-
-  function buildOverlayCard_Session(s) {
-    const meta = [s.artist, s.year].filter(Boolean).join(" • ");
-    const small = s.mode === "queue" ? `${s.tracks.length} tracks` : "Full session";
-
-    const card = el("div", { class: "ep", tabindex: "0" }, [
-      el("div", { class: "epHead" }, [
-        el("div", {}, [
-          el("div", { class: "epTitle" }, s.title),
-          el("div", { class: "epMeta" }, meta),
-          el("div", { class: "epSmall" }, small),
-        ]),
-        el("div", { class: "chev", "aria-hidden": "true" }, "›"),
-      ]),
-    ]);
-
-    const play = () => {
-      closeSessionsOverlay();
-      startSession(s, 0);
-    };
-
-    card.addEventListener("click", play);
-    card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        play();
-      }
-    });
-
-    return card;
   }
 
   // =========================
@@ -712,12 +426,8 @@
       el("div", { class: "epHead" }, [
         el("div", {}, [
           el("div", { class: "epTitle" }, "Play All — Autoplay Everything"),
-          el(
-            "div",
-            { class: "epMeta" },
-            meta ? `Starts with: ${featured.title} • ${meta}` : `Starts with: ${featured.title}`
-          ),
-          el("div", { class: "epSmall" }, IS_TV ? "Tip: use 📺 Watch on TV for the smooth experience." : "Hands-free mode: it keeps rolling."),
+          el("div", { class: "epMeta" }, meta ? `Starts with: ${featured.title} • ${meta}` : `Starts with: ${featured.title}`),
+          el("div", { class: "epSmall" }, "Hands-free mode: it keeps rolling."),
         ]),
         el("div", { class: "chev", "aria-hidden": "true" }, "›"),
       ]),
@@ -727,10 +437,7 @@
 
     card.addEventListener("click", playAll);
     card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        playAll();
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); playAll(); }
     });
 
     list.appendChild(card);
@@ -757,16 +464,10 @@
 
     card.addEventListener("click", play);
     card.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        play();
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); play(); }
     });
 
     list.appendChild(card);
   });
 
-  // Start state
-  updateCastBtnState();
-  setNow(IS_TV ? "Tip: Use 📺 Watch on TV for Shield/TV." : "Ready.");
 })();
