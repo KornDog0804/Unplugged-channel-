@@ -1,4 +1,4 @@
-/* Joey’s Acoustic Corner — Sessions Data */
+/* Stripped & Turned Up — Sessions data (LOCKED BASELINE) */
 
 window.EPISODES = [
   {
@@ -6,29 +6,41 @@ window.EPISODES = [
     artist: "Nirvana",
     year: 1993,
     mode: "fullshow",
-    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/pOTkCgkxqyg" }]
+    tracks: [
+      { title: "Full Session Stream", url: "https://youtu.be/pOTkCgkxqyg" }
+    ]
   },
+
   {
     title: "Alice In Chains — MTV Unplugged (Full Session)",
     artist: "Alice In Chains",
     year: 1996,
     mode: "fullshow",
-    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/Jprla2NvHY0" }]
+    tracks: [
+      { title: "Full Session Stream", url: "https://youtu.be/Jprla2NvHY0" }
+    ]
   },
+
   {
     title: "JAY-Z — Unplugged / Live (Full Session)",
     artist: "JAY-Z",
     year: 2001,
     mode: "fullshow",
-    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/r2I_pGlvtAY" }]
+    tracks: [
+      { title: "Full Session Stream", url: "https://youtu.be/r2I_pGlvtAY" }
+    ]
   },
+
   {
     title: "Papa Roach — WRIF Acoustic Set (Full Session)",
     artist: "Papa Roach",
     year: 2025,
     mode: "fullshow",
-    tracks: [{ title: "Full Session Stream", url: "https://www.youtube.com/watch?v=f4BK60WVPac" }]
+    tracks: [
+      { title: "Full Session Stream", url: "https://www.youtube.com/watch?v=f4BK60WVPac" }
+    ]
   },
+
   {
     title: "Wage War — Acoustic Queue (6 Songs)",
     artist: "Wage War",
@@ -43,13 +55,17 @@ window.EPISODES = [
       { title: "Track 6", url: "https://youtu.be/7WVGNUVsDFw" }
     ]
   },
+
   {
     title: "The Home Team — Acoustic Session",
     artist: "The Home Team",
     year: 2023,
     mode: "fullshow",
-    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/EGB3xoa7Cus" }]
+    tracks: [
+      { title: "Full Session Stream", url: "https://youtu.be/EGB3xoa7Cus" }
+    ]
   },
+
   {
     title: "Smile Empty Soul — Acoustic Queue (4 Songs)",
     artist: "Smile Empty Soul",
@@ -62,6 +78,7 @@ window.EPISODES = [
       { title: "Wonderwall", url: "https://youtu.be/C08X2DbSPfs" }
     ]
   },
+
   {
     title: "Wind Walkers — Acoustic Queue (2 Songs)",
     artist: "Wind Walkers",
@@ -72,27 +89,51 @@ window.EPISODES = [
       { title: "Hangfire", url: "https://youtu.be/pqWTvbLTV0Q" }
     ]
   },
+
   {
     title: "Sevendust — Acoustic Session (Full)",
     artist: "Sevendust",
     year: 2025,
     mode: "fullshow",
-    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/Q4s_nIG8rw0" }]
+    tracks: [
+      { title: "Full Session Stream", url: "https://youtu.be/Q4s_nIG8rw0" }
+    ]
   },
 
-  /* Added today */
   {
     title: "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
-    artist: "SRV • Satriani",
+    artist: "Stevie Ray Vaughan • Joe Satriani",
     year: "1980s",
     mode: "fullshow",
-    tracks: [{ title: "Live Jam", url: "https://youtu.be/e_UASyYu1iA" }]
+    tracks: [
+      { title: "SRV & Satriani Live Jam", url: "https://youtu.be/e_UASyYu1iA" }
+    ]
+  },
+
+  {
+    title: "Chris Cornell — Acoustic Playlist",
+    artist: "Chris Cornell",
+    year: "Collection",
+    mode: "fullshow",
+    tracks: [
+      { title: "Playlist", url: "https://youtu.be/nqtO7-bE23E?si=XYOeAWf4uGPM7wDt" }
+    ]
+  },
+
+  {
+    title: "Chris Cornell — Acoustic Set (Video Queue)",
+    artist: "Chris Cornell",
+    year: "Collection",
+    mode: "fullshow",
+    tracks: [
+      { title: "Set / Collection", url: "https://youtu.be/2xxonKSQ-1M" }
+    ]
   },
 
   {
     title: "Shinedown — Acoustic Queue (8 Songs)",
     artist: "Shinedown",
-    year: "Acoustic",
+    year: "Collection",
     mode: "queue",
     tracks: [
       { title: "45", url: "https://youtu.be/PGiLaRC_U0g" },
@@ -109,7 +150,7 @@ window.EPISODES = [
   {
     title: "Dayseeker — Acoustic Queue (5 Songs)",
     artist: "Dayseeker",
-    year: "Acoustic",
+    year: "Collection",
     mode: "queue",
     tracks: [
       { title: "My Immortal", url: "https://youtu.be/rnJEV8tVSJc" },
@@ -121,9 +162,19 @@ window.EPISODES = [
   },
 
   {
-    title: "Bad Omens — Acoustic/Stripped Queue (6 Songs)",
+    title: "KISS — Unplugged (Playlist)",
+    artist: "KISS",
+    year: 1995,
+    mode: "fullshow",
+    tracks: [
+      { title: "Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
+    ]
+  },
+
+  {
+    title: "Bad Omens — Acoustic Queue (6 Songs)",
     artist: "Bad Omens",
-    year: "Stripped",
+    year: "Collection",
     mode: "queue",
     tracks: [
       { title: "Never Know", url: "https://youtu.be/tIDxdXRvtLg" },
@@ -138,7 +189,7 @@ window.EPISODES = [
   {
     title: "I Prevail — Acoustic Queue (5 Songs)",
     artist: "I Prevail",
-    year: "Acoustic",
+    year: "Collection",
     mode: "queue",
     tracks: [
       { title: "Deep End", url: "https://youtu.be/wFXJapoQRBw" },
@@ -146,16 +197,6 @@ window.EPISODES = [
       { title: "Stuck In Your Head", url: "https://youtu.be/NUcvAirmEm4" },
       { title: "Scars", url: "https://youtu.be/vadGCs66ing" },
       { title: "My Heart I Surrender", url: "https://youtu.be/CqOgxKsIA88" }
-    ]
-  },
-
-  {
-    title: "KISS — Unplugged (Playlist Stream)",
-    artist: "KISS",
-    year: 1995,
-    mode: "fullshow",
-    tracks: [
-      { title: "Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
     ]
   }
 ];
