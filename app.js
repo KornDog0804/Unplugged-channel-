@@ -1,371 +1,255 @@
-/* Joey’s Acoustic Corner — app.js (SAFE + STABLE)
-   - Queue stitching
-   - Play All
-   - Player drawer (show/hide)
-   - Handles slow YouTube API load without crashing
+/* Joey’s Acoustic Corner — app.js
+   Crash-proof renderer + stitched queue autoplay (no YT API)
 */
 
-(() => {
-  "use strict";
-
-  const params = new URLSearchParams(location.search);
-  const AUTO_PLAYALL = params.get("autoplay") === "1";
-
-  const EPISODES_RAW =
-    Array.isArray(window.EPISODES) ? window.EPISODES :
-    Array.isArray(window.episodes) ? window.episodes :
-    [];
-
+(function () {
   const $ = (sel) => document.querySelector(sel);
 
-  const listEl = $("#episodes");
-  const statusEl = $("#status");
-  const playerWrapEl = $("#playerWrap") || null;
+  const el = {
+    status: $("#status"),
+    episodes: $("#episodes"),
+    playerFrame: $("#playerFrame"),
+    nowTitle: $("#nowPlayingTitle"),
+    nowLine: $("#nowPlayingLine"),
+    toggleBtn: $("#playerToggleBtn")
+  };
 
-  // ---------- helpers ----------
-  const safeText = (v) => (v == null ? "" : String(v)).trim();
+  function setStatus(msg) {
+    if (el.status) el.status.textContent = msg;
+  }
 
-  function ytKeyFromUrl(url) {
-    const u = safeText(url);
-    if (!u) return "";
+  function safeText(v) {
+    return (v === undefined || v === null) ? "" : String(v);
+  }
 
+  function getVideoId(url) {
     try {
-      const parsed = new URL(u);
-
-      // playlist-only link => "LIST:<id>"
-      const listId = parsed.searchParams.get("list");
-      const vid = parsed.searchParams.get("v");
-
-      if (listId && !vid) return `LIST:${listId}`;
-      if (vid) return vid;
-
+      const u = new URL(url);
       // youtu.be/<id>
-      if (parsed.hostname.includes("youtu.be")) {
-        const id = parsed.pathname.replace("/", "").trim();
-        return id || "";
+      if (u.hostname.includes("youtu.be")) {
+        return u.pathname.replace("/", "").trim();
       }
+      // youtube.com/watch?v=<id>
+      if (u.searchParams.get("v")) return u.searchParams.get("v");
+      // youtube.com/embed/<id>
+      const parts = u.pathname.split("/").filter(Boolean);
+      const embedIndex = parts.indexOf("embed");
+      if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
       return "";
-    } catch {
-      // fallback regex
-      const m1 = u.match(/v=([a-zA-Z0-9_-]{6,})/);
-      if (m1 && m1[1]) return m1[1];
-      const m2 = u.match(/youtu\.be\/([a-zA-Z0-9_-]{6,})/);
-      if (m2 && m2[1]) return m2[1];
-      const m3 = u.match(/list=([a-zA-Z0-9_-]{6,})/);
-      if (m3 && m3[1]) return `LIST:${m3[1]}`;
+    } catch (e) {
       return "";
     }
   }
 
-  function normalizeEpisodes(arr) {
-    const out = [];
-    (arr || []).forEach((ep, idx) => {
-      if (!ep || typeof ep !== "object") return;
-
-      const title = safeText(ep.title) || `Session ${idx + 1}`;
-      const artist = safeText(ep.artist) || "";
-      const year = ep.year != null ? String(ep.year) : "";
-      const mode = safeText(ep.mode) || "fullshow";
-      const tracksRaw = Array.isArray(ep.tracks) ? ep.tracks : [];
-
-      const tracks = tracksRaw
-        .map((t) => {
-          const tTitle = safeText(t && t.title) || "Track";
-          const tUrl = safeText(t && t.url);
-          const key = ytKeyFromUrl(tUrl);
-          return { title: tTitle, url: tUrl, key };
-        })
-        .filter((t) => !!t.key);
-
-      if (!tracks.length) return;
-      out.push({ title, artist, year, mode, tracks });
-    });
-    return out;
-  }
-
-  const SESSIONS = normalizeEpisodes(EPISODES_RAW);
-
-  if (statusEl) {
-    statusEl.textContent = SESSIONS.length ? `Loaded ${SESSIONS.length} sessions` : "No sessions found";
-  }
-
-  // ---------- Player Drawer UI (no crash if missing) ----------
-  let drawerEls = {
-    nowTitle: null,
-    nowLine: null,
-    toggleBtn: null
-  };
-
-  function setPlayerHidden(hidden) {
-    document.body.classList.toggle("playerHidden", !!hidden);
-    if (drawerEls.toggleBtn) drawerEls.toggleBtn.textContent = hidden ? "Show" : "Hide";
-    try { localStorage.setItem("playerHidden", hidden ? "1" : "0"); } catch {}
-  }
-
-  function buildPlayerDrawer() {
-    if (!playerWrapEl) return;
-
-    playerWrapEl.innerHTML = `
-      <div class="playerDrawer">
-        <div class="playerCard">
-          <div class="playerBar">
-            <div class="playerTitle" id="nowTitle">Tap a session to play</div>
-            <div class="playerBtns">
-              <button class="playerBtn" id="togglePlayerBtn" type="button">Hide</button>
-            </div>
-          </div>
-
-          <div class="playerFrameWrap">
-            <div id="playerFrame"></div>
-          </div>
-
-          <div id="nowPlayingLine">Ready.</div>
-        </div>
-      </div>
-    `;
-
-    drawerEls.nowTitle = $("#nowTitle");
-    drawerEls.nowLine = $("#nowPlayingLine");
-    drawerEls.toggleBtn = $("#togglePlayerBtn");
-
-    if (drawerEls.toggleBtn) {
-      drawerEls.toggleBtn.addEventListener("click", () => {
-        const hidden = document.body.classList.contains("playerHidden");
-        setPlayerHidden(!hidden);
-      });
-    }
-
-    // restore last state
-    let remembered = false;
-    try { remembered = localStorage.getItem("playerHidden") === "1"; } catch {}
-    setPlayerHidden(remembered);
-  }
-
-  function setNowTitle(t) {
-    if (drawerEls.nowTitle) drawerEls.nowTitle.textContent = t || "Tap a session to play";
-  }
-  function setNowLine(t) {
-    if (drawerEls.nowLine) drawerEls.nowLine.textContent = t || "Ready.";
-  }
-
-  buildPlayerDrawer();
-
-  // ---------- YouTube player (safe init) ----------
-  let ytPlayer = null;
-  let ytReady = false;
-  let pendingPlay = null; // { sessionIndex, trackIndex }
-
-  // current playback state
-  let currentSessionIndex = -1;
-  let currentTrackIndex = 0;
-
-  // play-all state
-  let playAllEnabled = false;
-  let playAllFlat = [];
-  let playAllPos = 0;
-
-  function ensurePlayerVisible() {
-    setPlayerHidden(false);
-  }
-
-  function buildPlayAllFlatList() {
-    const flat = [];
-    for (let si = 0; si < SESSIONS.length; si++) {
-      const s = SESSIONS[si];
-      for (let ti = 0; ti < s.tracks.length; ti++) {
-        flat.push({ si, ti });
-      }
-    }
-    return flat;
-  }
-
-  function playKey(key) {
-    if (!ytPlayer || !ytReady) return false;
-    if (!key) return false;
-
-    // playlist support
-    if (key.startsWith("LIST:")) {
-      const listId = key.slice(5);
-      try {
-        ytPlayer.loadPlaylist({ listType: "playlist", list: listId });
-        return true;
-      } catch {
-        // fallback: open playlist in YouTube
-        window.location.href = `https://www.youtube.com/playlist?list=${encodeURIComponent(listId)}`;
-        return true;
-      }
-    }
-
+  function getPlaylistId(url) {
     try {
-      ytPlayer.loadVideoById(key);
-      return true;
-    } catch {
-      return false;
+      const u = new URL(url);
+      return u.searchParams.get("list") || "";
+    } catch (e) {
+      return "";
     }
   }
 
-  function startSession(sessionIndex, trackIndex = 0) {
-    if (!SESSIONS[sessionIndex]) return;
+  function buildEmbedForSingle(videoUrl) {
+    const id = getVideoId(videoUrl);
+    if (!id) return "";
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+  }
 
-    currentSessionIndex = sessionIndex;
-    const session = SESSIONS[sessionIndex];
+  function buildEmbedForQueue(videoUrls) {
+    const ids = videoUrls.map(getVideoId).filter(Boolean);
+    if (!ids.length) return "";
+    const first = ids[0];
+    const rest = ids.slice(1);
+    // playlist= lets YT auto-advance through the IDs
+    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
+  }
 
-    const ti = Math.max(0, Math.min(trackIndex, session.tracks.length - 1));
-    currentTrackIndex = ti;
+  function buildEmbedForPlaylist(playlistUrl) {
+    const list = getPlaylistId(playlistUrl);
+    if (!list) return "";
+    return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+  }
 
-    const meta = [session.artist, session.year].filter(Boolean).join(" • ");
-    if (session.mode === "queue") {
-      setNowTitle(`${session.title} — Track ${ti + 1}/${session.tracks.length}`);
+  function playEpisode(ep) {
+    if (!ep || !ep.tracks || !ep.tracks.length) return;
+
+    const mode = safeText(ep.mode).toLowerCase();
+    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
+
+    let src = "";
+    if (mode === "queue") {
+      src = buildEmbedForQueue(trackUrls);
+    } else if (mode === "playlist") {
+      src = buildEmbedForPlaylist(trackUrls[0]);
     } else {
-      setNowTitle(session.title);
+      src = buildEmbedForSingle(trackUrls[0]);
     }
-    setNowLine(meta ? `Playing now. • ${meta}` : "Playing now.");
 
-    ensurePlayerVisible();
-
-    const key = session.tracks[ti].key;
-
-    // if yt not ready yet, queue it
-    if (!ytReady) {
-      pendingPlay = { sessionIndex, trackIndex: ti };
+    if (!src) {
+      setStatus("Bad link in this session");
       return;
     }
 
-    const ok = playKey(key);
-    if (!ok) {
-      setNowLine("Embed blocked or player not ready. Try opening in YouTube.");
-    }
-  }
+    // Update UI
+    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
+    if (el.nowLine) el.nowLine.textContent = `Playing now: ${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
 
-  function nextInQueue() {
-    const session = SESSIONS[currentSessionIndex];
-    if (!session || session.mode !== "queue") return;
-
-    if (session.tracks.length <= 1) return;
-
-    currentTrackIndex = (currentTrackIndex + 1) % session.tracks.length;
-
-    setNowTitle(`${session.title} — Track ${currentTrackIndex + 1}/${session.tracks.length}`);
-    const key = session.tracks[currentTrackIndex].key;
-
-    if (!ytReady) {
-      pendingPlay = { sessionIndex: currentSessionIndex, trackIndex: currentTrackIndex };
-      return;
+    // Make sure player is visible when you pick a session
+    document.body.classList.remove("playerCollapsed");
+    if (el.toggleBtn) {
+      el.toggleBtn.textContent = "Hide player";
+      el.toggleBtn.setAttribute("aria-expanded", "true");
     }
 
-    playKey(key);
+    // Set player
+    if (el.playerFrame) {
+      el.playerFrame.src = src;
+    }
+
+    // Highlight active
+    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
+    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
+    if (card) card.classList.add("isActive");
+
+    setStatus("Ready");
   }
 
-  function startPlayAll() {
-    playAllFlat = buildPlayAllFlatList();
-    if (!playAllFlat.length) return;
+  function buildCard(ep, idx) {
+    const div = document.createElement("div");
+    div.className = "ep";
+    div.tabIndex = 0;
 
-    playAllEnabled = true;
-    playAllPos = 0;
+    ep.__key = `${idx}-${(ep.title || "").slice(0, 24)}`;
+    div.dataset.key = ep.__key;
 
-    const { si, ti } = playAllFlat[playAllPos];
-    startSession(si, ti);
-  }
+    const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
+    const small = (safeText(ep.mode).toLowerCase() === "queue")
+      ? `${ep.tracks.length} tracks • stitched queue`
+      : (safeText(ep.mode).toLowerCase() === "playlist")
+        ? `playlist`
+        : `full show`;
 
-  function nextInPlayAll() {
-    if (!playAllEnabled || !playAllFlat.length) return;
-
-    playAllPos = (playAllPos + 1) % playAllFlat.length;
-    const { si, ti } = playAllFlat[playAllPos];
-    startSession(si, ti);
-  }
-
-  // YouTube API calls this globally
-  window.onYouTubeIframeAPIReady = function () {
-    // if playerFrame missing, don’t crash
-    const frameHost = $("#playerFrame");
-    if (!frameHost) return;
-
-    ytPlayer = new YT.Player("playerFrame", {
-      width: "100%",
-      height: "100%",
-      videoId: "",
-      playerVars: {
-        autoplay: 0,
-        playsinline: 1,
-        rel: 0,
-        modestbranding: 1,
-        iv_load_policy: 3
-      },
-      events: {
-        onReady: function () {
-          ytReady = true;
-          setNowLine("Ready.");
-
-          // if something was queued before API loaded
-          if (pendingPlay) {
-            const { sessionIndex, trackIndex } = pendingPlay;
-            pendingPlay = null;
-            startSession(sessionIndex, trackIndex);
-          }
-
-          // auto playall if requested
-          if (AUTO_PLAYALL) startPlayAll();
-        },
-        onStateChange: function (e) {
-          if (!e) return;
-          if (e.data === YT.PlayerState.ENDED) {
-            const session = SESSIONS[currentSessionIndex];
-            if (session && session.mode === "queue") nextInQueue();
-            else if (playAllEnabled) nextInPlayAll();
-          }
-        }
-      }
-    });
-  };
-
-  // ---------- Render list ----------
-  if (!listEl) return;
-  listEl.innerHTML = "";
-
-  function renderCard(title, meta, small, onGo, featured = false) {
-    const card = document.createElement("div");
-    card.className = featured ? "ep epFeatured" : "ep";
-    card.tabIndex = 0;
-
-    card.innerHTML = `
+    div.innerHTML = `
       <div class="epHead">
-        <div>
-          <div class="epTitle">${title}</div>
-          <div class="epMeta">${meta || ""}</div>
-          <div class="epSmall">${small || ""}</div>
+        <div style="min-width:0">
+          <div class="epTitle">${safeText(ep.title)}</div>
+          <div class="epMeta">${meta}</div>
+          <div class="epSmall">${small}</div>
         </div>
-        <div class="chev" aria-hidden="true">›</div>
+        <div class="chev">›</div>
       </div>
     `;
 
-    card.addEventListener("click", onGo);
-    card.addEventListener("keydown", (e) => {
+    const activate = () => playEpisode(ep);
+
+    div.addEventListener("click", activate);
+    div.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        onGo();
+        activate();
       }
     });
 
-    listEl.appendChild(card);
+    return div;
   }
 
-  // Play All card
-  if (SESSIONS.length) {
-    const first = SESSIONS[0];
-    const meta = [first.artist, first.year].filter(Boolean).join(" • ");
-    renderCard(
-      "Play All — Autoplay Everything",
-      meta ? `Starts with: ${first.title} • ${meta}` : `Starts with: ${first.title}`,
-      "Hands-free mode: keeps rolling.",
-      () => startPlayAll(),
-      true
-    );
+  function flattenPlayAll(list) {
+    // Build a single mega queue of IDs from all episodes (fullshow contributes 1, queue contributes many).
+    const urls = [];
+    list.forEach(ep => {
+      const mode = safeText(ep.mode).toLowerCase();
+      if (mode === "playlist") {
+        // playlists can’t be merged into a single ID chain reliably — skip from Play All
+        return;
+      }
+      (ep.tracks || []).forEach(t => {
+        if (t && t.url) urls.push(t.url);
+      });
+    });
+    return urls;
   }
 
-  // Session cards
-  SESSIONS.forEach((s, i) => {
-    const meta = [s.artist, s.year].filter(Boolean).join(" • ");
-    const small = s.mode === "queue" ? `${s.tracks.length} tracks (stitched)` : "Full session";
-    renderCard(s.title, meta, small, () => startSession(i, 0), false);
+  function wirePlayAllButton(episodes) {
+    const btn = document.getElementById("playAllBtn");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const urls = flattenPlayAll(episodes).filter(Boolean);
+      const src = buildEmbedForQueue(urls);
+
+      if (!src) {
+        setStatus("No playable items for Play All");
+        return;
+      }
+
+      if (el.nowTitle) el.nowTitle.textContent = "Play All";
+      if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
+
+      document.body.classList.remove("playerCollapsed");
+      if (el.toggleBtn) {
+        el.toggleBtn.textContent = "Hide player";
+        el.toggleBtn.setAttribute("aria-expanded", "true");
+      }
+
+      if (el.playerFrame) el.playerFrame.src = src;
+      setStatus("Ready");
+    });
+  }
+
+  function init() {
+    try {
+      const episodes = window.EPISODES || window.episodes;
+
+      if (!Array.isArray(episodes)) {
+        setStatus("episodes.js not loaded");
+        if (el.episodes) {
+          el.episodes.innerHTML = `
+            <div class="ep" style="cursor:default;">
+              <div class="epTitle">No sessions found</div>
+              <div class="epMeta">episodes.js didn’t load or EPISODES wasn’t defined.</div>
+              <div class="epSmall">Check that sessions.html includes <b>./data/episodes.js</b> before app.js</div>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      if (!el.episodes) return;
+
+      el.episodes.innerHTML = "";
+      episodes.forEach((ep, idx) => el.episodes.appendChild(buildCard(ep, idx)));
+
+      wirePlayAllButton(episodes);
+
+      setStatus(`${episodes.length} sessions`);
+    } catch (err) {
+      setStatus("App crashed");
+      console.error(err);
+    }
+  }
+
+  // Player collapse toggle (safe)
+  function initPlayerToggle() {
+    if (!el.toggleBtn) return;
+
+    function setCollapsed(isCollapsed) {
+      document.body.classList.toggle("playerCollapsed", isCollapsed);
+      el.toggleBtn.textContent = isCollapsed ? "Show player" : "Hide player";
+      el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
+    }
+
+    // Start collapsed by default so it doesn’t block the list
+    setCollapsed(true);
+
+    el.toggleBtn.addEventListener("click", () => {
+      setCollapsed(!document.body.classList.contains("playerCollapsed"));
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    initPlayerToggle();
+    init();
   });
+})();
