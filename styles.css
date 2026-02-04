@@ -407,3 +407,38 @@ body.landing{
   .sessionsTitle{ font-size: 20px; }
   .epTitle{ font-size: 15px; }
 }
+/* =========================================================
+   PLAYER COLLAPSE (NO APP.JS CHANGES)
+   Keeps audio playing, stops iframe blocking taps/clicks
+   ========================================================= */
+
+.player-wrap--collapsible {
+  position: sticky;
+  top: 10px;
+  z-index: 60;
+}
+
+/* Collapsed state */
+body.playerCollapsed .player-wrap--collapsible .playerFrameWrap{
+  max-height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Make iframe non-blocking when collapsed (but still alive) */
+body.playerCollapsed #playerFrame{
+  height: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Tighten the frame so it becomes a clean mini-header */
+body.playerCollapsed .tvFrame{
+  border-radius: 22px;
+}
+
+/* Reduce the "Playing now" line too */
+body.playerCollapsed #nowPlayingLine{
+  padding-top: 0 !important;
+  padding-bottom: 10px !important;
+  opacity: .7;
+}
