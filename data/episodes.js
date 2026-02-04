@@ -190,6 +190,16 @@ window.EPISODES = [
       { title: "Scars", url: "https://youtu.be/vadGCs66ing?si=Z7xgurHTQUONsiUE" },
       { title: "My Heart I Surrender", url: "https://youtu.be/CqOgxKsIA88?si=90fIDzps92lQqP33" }
     ]
+  },
+
+  {
+    title: "Scarface — Tiny Desk (Home) Concert",
+    artist: "Scarface",
+    year: 2023,
+    mode: "fullshow",
+    tracks: [
+      { title: "Tiny Desk Concert", url: "https://youtu.be/ajNYTJcF6rE?si=iCDluIrgYiUgoh_z" }
+    ]
   }
 ];
 
