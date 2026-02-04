@@ -3,15 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sessions — Joey’s Acoustic Corner</title>
-  <link rel="stylesheet" href="styles.css?v=300" />
+  <title>Joey’s Acoustic Corner — Sessions</title>
+  <link rel="stylesheet" href="./styles.css?v=20260204">
 </head>
 
 <body>
   <header class="top">
     <div class="brand">
       <div class="brandMark"></div>
-
       <div class="brandText">
         <div class="titleRow">
           <div class="title">JOEY’S ACOUSTIC CORNER</div>
@@ -27,12 +26,25 @@
   </header>
 
   <main class="wrap">
-    <a class="backHome" href="index.html">← Back to home</a>
+    <a class="landingBtn" href="./index.html">← Back to home</a>
 
-    <!-- PLAYER (app.js will fill this) -->
-    <section class="player-wrap" id="playerWrap"></section>
+    <!-- Player -->
+    <section class="player-wrap" id="playerWrap">
+      <div class="now-playing-title" id="nowPlayingTitle">Pick a session 👇</div>
+      <div class="player-shell">
+        <iframe
+          id="playerFrame"
+          class="player-frame"
+          title="Player"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen
+          src="about:blank">
+        </iframe>
+      </div>
+      <div id="nowPlayingLine"> </div>
+    </section>
 
-    <!-- SESSIONS LIST -->
+    <!-- Sessions list -->
     <section id="sessionsList">
       <div class="sessionsHead">
         <div>
@@ -46,9 +58,8 @@
     </section>
   </main>
 
-  <!-- IMPORTANT: scripts in this order -->
-  <script src="episodes.js?v=300"></script>
-  <script src="app.js?v=300"></script>
-  <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- ✅ CRITICAL: episodes.js MUST load BEFORE app.js -->
+  <script src="./episodes.js?v=20260204"></script>
+  <script src="./app.js?v=20260204"></script>
 </body>
 </html>
