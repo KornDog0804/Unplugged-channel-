@@ -1,5 +1,6 @@
 /* Joey’s Acoustic Corner — app.js
    Crash-proof renderer + stitched queue autoplay (no YT API)
+   FIX: queues now start on track 1 (first song no longer skipped)
 */
 
 (function () {
@@ -56,14 +57,16 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
+  // ✅ FIXED: include ALL ids (including the first) in playlist=
+  // and force index=0 so the queue reliably starts on the first song.
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
+
     const first = ids[0];
-    const rest = ids.slice(1);
-    // playlist= lets YT auto-advance through the IDs
-    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
-    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
+    const playlistAll = encodeURIComponent(ids.join(","));
+
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&playlist=${playlistAll}&index=0`;
   }
 
   function buildEmbedForPlaylist(playlistUrl) {
@@ -94,7 +97,10 @@
 
     // Update UI
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
-    if (el.nowLine) el.nowLine.textContent = `Playing now: ${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
+    if (el.nowLine) {
+      const line = `Playing now: ${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
+      el.nowLine.textContent = line;
+    }
 
     // Make sure player is visible when you pick a session
     document.body.classList.remove("playerCollapsed");
@@ -125,11 +131,13 @@
     div.dataset.key = ep.__key;
 
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
-    const small = (safeText(ep.mode).toLowerCase() === "queue")
-      ? `${ep.tracks.length} tracks • stitched queue`
-      : (safeText(ep.mode).toLowerCase() === "playlist")
-        ? `playlist`
-        : `full show`;
+    const mode = safeText(ep.mode).toLowerCase();
+    const small =
+      (mode === "queue")
+        ? `${(ep.tracks || []).length} tracks • stitched queue`
+        : (mode === "playlist")
+          ? `playlist`
+          : `full show`;
 
     div.innerHTML = `
       <div class="epHead">
