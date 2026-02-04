@@ -531,3 +531,48 @@ body.playerCollapsed .tvFrame{
   position: relative;
   z-index: 1;
 }
+/* ===== PLAYER ISOLATION FIX ===== */
+
+/* Main player shell */
+.playerWrap {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #000;              /* HARD blackout */
+  overflow: hidden;              /* prevent bleed */
+  border-radius: 16px;
+}
+
+/* Inner player frame container */
+.playerBox {
+  background: #000;              /* double insurance */
+  isolation: isolate;            /* stops text bleeding through */
+}
+
+/* YouTube iframe */
+#playerFrame {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #000;
+}
+
+/* When player is collapsed */
+.playerCollapsed .playerWrap {
+  max-height: 0;
+  padding: 0;
+  margin: 0;
+  border: none;
+}
+
+/* Smooth transitions */
+.playerWrap,
+#playerFrame {
+  transition: all 0.25s ease;
+}
+/* Remove two-tone bleed near player */
+.sessions,
+.episodes,
+body {
+  background: #0b0b0b;
+}
