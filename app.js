@@ -1,6 +1,7 @@
-/* Joey’s Acoustic Corner — app.js (FIXED)
+/* Joey’s Acoustic Corner — app.js (FIXED v2)
    Crash-proof renderer + stitched queue autoplay (no YT API)
-   ✅ Fix: Watch on TV now opens REAL YouTube links (Android intent + fallback)
+   ✅ Fix: Watch on TV opens correctly on Shield/Android TV
+   ✅ Fix: Stitched queues no longer skip the first song (include first ID in playlist param)
 */
 
 (function () {
@@ -16,7 +17,6 @@
     watchTvBtn: $("#watchOnTvBtn")
   };
 
-  // Track what "Watch on TV" should open for the CURRENT thing playing
   let currentExternalUrl = "";
 
   function setStatus(msg) {
@@ -42,13 +42,10 @@
   function getVideoId(url) {
     try {
       const u = new URL(url);
-      // youtu.be/<id>
       if (u.hostname.includes("youtu.be")) {
         return u.pathname.replace("/", "").trim();
       }
-      // youtube.com/watch?v=<id>
       if (u.searchParams.get("v")) return u.searchParams.get("v");
-      // youtube.com/embed/<id>
       const parts = u.pathname.split("/").filter(Boolean);
       const embedIndex = parts.indexOf("embed");
       if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
@@ -73,13 +70,18 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
+  // ✅ FIX: include FIRST id inside playlist param too, or TV browsers sometimes start on #2
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
+
     const first = ids[0];
-    const rest = ids.slice(1);
-    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
-    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
+
+    // IMPORTANT: playlist contains ALL ids (including first)
+    // This prevents "skip first item" on some Android/TV browsers.
+    const fullList = ids.join(",");
+
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&playlist=${encodeURIComponent(fullList)}`;
   }
 
   function buildEmbedForPlaylist(playlistUrl) {
@@ -88,7 +90,7 @@
     return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
-  // ========== ✅ Watch on TV link builders ==========
+  // ===== Watch on TV builders =====
   function ytWatchUrl(id) {
     return `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
   }
@@ -97,7 +99,6 @@
     return `https://www.youtube.com/playlist?list=${encodeURIComponent(listId)}`;
   }
 
-  // This makes YouTube auto-advance through an ID list (works better than plain watch URL)
   function ytQueueWatchUrl(ids) {
     if (!ids || !ids.length) return "";
     const first = ids[0];
@@ -106,10 +107,7 @@
     return `https://www.youtube.com/watch?v=${encodeURIComponent(first)}&playlist=${encodeURIComponent(rest.join(","))}`;
   }
 
-  // Android intent deep link (helps Shield/Android TV jump to YouTube app)
   function ytIntentUrl(httpUrl) {
-    // Turn https://... into intent://... with YouTube package
-    // NOTE: Some TV browsers are picky — we always fallback to httpUrl.
     const safe = String(httpUrl || "").replace(/^https?:\/\//i, "");
     return `intent://${safe}#Intent;scheme=https;package=com.google.android.youtube;end`;
   }
@@ -134,26 +132,20 @@
   function openWatchOnTv() {
     if (!currentExternalUrl) return;
 
-    // On Android TV / Shield this often needs a direct navigation (not a new tab pop)
-    // We'll try intent first, then fall back to normal https.
     const httpUrl = currentExternalUrl;
 
-    // If not Android or Oculus, open normally in a new tab (your existing target=_blank will work)
     if (!isAndroid() || isOculus()) {
       window.open(httpUrl, "_blank", "noopener");
       return;
     }
 
-    // Android: try intent deep link
     try { window.location.href = ytIntentUrl(httpUrl); } catch (e) {}
 
-    // Fallback after a moment (if intent is ignored)
     setTimeout(() => {
       try { window.location.href = httpUrl; } catch (e) {}
     }, 550);
   }
 
-  // ========== Play logic ==========
   function playEpisode(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return;
 
@@ -183,29 +175,24 @@
       return;
     }
 
-    // Update UI
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
     if (el.nowLine) {
       const meta = `${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
       el.nowLine.textContent = meta ? `Playing now: ${meta}` : "Playing now.";
     }
 
-    // ✅ Update Watch on TV link for THIS session
     setWatchOnTv(external);
 
-    // Make sure player is visible when you pick a session
     document.body.classList.remove("playerCollapsed");
     if (el.toggleBtn) {
       el.toggleBtn.textContent = "Hide player";
       el.toggleBtn.setAttribute("aria-expanded", "true");
     }
 
-    // Set player
     if (el.playerFrame) {
       el.playerFrame.src = src;
     }
 
-    // Highlight active
     document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
     const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
     if (card) card.classList.add("isActive");
@@ -258,7 +245,7 @@
     const urls = [];
     list.forEach(ep => {
       const mode = safeText(ep.mode).toLowerCase();
-      if (mode === "playlist") return; // skip playlist items from mega-queue
+      if (mode === "playlist") return;
       (ep.tracks || []).forEach(t => {
         if (t && t.url) urls.push(t.url);
       });
@@ -283,7 +270,6 @@
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
 
-      // ✅ Watch on TV for Play All (stitches all IDs into a watch queue)
       const ids = urls.map(getVideoId).filter(Boolean);
       setWatchOnTv(ytQueueWatchUrl(ids));
 
@@ -324,8 +310,6 @@
       wirePlayAllButton(episodes);
 
       setStatus(`${episodes.length} sessions`);
-
-      // Start with Watch on TV disabled until something plays
       setWatchOnTv("");
 
     } catch (err) {
@@ -334,7 +318,6 @@
     }
   }
 
-  // Player collapse toggle (safe)
   function initPlayerToggle() {
     if (!el.toggleBtn) return;
 
@@ -344,7 +327,6 @@
       el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
     }
 
-    // Start collapsed by default so it doesn’t block the list
     setCollapsed(true);
 
     el.toggleBtn.addEventListener("click", () => {
@@ -352,19 +334,14 @@
     });
   }
 
-  // ✅ Watch on TV behavior
   function initWatchOnTv() {
     if (!el.watchTvBtn) return;
 
-    // If you click it, force a direct navigation (works better than _blank on TV browsers)
     el.watchTvBtn.addEventListener("click", (e) => {
-      // If no url yet, do nothing
       if (!currentExternalUrl) {
         e.preventDefault();
         return;
       }
-
-      // On Android TV, avoid the "opens then snaps back" behavior
       e.preventDefault();
       openWatchOnTv();
     });
