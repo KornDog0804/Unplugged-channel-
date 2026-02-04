@@ -698,3 +698,60 @@ body.pickMode #sessionOverlay *,
 body.pickMode .ep{
   pointer-events: auto !important;
 }
+/* =========================
+   Collapsible Player (NEW)
+   ========================= */
+
+.now-playing-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding: 14px 14px 10px;
+}
+
+.now-playing-title{
+  padding: 0 !important;
+  margin: 0;
+}
+
+.playerToggleBtn{
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.90);
+  border-radius: 999px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.playerToggleBtn:active{
+  transform: scale(.99);
+}
+
+/* When collapsed: keep a compact “Now Playing” bar, hide the heavy player area */
+body.playerCollapsed .tvFrame .playerFrameWrap,
+body.playerCollapsed .tvFrame .player-shell,
+body.playerCollapsed .tvFrame .player-frame{
+  display:none !important;
+}
+
+/* Make the card slim when collapsed */
+body.playerCollapsed .tvFrame{
+  padding-bottom: 10px;
+}
+
+/* Keep “Playing now.” visible as the mini-bar */
+body.playerCollapsed #nowPlayingLine{
+  padding: 12px 14px 14px !important;
+  opacity: .85;
+}
+
+/* On big screens, stop sticky behavior from hogging the screen when not needed */
+@media (min-width: 1100px){
+  body.playerCollapsed .player-wrap{
+    position: relative !important;
+    top: auto !important;
+  }
+}
