@@ -631,6 +631,374 @@ body.focusMode header.top { display: none !important; }
   background: #fff;
   color: #000;
 }
+:root{
+  --bg0:#07070a;
+  --text:rgba(255,255,255,.92);
+  --muted:rgba(255,255,255,.66);
+  --line:rgba(255,255,255,.10);
+
+  --a0:#ffb300;
+  --a1:#ff7a18;
+
+  --radius:22px;
+  --shadow: 0 16px 50px rgba(0,0,0,.55);
+  --shadow2: 0 10px 30px rgba(0,0,0,.45);
+
+  --max: 980px;
+
+  /* drawer height (player visible) */
+  --drawerH: 330px;
+}
+
+*{ box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  margin:0;
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  background:
+    radial-gradient(1200px 800px at 20% 0%, rgba(255,179,0,.16), transparent 55%),
+    radial-gradient(900px 700px at 90% 20%, rgba(255,122,24,.12), transparent 55%),
+    linear-gradient(180deg, #050507 0%, #0a0a10 40%, #06060a 100%);
+}
+
+/* ===== Top bar ===== */
+.top{
+  position:sticky;
+  top:0;
+  z-index:50;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(10,10,14,.86), rgba(10,10,14,.50));
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.brand{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 14px 14px 12px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.brandMark{
+  width:44px; height:44px;
+  border-radius:14px;
+  background:
+    radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.18), transparent 60%),
+    linear-gradient(135deg, rgba(255,179,0,.95), rgba(255,122,24,.85));
+  box-shadow: 0 10px 26px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.10) inset;
+  flex:0 0 auto;
+}
+.brandText{ flex:1; min-width:0; }
+.titleRow{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.title{
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  font-size: 15px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.sub{
+  margin-top:4px;
+  font-size:13px;
+  color: var(--muted);
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.subStrong{ color: rgba(255,255,255,.86); font-weight:650; }
+.subSep{ opacity:.5; }
+
+.liveBadge{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.25);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 8px 20px rgba(0,0,0,.28);
+  font-weight:700;
+  font-size:12px;
+  color: rgba(255,255,255,.85);
+  flex:0 0 auto;
+}
+.liveDot{
+  width:10px; height:10px;
+  border-radius: 999px;
+  background: var(--a0);
+  box-shadow: 0 0 0 4px rgba(255,179,0,.18);
+}
+
+/* ===== Main wrap ===== */
+.wrap{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 14px;
+  display:grid;
+  gap: 14px;
+
+  /* IMPORTANT: make room for player when drawer is open */
+  padding-bottom: var(--drawerH);
+}
+
+/* ===== Sessions card ===== */
+#sessionsList{
+  border-radius: var(--radius);
+  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow2);
+  overflow:hidden;
+}
+.sessionsHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sessionsTitle{
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -.01em;
+}
+.sessionsSub{
+  margin-top:4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+#status{
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.22);
+  color: rgba(255,255,255,.80);
+  font-weight: 700;
+  font-size: 13px;
+  white-space:nowrap;
+}
+
+#episodes{
+  padding: 12px;
+  display:grid;
+  gap: 10px;
+}
+.ep{
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+  padding: 12px 12px;
+  cursor:pointer;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
+  outline:none;
+}
+.ep:active{ transform: scale(.99); }
+.ep:hover{
+  border-color: rgba(255,179,0,.35);
+  box-shadow: 0 16px 46px rgba(0,0,0,.55);
+}
+.epHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+.epTitle{ font-weight: 900; font-size: 16px; line-height: 1.2; }
+.epMeta{ margin-top:6px; color: rgba(255,255,255,.72); font-weight: 650; }
+.epSmall{ margin-top:6px; font-size: 12px; color: rgba(255,255,255,.55); }
+.chev{
+  width: 34px; height: 34px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.85);
+  font-size: 20px;
+  flex: 0 0 auto;
+}
+.epFeatured{
+  border: 1px solid rgba(140,255,140,.18);
+  box-shadow: 0 0 0 1px rgba(140,255,140,.10), 0 18px 60px rgba(0,0,0,.35);
+}
+
+/* =========================
+   PLAYER DRAWER (KEY FIX)
+   ========================= */
+
+/* Player area lives fixed at bottom */
+#playerWrap{
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 9999;
+  pointer-events: none; /* only inner controls receive clicks */
+}
+
+/* The drawer shell */
+.playerDrawer{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 10px 14px 14px;
+  pointer-events: none;
+}
+
+/* Actual clickable card */
+.playerCard{
+  pointer-events: auto;
+  border-radius: 24px;
+  background: rgba(10,10,14,.82);
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* Drawer header row */
+.playerBar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.18);
+}
+.playerTitle{
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 13px;
+  opacity: .9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.playerBtns{
+  display:flex;
+  gap:10px;
+}
+.playerBtn{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.90);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* Video area */
+.playerFrameWrap{
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #000;
+}
+#playerFrame{
+  position:absolute;
+  inset:0;
+  width:100% !important;
+  height:100% !important;
+}
+#nowPlayingLine{
+  padding: 10px 12px 12px;
+  font-size: 12.5px;
+  color: rgba(255,255,255,.72);
+}
+
+/* Hidden state: collapses drawer height so it stops blocking */
+body.playerHidden .wrap{
+  padding-bottom: 14px;
+}
+body.playerHidden #playerWrap{
+  display:none;
+}
+
+/* ===== Landing styles (your existing look) ===== */
+body.landing{
+  min-height:100vh;
+  background:
+    radial-gradient(1100px 700px at 20% 10%, rgba(120,255,120,.18), transparent 55%),
+    radial-gradient(900px 600px at 80% 20%, rgba(120,140,255,.14), transparent 55%),
+    radial-gradient(1200px 800px at 50% 100%, rgba(255,180,70,.14), transparent 60%),
+    linear-gradient(180deg, #0a0b11, #0b0c14 60%, #0a0b11);
+}
+
+.landingWrap{ max-width: 980px; margin: 0 auto; padding: 18px 14px 32px; }
+.landingHero{
+  border-radius: 26px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  box-shadow: 0 18px 60px rgba(0,0,0,.45);
+  overflow:hidden;
+}
+.landingTop{ display:flex; align-items:center; justify-content:space-between; gap:12px; padding: 10px 10px; }
+.landingBrand{ display:flex; align-items:center; gap:12px; }
+.landingMark{
+  width:44px; height:44px; border-radius:14px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(120,255,120,.65), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(255,190,70,.55), transparent 60%),
+    rgba(255,255,255,.06);
+  box-shadow: 0 12px 30px rgba(0,0,0,.35);
+  border: 1px solid rgba(255,255,255,.10);
+}
+.landingTitle{ font-weight: 900; letter-spacing: .2px; font-size: 16px; }
+.landingSub{ opacity:.8; font-size: 12px; margin-top:2px; }
+.landingBadge{
+  display:flex; align-items:center; gap:8px;
+  padding: 8px 12px; border-radius: 999px;
+  border:1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  backdrop-filter: blur(10px);
+  font-weight: 800; font-size: 12px;
+}
+.landingLogo{
+  padding: 26px 18px 10px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  line-height: .92;
+  font-size: clamp(34px, 7vw, 62px);
+  text-transform: uppercase;
+  background: linear-gradient(90deg, rgba(120,255,120,.95), rgba(255,190,70,.92));
+  -webkit-background-clip: text;
+  background-clip:text;
+  color: transparent;
+}
+.landingCard{
+  padding: 16px 18px 20px;
+  border-top: 1px solid rgba(255,255,255,.10);
+  background:
+    radial-gradient(900px 400px at 20% 0%, rgba(255,190,70,.10), transparent 60%),
+    rgba(10,10,16,.35);
+}
+.landingCard h1{ margin: 0 0 8px; font-size: 28px; }
+.landingCard p{ margin: 0 0 14px; opacity: .86; font-size: 14px; line-height: 1.45; }
+.landingButtons{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+.landingBtn{
+  display:inline-flex; align-items:center; justify-content:center;
+  padding: 12px 14px; border-radius: 14px;
+  text-decoration:none; font-weight: 900;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color:#fff;
+  min-width: 170px;
+}
+.landingBtn.primary{
+  border-color: rgba(120,255,120,.30);
+  background: linear-gradient(90deg, rgba(120,255,120,.90), rgba(255,190,70,.80));
+  color: #0a0b11;
+}
+.landingFine{ margin-top: 12px; font-size: 12px; opacity: .72; }
+
+@media (max-width: 420px){
+  .sessionsTitle{ font-size: 20px; }
+  .epTitle{ font-size: 15px; }
+  :root{ --drawerH: 290px; }
+   }
 
 /* =========================================================
    ✅ TV / SHIELD FIXES (CONTROL + CLICK SAFETY)
