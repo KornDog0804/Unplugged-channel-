@@ -442,3 +442,92 @@ body.playerCollapsed #nowPlayingLine{
   padding-bottom: 10px !important;
   opacity: .7;
 }
+/* --- CLEAN PLAYER + CLEAN BACKGROUND OVERRIDES (drop at bottom of styles.css) --- */
+
+/* Kill the weird two-tone fight */
+html, body {
+  background: radial-gradient(1200px 800px at 20% 10%, rgba(120,255,140,.12), transparent 55%),
+              radial-gradient(900px 700px at 80% 20%, rgba(255,190,80,.10), transparent 55%),
+              linear-gradient(180deg, #07080b 0%, #050508 55%, #07080b 100%) !important;
+}
+
+/* Make the sticky player NOT collide with header */
+.player-wrap--collapsible{
+  position: sticky;
+  top: 72px;           /* give the header breathing room */
+  z-index: 40;
+  margin-top: 10px;
+}
+
+/* Stop "jumbled words" — constrain the Now Playing text */
+.now-playing-title,
+#nowPlayingTitle{
+  font-weight: 900;
+  letter-spacing: .02em;
+  line-height: 1.15;
+  margin: 0 0 8px 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Make the TV frame act like a real container */
+.tvFrame{
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+/* The wrapper needs a stable height so iframe can fill it */
+.playerFrameWrap{
+  width: 100%;
+  aspect-ratio: 16 / 9;     /* keeps it looking clean on phones + TV */
+  border-radius: 18px;
+  overflow: hidden;
+  background: #000;
+  position: relative;
+}
+
+/* Make iframe fill the entire box */
+.player-frame,
+#playerFrame{
+  position: absolute;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  display: block;
+}
+
+/* Make toggle button not look like 2006 */
+.sessionOverlayClose,
+#playerToggleBtn{
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 800;
+}
+
+/* COLLAPSE: truly gets out of the way */
+body.playerCollapsed .playerFrameWrap{
+  max-height: 0 !important;
+  aspect-ratio: auto !important;
+  height: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+}
+
+/* When collapsed, make sure iframe can’t steal taps */
+body.playerCollapsed #playerFrame{
+  pointer-events: none !important;
+}
+
+/* When collapsed, keep the player section slim */
+body.playerCollapsed .tvFrame{
+  padding-bottom: 0 !important;
+}
+
+/* Make the Sessions list always tappable (player can’t “cover” it) */
+#sessionsList{
+  position: relative;
+  z-index: 1;
+}
