@@ -32,21 +32,23 @@
       ← Back to home
     </a>
 
+    <!-- PLAYER -->
     <section id="playerWrap" class="player-wrap player-wrap--collapsible">
       <div class="now-playing-title" id="nowPlayingTitle">Now Playing</div>
-
-      <!-- Pro action row -->
-      <div class="playerActions">
-        <a id="watchOnTvBtn" class="watchOnTvBtn" href="#" target="_blank" rel="noopener">Watch on TV</a>
-
-        <button id="playerToggleBtn" class="playerToggleBtn" type="button" aria-expanded="false">
-          Show player
-        </button>
-      </div>
 
       <div class="tvFrame">
         <div class="tvTopBar">
           <div class="tvLabel">JOEY’S ACOUSTIC CORNER</div>
+
+          <div class="tvActions">
+            <a id="watchOnTvBtn" class="watchTvBtn" href="#" target="_blank" rel="noopener">
+              Watch on TV
+            </a>
+
+            <button id="playerToggleBtn" class="sessionOverlayClose" type="button" aria-expanded="false">
+              Show player
+            </button>
+          </div>
         </div>
 
         <div class="playerFrameWrap" id="playerFrameWrap">
@@ -60,12 +62,13 @@
           ></iframe>
         </div>
 
-        <div id="nowPlayingLine" style="padding: 10px 14px 12px; opacity:.75; font-weight:700;">
+        <div id="nowPlayingLine" class="nowPlayingLine">
           Playing now.
         </div>
       </div>
     </section>
 
+    <!-- LIST -->
     <section id="sessionsList">
       <div class="sessionsHead">
         <div>
@@ -75,8 +78,8 @@
         <div id="status">Loading…</div>
       </div>
 
-      <div style="padding: 0 12px 12px;">
-        <button id="playAllBtn" class="landingBtn" style="width:100%; border-radius: 16px;">
+      <div class="playAllWrap">
+        <button id="playAllBtn" class="landingBtn playAllBtn">
           Play All
         </button>
       </div>
