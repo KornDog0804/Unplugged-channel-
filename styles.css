@@ -1,838 +1,286 @@
+/* Joey’s Acoustic Corner — styles.css */
+
 :root{
-  --bg0:#07070a;
-  --bg1:#0d0d14;
-  --card:rgba(255,255,255,.06);
-  --line:rgba(255,255,255,.10);
-  --text:rgba(255,255,255,.92);
-  --muted:rgba(255,255,255,.66);
-
-  --a0:#ffb300;
-  --a1:#ff7a18;
-
-  --radius:22px;
-  --shadow: 0 16px 50px rgba(0,0,0,.55);
-  --shadow2: 0 10px 30px rgba(0,0,0,.45);
-  --max: 980px;
+  --bg:#0b0d10;
+  --card: rgba(255,255,255,.06);
+  --stroke: rgba(255,255,255,.10);
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.70);
+  --muted2: rgba(255,255,255,.55);
+  --shadow: 0 18px 45px rgba(0,0,0,.45);
+  --r: 22px;
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
+*{box-sizing:border-box}
+html,body{height:100%}
+
 body{
   margin:0;
-  color:var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  color: var(--text);
   background:
-    radial-gradient(1200px 800px at 20% 0%, rgba(255,179,0,.16), transparent 55%),
-    radial-gradient(900px 700px at 90% 20%, rgba(255,122,24,.12), transparent 55%),
-    linear-gradient(180deg, #050507 0%, #0a0a10 40%, #06060a 100%);
-  min-height:100%;
+    radial-gradient(1200px 900px at 25% 10%, rgba(124,255,107,.18), transparent 60%),
+    radial-gradient(900px 700px at 85% 5%, rgba(242,201,76,.14), transparent 55%),
+    var(--bg);
 }
 
-/* ---------- Top Bar ---------- */
+a{color:inherit;text-decoration:none}
+button{font:inherit}
+
 .top{
-  position:sticky;
-  top:0;
-  z-index:50;
-  backdrop-filter: blur(14px);
-  background: linear-gradient(180deg, rgba(10,10,14,.86), rgba(10,10,14,.50));
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  padding: 18px 14px 6px;
 }
 
 .brand{
-  max-width: var(--max);
+  max-width: 620px;
   margin: 0 auto;
-  padding: 14px 14px 12px;
   display:flex;
+  gap: 12px;
   align-items:center;
-  gap:12px;
 }
 
 .brandMark{
-  width:44px; height:44px;
-  border-radius:14px;
-  background:
-    radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.18), transparent 60%),
-    linear-gradient(135deg, rgba(255,179,0,.95), rgba(255,122,24,.85));
-  box-shadow: 0 10px 26px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.10) inset;
-  flex:0 0 auto;
+  width:44px;height:44px;border-radius:14px;
+  background: radial-gradient(circle at 30% 20%, rgba(124,255,107,.85), rgba(242,201,76,.65));
+  box-shadow: var(--shadow);
 }
 
-.brandText{ flex:1; min-width:0; }
+.brandText{min-width:0; flex:1}
 
 .titleRow{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:10px;
+  gap:10px
 }
 
 .title{
-  font-weight:800;
+  font-weight:900;
   letter-spacing:.06em;
-  text-transform:uppercase;
-  font-size: 15px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  font-size:14px;
+  opacity:.92
 }
 
 .liveBadge{
   display:flex;
   align-items:center;
   gap:8px;
+  background: rgba(0,0,0,.35);
+  border: 1px solid var(--stroke);
   padding: 7px 10px;
   border-radius: 999px;
-  background: rgba(0,0,0,.25);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: 0 8px 20px rgba(0,0,0,.28);
-  font-weight:700;
-  font-size:12px;
-  color: rgba(255,255,255,.85);
-  flex:0 0 auto;
+  font-weight: 900;
 }
 
 .liveDot{
-  width:10px; height:10px;
-  border-radius: 999px;
-  background: var(--a0);
-  box-shadow: 0 0 0 4px rgba(255,179,0,.18);
+  width:10px;height:10px;border-radius:50%;
+  background: #ffcc00;
+  box-shadow: 0 0 0 4px rgba(255,204,0,.18);
 }
 
 .sub{
-  margin-top:4px;
-  font-size:13px;
-  color: var(--muted);
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
+  margin-top:2px;
+  font-size:14px;
+  color: var(--muted)
 }
-.subStrong{ color: rgba(255,255,255,.86); font-weight:650; }
-.subSep{ opacity:.5; }
 
-/* ---------- Layout ---------- */
+.subStrong{font-weight:900}
+.subSep{opacity:.6; margin: 0 6px}
+
 .wrap{
-  max-width: var(--max);
+  max-width: 620px;
   margin: 0 auto;
-  padding: 14px;
-  display:grid;
-  gap: 14px;
+  padding: 10px 12px 40px;
 }
 
-.backHome{
-  display:inline-flex;
+.focusToggleBtn{
+  display:flex;
   align-items:center;
-  gap:8px;
+  gap:10px;
+  width:100%;
+  margin: 6px 0 12px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--stroke);
   padding: 12px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.22);
-  color: rgba(255,255,255,.9);
-  text-decoration:none;
   font-weight: 800;
-}
-
-/* ---------- Player (injected by app.js) ---------- */
-.playerDrawer{
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.10);
   box-shadow: var(--shadow);
-  overflow:hidden;
 }
 
-.playerCard{ padding: 12px; }
-
-.playerBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  padding: 10px 10px 12px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.playerTitle{
-  font-weight: 900;
-  letter-spacing: .2px;
-  font-size: 14px;
-  line-height: 1.25;
-  color: rgba(255,255,255,.92);
-  overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
-}
-
-.playerBtns{
-  display:flex;
-  gap:8px;
-  flex:0 0 auto;
-}
-
-.playerBtn{
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(0,0,0,.22);
-  color: rgba(255,255,255,.92);
-  font-weight: 900;
-  padding: 10px 12px;
-  border-radius: 999px;
-  cursor:pointer;
-}
-
-.playerFrameWrap{
-  margin-top: 12px;
-  border-radius: 18px;
-  overflow:hidden;
-  background:#000;
-  box-shadow: var(--shadow2);
-  aspect-ratio: 16 / 9;
-  position: relative;
-}
-
-#playerFrame{
-  position:absolute;
-  inset:0;
-}
-
-#nowPlayingLine{
-  margin-top: 10px;
-  padding: 8px 10px 2px;
-  font-size: 12.5px;
-  font-weight: 800;
-  color: rgba(255,255,255,.70);
-}
-
-/* ✅ Hide-player: COLLAPSE the frame so it stops blocking taps */
-body.playerHidden .playerFrameWrap{
-  display:none !important;
-}
-body.playerHidden #nowPlayingLine{
-  display:none !important;
-}
-body.playerHidden .playerCard{
-  padding-bottom: 6px;
-}
-
-/* ---------- Sessions Card ---------- */
-#sessionsList{
-  border-radius: var(--radius);
-  background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: var(--shadow2);
-  overflow:hidden;
-}
-
-.sessionsHead{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:12px;
-  padding: 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.sessionsTitle{
-  font-size: 22px;
-  font-weight: 900;
-  letter-spacing: -.01em;
-}
-
-.sessionsSub{
-  margin-top:4px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-#status{
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.22);
-  color: rgba(255,255,255,.80);
-  font-weight: 900;
-  font-size: 13px;
-  white-space:nowrap;
-}
-
-/* ---------- Episode List ---------- */
-#episodes{
-  padding: 12px;
-  display:grid;
-  gap: 10px;
-}
-
-.ep{
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  padding: 12px 12px;
-  cursor:pointer;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease;
-  outline:none;
-}
-
-.ep:active{ transform: scale(.99); }
-
-.ep:hover{
-  border-color: rgba(255,179,0,.35);
-  box-shadow: 0 16px 46px rgba(0,0,0,.55);
-}
-
-.ep:focus{
-  border-color: rgba(255,179,0,.55);
-  box-shadow: 0 0 0 4px rgba(255,179,0,.14), 0 18px 50px rgba(0,0,0,.55);
-}
-
-.epHead{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.epTitle{
-  font-weight: 900;
-  letter-spacing: -.01em;
-  font-size: 16px;
-  line-height: 1.2;
-}
-
-.epMeta{
-  margin-top:6px;
-  color: rgba(255,255,255,.72);
-  font-weight: 750;
-}
-
-.epSmall{
-  margin-top:6px;
-  font-size: 12px;
-  color: rgba(255,255,255,.55);
-  font-weight: 750;
-}
-
-.chev{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display:grid;
-  place-items:center;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.18);
-  color: rgba(255,255,255,.85);
-  font-size: 20px;
-  flex: 0 0 auto;
-}
-
-/* Featured (Play All) */
-.epFeatured{
-  border-color: rgba(140,255,140,.20);
-  box-shadow: 0 0 0 1px rgba(140,255,140,.10), 0 18px 60px rgba(0,0,0,.35);
-}
-
-/* ---------- Landing Page ---------- */
-body.landing{
-  background:
-    radial-gradient(1100px 700px at 20% 10%, rgba(120,255,120,.18), transparent 55%),
-    radial-gradient(900px 600px at 80% 20%, rgba(120,140,255,.14), transparent 55%),
-    radial-gradient(1200px 800px at 50% 100%, rgba(255,180,70,.14), transparent 60%),
-    linear-gradient(180deg, #0a0b11, #0b0c14 60%, #0a0b11);
-}
-
-.landingWrap{
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 18px 14px 32px;
-}
-
-.landingHero{
-  margin-top: 10px;
-  border-radius: 26px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  box-shadow: 0 18px 60px rgba(0,0,0,.45);
-  overflow:hidden;
-}
-
-.landingLogo{
-  padding: 26px 18px 10px;
-  font-weight: 1000;
-  letter-spacing: 1px;
-  line-height: .92;
-  font-size: clamp(34px, 7vw, 62px);
-  text-transform: uppercase;
-  background: linear-gradient(90deg, rgba(120,255,120,.95), rgba(255,190,70,.92));
-  -webkit-background-clip: text;
-  background-clip:text;
-  color: transparent;
-}
-
-.landingCard{
-  padding: 16px 18px 20px;
-  border-top: 1px solid rgba(255,255,255,.10);
-  background:
-    radial-gradient(900px 400px at 20% 0%, rgba(255,190,70,.10), transparent 60%),
-    rgba(10,10,16,.35);
-}
-
-.landingCard h1{ margin: 0 0 8px; font-size: 28px; letter-spacing: .2px; }
-.landingCard p{
-  margin: 0 0 14px;
-  opacity: .86;
-  font-size: 14px;
-  line-height: 1.45;
-  max-width: 62ch;
-}
-
-.landingButtons{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
-
-.landingBtn{
-  display:inline-flex; align-items:center; justify-content:center;
-  padding: 12px 14px; border-radius: 14px;
-  text-decoration:none; font-weight: 900; letter-spacing:.2px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color:#fff;
-  min-width: 170px;
-}
-
-.landingBtn.primary{
-  border-color: rgba(120,255,120,.30);
-  background: linear-gradient(90deg, rgba(120,255,120,.90), rgba(255,190,70,.80));
-  color: #0a0b11;
-}
-
-.landingFine{ margin-top: 12px; font-size: 12px; opacity: .72; }
-
-@media (max-width: 420px){
-  .title{ font-size: 14px; }
-  .sessionsTitle{ font-size: 20px; }
-  .epTitle{ font-size: 15px; }
-}
-/* =========================================================
-   PLAYER COLLAPSE (NO APP.JS CHANGES)
-   Keeps audio playing, stops iframe blocking taps/clicks
-   ========================================================= */
-
-.player-wrap--collapsible {
-  position: sticky;
-  top: 10px;
-  z-index: 60;
-}
-
-/* Collapsed state */
-body.playerCollapsed .player-wrap--collapsible .playerFrameWrap{
-  max-height: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
-/* Make iframe non-blocking when collapsed (but still alive) */
-body.playerCollapsed #playerFrame{
-  height: 0 !important;
-  pointer-events: none !important;
-}
-
-/* Tighten the frame so it becomes a clean mini-header */
-body.playerCollapsed .tvFrame{
-  border-radius: 22px;
-}
-
-/* Reduce the "Playing now" line too */
-body.playerCollapsed #nowPlayingLine{
-  padding-top: 0 !important;
-  padding-bottom: 10px !important;
-  opacity: .7;
-}
-/* --- CLEAN PLAYER + CLEAN BACKGROUND OVERRIDES (drop at bottom of styles.css) --- */
-
-/* Kill the weird two-tone fight */
-html, body {
-  background: radial-gradient(1200px 800px at 20% 10%, rgba(120,255,140,.12), transparent 55%),
-              radial-gradient(900px 700px at 80% 20%, rgba(255,190,80,.10), transparent 55%),
-              linear-gradient(180deg, #07080b 0%, #050508 55%, #07080b 100%) !important;
-}
-
-/* Make the sticky player NOT collide with header */
-.player-wrap--collapsible{
-  position: sticky;
-  top: 72px;           /* give the header breathing room */
-  z-index: 40;
-  margin-top: 10px;
-}
-
-/* Stop "jumbled words" — constrain the Now Playing text */
-.now-playing-title,
-#nowPlayingTitle{
-  font-weight: 900;
-  letter-spacing: .02em;
-  line-height: 1.15;
-  margin: 0 0 8px 0;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Make the TV frame act like a real container */
-.tvFrame{
-  overflow: hidden;
-  border-radius: 22px;
-}
-
-/* The wrapper needs a stable height so iframe can fill it */
-.playerFrameWrap{
-  width: 100%;
-  aspect-ratio: 16 / 9;     /* keeps it looking clean on phones + TV */
-  border-radius: 18px;
-  overflow: hidden;
-  background: #000;
-  position: relative;
-}
-
-/* Make iframe fill the entire box */
-.player-frame,
-#playerFrame{
-  position: absolute;
-  inset: 0;
-  width: 100% !important;
-  height: 100% !important;
-  border: 0 !important;
-  display: block;
-}
-
-/* Make toggle button not look like 2006 */
-.sessionOverlayClose,
-#playerToggleBtn{
-  border-radius: 14px;
-  padding: 10px 12px;
-  font-weight: 800;
-}
-
-/* COLLAPSE: truly gets out of the way */
-body.playerCollapsed .playerFrameWrap{
-  max-height: 0 !important;
-  aspect-ratio: auto !important;
-  height: 0 !important;
-  padding: 0 !important;
-  overflow: hidden !important;
-}
-
-/* When collapsed, make sure iframe can’t steal taps */
-body.playerCollapsed #playerFrame{
-  pointer-events: none !important;
-}
-
-/* When collapsed, keep the player section slim */
-body.playerCollapsed .tvFrame{
-  padding-bottom: 0 !important;
-}
-
-/* Make the Sessions list always tappable (player can’t “cover” it) */
-#sessionsList{
-  position: relative;
-  z-index: 1;
-}
-/* ===== PLAYER ISOLATION FIX ===== */
-
-/* Main player shell */
-.playerWrap {
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  background: #000;              /* HARD blackout */
-  overflow: hidden;              /* prevent bleed */
-  border-radius: 16px;
-}
-
-/* Inner player frame container */
-.playerBox {
-  background: #000;              /* double insurance */
-  isolation: isolate;            /* stops text bleeding through */
-}
-
-/* YouTube iframe */
-#playerFrame {
-  width: 100%;
-  height: 100%;
-  display: block;
-  background: #000;
-}
-
-/* When player is collapsed */
-.playerCollapsed .playerWrap {
-  max-height: 0;
-  padding: 0;
-  margin: 0;
-  border: none;
-}
-
-/* Smooth transitions */
-.playerWrap,
-#playerFrame {
-  transition: all 0.25s ease;
-}
-/* Remove two-tone bleed near player */
-.sessions,
-.episodes,
-body {
-  background: #0b0b0b;
-}
-/* =========================
-   SPOTIFY-STYLE PLAYER DOCK
-   (Fixes scroll bleed + blocking)
-========================= */
-
-/* Player becomes a fixed bottom dock (not in scroll layer) */
-.playerWrap{
-  position: fixed !important;
-  left: 12px;
-  right: 12px;
-  bottom: 12px;
-  top: auto !important;
-  z-index: 9999;
-
-  background: #000;
-  border-radius: 18px;
-  overflow: hidden;
-  isolation: isolate;
-
-  box-shadow: 0 20px 60px rgba(0,0,0,.65);
-}
-
-/* Make sure nothing can “show through” behind the dock */
-.playerWrap *{
-  position: relative;
-  z-index: 2;
-}
-
-/* The actual video area fills the whole black box cleanly */
-.playerBox{
-  background: #000;
-  overflow: hidden;
-  border-radius: 18px;
-}
-
-/* Fill the player area */
-#playerFrame{
-  width: 100%;
-  height: 240px;          /* adjust if you want taller */
-  display: block;
-  background: #000;
-  border: 0;
-}
-
-/* Reserve space so the sessions list NEVER scrolls underneath */
-main,
-#episodes,
-.episodes,
-.sessions,
-.page{
-  padding-bottom: 290px;  /* should be a bit bigger than iframe height */
-}
-
-/* Collapse = slide down off-screen (mini-player behavior) */
-.playerCollapsed .playerWrap{
-  transform: translateY(calc(100% + 20px));
-}
-
-/* Smooth, premium feel */
-.playerWrap{
-  transform: translateY(0);
-  transition: transform .22s ease;
-}
-
-/* Optional: make “Now Playing” text area not float over anything */
-#nowPlayingTitle,
-#nowPlayingLine{
-  background: #000;
-}
-/* --- Player: hard stop scroll bleed + non-blocking collapse --- */
-
-/* Keeps the player area from letting text bleed behind it */
-#playerWrap.player-wrap {
-  position: sticky;
-  top: 0;              /* if you want it below header, set this to your header height */
-  z-index: 50;
-  background: #000;    /* blackout */
-  isolation: isolate;  /* prevents weird blend/stack behavior */
-}
-
-/* Blackout “cap” above the player so nothing shows through while scrolling */
-#playerWrap.player-wrap::before {
-  content: "";
-  position: absolute;
-  left: 0; right: 0;
-  top: -80px;          /* adjust if needed */
-  height: 80px;
-  background: #000;
-}
-
-/* The TV frame should be the visual container */
-#playerWrap .tvFrame {
-  background: #000;
-}
-
-/* Make the iframe fill the box (no weird letterbox gaps) */
-#playerWrap .playerFrameWrap {
-  width: 100%;
-  aspect-ratio: 16 / 9;  /* keeps it clean on phones */
-  overflow: hidden;
-  border-radius: 18px;
-  background: #000;
-}
-
-#playerWrap iframe.player-frame {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  display: block;
-}
-
-/* COLLAPSE: hide the actual video area so it stops blocking the page */
-body.playerCollapsed #playerWrap .playerFrameWrap {
-  display: none;
-}
-
-/* COLLAPSE: keep only the top bar + “Now Playing” line visible */
-body.playerCollapsed #playerWrap .now-playing-title,
-body.playerCollapsed #playerWrap #nowPlayingLine {
-  display: none; /* optional — remove these if you want them visible */
-}
-/* === PLAYER HERO MODE === */
-
-/* Make the whole player section feel intentional */
-#playerWrap.player-wrap {
-  background: #000;
-  padding: 0;
-}
-
-/* TV frame = visual container */
-#playerWrap .tvFrame {
-  background: #000;
-  padding: 0;
-  border-radius: 18px;
-  overflow: hidden;
-}
-
-/* Kill wasted vertical space above/below video */
-#playerWrap .tvTopBar {
-  background: #000;
-  padding: 10px 14px;
-  z-index: 2;
-}
-
-/* The video area becomes the star */
-#playerWrap .playerFrameWrap {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* FORCE iframe to fill the box */
-#playerWrap iframe.player-frame {
-  width: 100%;
-  height: 100%;
-  min-height: 100%;
-  border: 0;
-  display: block;
-  background: #000;
-}
-/* --- Pro Player Shell (Spotify/Apple-ish) --- */
-
-.player-wrap{
-  margin-top: 14px;
-}
+/* Player */
+.player-wrap{margin: 0 0 14px}
 
 .now-playing-title{
-  font-size: 14px;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  opacity: .85;
-  margin: 6px 2px 8px;
-  font-weight: 900;
-}
-
-.playerActions{
-  display:flex;
-  gap:10px;
-  align-items:center;
-  justify-content:space-between;
-  margin: 0 0 10px;
-}
-
-.watchOnTvBtn{
-  display:none;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(0,0,0,.65);
-  border: 1px solid rgba(255,255,255,.10);
-  color:#fff;
-  text-decoration:none;
-  font-weight: 900;
-  letter-spacing:.02em;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-}
-
-.playerToggleBtn{
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(255,255,255,.10);
-  border: 1px solid rgba(255,255,255,.14);
-  color:#fff;
-  font-weight: 900;
+  font-weight: 1000;
+  letter-spacing: .02em;
+  font-size: 16px;
+  margin: 10px 6px 10px;
+  opacity: .95;
 }
 
 .tvFrame{
-  background: #000;
-  border-radius: 22px;
+  background: rgba(0,0,0,.82);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: var(--r);
   overflow: hidden;
-  box-shadow: 0 18px 70px rgba(0,0,0,.65);
-  border: 1px solid rgba(255,255,255,.06);
+  box-shadow: var(--shadow);
 }
 
 .tvTopBar{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding: 10px 14px;
-  background: linear-gradient(to bottom, rgba(255,255,255,.06), rgba(0,0,0,0));
+  gap: 10px;
+  padding: 12px 12px;
+  background: rgba(0,0,0,.90);
+  border-bottom: 1px solid rgba(255,255,255,.10);
 }
 
 .tvLabel{
-  font-weight: 900;
-  letter-spacing: .10em;
-  text-transform: uppercase;
+  font-weight: 1000;
+  letter-spacing: .12em;
   font-size: 12px;
-  opacity: .85;
+  opacity: .92;
 }
 
-/* Make iframe fill the box more, less wasted space */
+.tvActions{
+  display:flex;
+  align-items:center;
+  gap: 10px;
+}
+
+.watchTvBtn,
+.sessionOverlayClose{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.07);
+  font-weight: 1000;
+  color: var(--text);
+  box-shadow: 0 10px 24px rgba(0,0,0,.35);
+}
+
+.watchTvBtn:active,
+.sessionOverlayClose:active{
+  transform: translateY(1px);
+}
+
 .playerFrameWrap{
-  position: relative;
+  background: #000;
+}
+
+/* Big prominent player fills the box */
+.player-frame{
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: clamp(300px, 52vh, 520px);
+  border: 0;
+  display:block;
   background:#000;
 }
 
-.player-frame{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  border:0;
+.nowPlayingLine{
+  padding: 10px 14px 12px;
+  opacity: .78;
+  font-weight: 900;
 }
 
-/* Collapsed state: player shrinks cleanly, list stays usable */
-body.playerCollapsed .playerFrameWrap{
-  display:none;
+/* Collapsed mode: remove iframe area entirely */
+body.playerCollapsed #playerFrameWrap{ display:none; }
+body.playerCollapsed .nowPlayingLine{ display:none; }
+
+/* Sessions list */
+.sessionsHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap: 12px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid var(--stroke);
+  border-radius: var(--r);
+  padding: 14px 14px;
+  box-shadow: var(--shadow);
 }
 
-body.playerCollapsed #nowPlayingLine{
-  display:none;
+.sessionsTitle{
+  font-size: 22px;
+  font-weight: 1000;
+}
+
+.sessionsSub{
+  color: var(--muted);
+  margin-top: 3px;
+  font-weight: 800;
+}
+
+#status{
+  color: var(--muted);
+  font-weight: 1000;
+  background: rgba(0,0,0,.35);
+  border: 1px solid var(--stroke);
+  padding: 8px 10px;
+  border-radius: 999px;
+}
+
+.playAllWrap{padding: 12px 8px 10px}
+
+.landingBtn{
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.07);
+  color: var(--text);
+  font-weight: 1000;
+  padding: 14px 14px;
+  border-radius: 16px;
+  width: 100%;
+  box-shadow: 0 10px 22px rgba(0,0,0,.35);
+}
+
+#episodes{padding: 4px 0 0}
+
+.ep{
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--r);
+  padding: 14px 14px;
+  margin: 10px 0;
+  box-shadow: 0 14px 30px rgba(0,0,0,.35);
+  cursor:pointer;
+}
+
+.ep.isActive{
+  border-color: rgba(242,201,76,.55);
+  box-shadow: 0 18px 45px rgba(0,0,0,.45);
+}
+
+.epHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 10px;
+}
+
+.epTitle{
+  font-weight: 1000;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.epMeta{
+  margin-top: 6px;
+  color: rgba(255,255,255,.75);
+  font-weight: 900;
+}
+
+.epSmall{
+  margin-top: 6px;
+  color: rgba(255,255,255,.55);
+  font-weight: 900;
+}
+
+.chev{
+  font-size: 22px;
+  opacity: .75;
+  padding-left: 6px;
 }
