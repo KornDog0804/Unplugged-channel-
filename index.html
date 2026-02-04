@@ -1,194 +1,46 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>Joey’s Acoustic Corner</title>
-
-  <link rel="stylesheet" href="styles.css?v=25" />
-
-  <style>
-    /* HARD 2-PAGE MODE (single file, no scroll mixing) */
-    body { margin: 0; }
-    .page {
-      display: none;
-      min-height: 100svh;
-      width: 100%;
-    }
-    body.mode-home #homePage { display: block; }
-    body.mode-sessions #sessionsPage { display: block; }
-
-    /* Prevent accidental scroll bleed */
-    body.mode-home { overflow: hidden; }
-    body.mode-sessions { overflow: hidden; }
-
-    /* Each page gets its own scroll container */
-    .pageScroll {
-      height: 100svh;
-      overflow: auto;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Back button (matches your glass vibe) */
-    .backTop{
-      display:inline-flex;
-      margin: 14px 6px 10px;
-      padding: 10px 14px;
-      border-radius: 999px;
-      text-decoration:none;
-      font-weight: 800;
-      color: rgba(255,255,255,.92);
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      -webkit-tap-highlight-color: transparent;
-    }
-    .backTop:active{ transform: scale(.98); }
-  </style>
-
-  <!-- Crash overlay (only shows if something breaks) -->
-  <script>
-    (function () {
-      const show = (msg) => {
-        let box = document.getElementById("kdCrash");
-        if (!box) {
-          box = document.createElement("div");
-          box.id = "kdCrash";
-          box.style.cssText = `
-            position:fixed; left:12px; right:12px; top:12px; z-index:999999;
-            border:2px solid #ff4d4d; border-radius:14px; padding:12px 14px;
-            background:rgba(10,10,14,.92); color:#fff; font:14px/1.35 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-            box-shadow:0 12px 40px rgba(0,0,0,.45);
-            white-space:pre-wrap;
-          `;
-          document.addEventListener("DOMContentLoaded", () => document.body.appendChild(box));
-        }
-        box.textContent = "JS CRASH DETECTED:\n\n" + msg;
-      };
-      window.addEventListener("error", (e) => show((e && (e.message || (e.error && e.error.stack))) || String(e)));
-      window.addEventListener("unhandledrejection", (e) => {
-        const reason = e && e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : "Unknown rejection";
-        show(reason);
-      });
-    })();
-  </script>
+  <link rel="stylesheet" href="styles.css?v=200" />
 </head>
+<body class="landing">
 
-<body class="mode-home">
-
-  <!-- =========================
-       HOME PAGE (LANDING)
-  ========================== -->
-  <section id="homePage" class="page">
-    <div class="pageScroll">
-      <main class="landingWrap">
-        <header class="landingTop">
-          <div class="landingBrand">
-            <div class="landingMark" aria-hidden="true"></div>
-            <div class="landingBrandText">
-              <div class="landingTitle">Joey’s Acoustic Corner</div>
-              <div class="landingSub">Stripped &amp; unplugged sessions — handpicked only.</div>
-            </div>
+  <main class="landingWrap">
+    <div class="landingHero" id="landing">
+      <div class="landingTop">
+        <div class="landingBrand">
+          <div class="landingMark" aria-hidden="true"></div>
+          <div>
+            <div class="landingTitle">Joey’s Acoustic Corner</div>
+            <div class="landingSub">Stripped & unplugged sessions — handpicked only.</div>
           </div>
+        </div>
 
-          <div class="landingBadge"><span class="liveDot"></span> LIVE</div>
-        </header>
+        <div class="landingBadge">
+          <span class="liveDot" aria-hidden="true"></span> LIVE
+        </div>
+      </div>
 
-        <section class="landingHero">
-          <div class="landingLogo">JOEY’S<br/>ACOUSTIC<br/>CORNER</div>
+      <div class="landingLogo">JOEY’S<br/>ACOUSTIC<br/>CORNER</div>
 
-          <div class="landingCard">
-            <h1>Turn the noise into therapy.</h1>
-            <p>
-              No algorithms. No filler. Just sessions that actually hit.
-              Tap in, pick a set, and let the queue do the work.
-            </p>
+      <div class="landingCard">
+        <h1>Turn the noise into therapy.</h1>
+        <p>No algorithms. No filler. Just sessions that actually hit.</p>
 
-            <div class="landingButtons">
-              <button class="landingBtn primary" id="enterSessionsBtn" type="button">Enter Sessions</button>
-            </div>
+        <div class="landingButtons">
+          <a class="landingBtn primary" href="sessions.html">Enter Sessions</a>
+          <a class="landingBtn" href="sessions.html?autoplay=1">Play All</a>
+        </div>
 
-            <div class="landingFine">
-              Phone rule: first tap unlocks audio. After that, queues can auto-advance.
-            </div>
-          </div>
-        </section>
-
-        <section class="landingMini">
-          <div class="miniItem">
-            <div class="miniLabel">Vibe</div>
-            <div class="miniValue">Unplugged • Acoustic • Stripped</div>
-          </div>
-        </section>
-      </main>
+        <div class="landingFine">
+          Built for phones first. If a TV browser gets weird, that’s on the TV — not your taste. 😄
+        </div>
+      </div>
     </div>
-  </section>
+  </main>
 
-  <!-- =========================
-       SESSIONS PAGE (PLAYER)
-  ========================== -->
-  <section id="sessionsPage" class="page">
-    <div class="pageScroll">
-      <main class="wrap">
-        <a class="backTop" href="#home" id="backHomeBtn">← Back to home</a>
-
-        <!-- app.js will render player UI here -->
-        <section id="playerWrap"></section>
-
-        <section id="sessionsList">
-          <div class="sessionsHead">
-            <div>
-              <div class="sessionsTitle">Sessions</div>
-              <div class="sessionsSub">Tap a session once to unlock audio. Queues will auto-advance.</div>
-            </div>
-            <div id="status">Loading…</div>
-          </div>
-
-          <div id="episodes"></div>
-        </section>
-      </main>
-    </div>
-  </section>
-
-  <!-- Data + YouTube API + your app logic -->
-  <script src="data/episodes.js?v=25"></script>
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js?v=25" defer></script>
-
-  <!-- Page router (does NOT touch autoplay/player logic) -->
-  <script>
-    (function () {
-      const setMode = (mode) => {
-        document.body.classList.toggle("mode-home", mode === "home");
-        document.body.classList.toggle("mode-sessions", mode === "sessions");
-      };
-
-      const goHome = () => {
-        location.hash = "#home";
-        setMode("home");
-      };
-
-      const goSessions = () => {
-        location.hash = "#sessions";
-        setMode("sessions");
-      };
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const enter = document.getElementById("enterSessionsBtn");
-        const back = document.getElementById("backHomeBtn");
-
-        if (enter) enter.addEventListener("click", goSessions);
-        if (back) back.addEventListener("click", (e) => { e.preventDefault(); goHome(); });
-
-        // On refresh / deep link
-        if (location.hash === "#sessions") setMode("sessions");
-        else setMode("home");
-      });
-
-      window.addEventListener("hashchange", () => {
-        if (location.hash === "#sessions") setMode("sessions");
-        else setMode("home");
-      });
-    })();
-  </script>
 </body>
 </html>
