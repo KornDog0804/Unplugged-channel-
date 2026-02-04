@@ -4,18 +4,11 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Joey’s Acoustic Corner — Sessions</title>
-
   <link rel="stylesheet" href="./styles.css" />
-
-  <!-- optional: makes refreshes show updated files faster -->
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
 </head>
 
 <body class="sessions">
 
-  <!-- TOP BAR -->
   <header class="top">
     <div class="brand">
       <div class="brandMark"></div>
@@ -35,27 +28,22 @@
 
   <main class="wrap">
 
-    <!-- Back to home -->
     <a href="./index.html" class="focusToggleBtn" style="justify-content:center;">
       ← Back to home
     </a>
 
-    <!-- PLAYER -->
     <section id="playerWrap" class="player-wrap player-wrap--collapsible">
       <div class="now-playing-title" id="nowPlayingTitle">Now Playing</div>
 
       <div class="tvFrame">
         <div class="tvTopBar">
           <div class="tvLabel">JOEY’S ACOUSTIC CORNER</div>
-
-          <!-- PLAYER TOGGLE BUTTON -->
-          <button id="playerToggleBtn" class="sessionOverlayClose" type="button" aria-expanded="true">
-            Hide player
+          <button id="playerToggleBtn" class="sessionOverlayClose" type="button" aria-expanded="false">
+            Show player
           </button>
         </div>
 
         <div class="playerFrameWrap" id="playerFrameWrap">
-          <!-- IMPORTANT: app.js controls this iframe src -->
           <iframe
             id="playerFrame"
             class="player-frame"
@@ -63,7 +51,6 @@
             title="Player"
             allow="autoplay; encrypted-media; picture-in-picture"
             allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin"
           ></iframe>
         </div>
 
@@ -73,7 +60,6 @@
       </div>
     </section>
 
-    <!-- SESSIONS LIST -->
     <section id="sessionsList">
       <div class="sessionsHead">
         <div>
@@ -83,63 +69,19 @@
         <div id="status">Loading…</div>
       </div>
 
+      <div style="padding: 0 12px 12px;">
+        <button id="playAllBtn" class="landingBtn" style="width:100%; border-radius: 16px;">
+          Play All
+        </button>
+      </div>
+
       <div id="episodes"></div>
     </section>
 
-    <!-- Optional: overlay container (if your app.js uses it, this enables it; if not, it just sits idle) -->
-    <div class="sessionOverlay" aria-hidden="true">
-      <div class="sessionOverlayCard">
-        <div class="sessionOverlayHead">
-          <div class="sessionOverlayTitle">Change Session</div>
-          <button class="sessionOverlayClose" type="button" onclick="document.body.classList.remove('showSessions')">
-            Close
-          </button>
-        </div>
-        <div class="sessionOverlayBody" id="sessionOverlayBody"></div>
-      </div>
-    </div>
-
   </main>
 
-  <!-- 🔥 FIX: correct episodes path (yours is /data/episodes.js) -->
+  <!-- MUST load episodes BEFORE app.js -->
   <script src="./data/episodes.js"></script>
-
-  <!-- your app logic -->
   <script src="./app.js"></script>
-
-  <!-- Player collapse/expand (does NOT touch autoplay/queue logic) -->
-  <script>
-    (function () {
-      const btn = document.getElementById("playerToggleBtn");
-      const wrap = document.getElementById("playerWrap");
-
-      function setCollapsed(isCollapsed) {
-        document.body.classList.toggle("playerCollapsed", isCollapsed);
-        btn.textContent = isCollapsed ? "Show player" : "Hide player";
-        btn.setAttribute("aria-expanded", String(!isCollapsed));
-      }
-
-      // start expanded (change to true if you want it collapsed by default)
-      setCollapsed(false);
-
-      btn.addEventListener("click", function () {
-        setCollapsed(!document.body.classList.contains("playerCollapsed"));
-      });
-
-      // OPTIONAL SMART BEHAVIOR:
-      // Auto-collapse when you scroll into the sessions list on phones.
-      // It won’t affect playback; it just stops the player from blocking taps.
-      const sessions = document.getElementById("sessionsList");
-      if ("IntersectionObserver" in window && sessions) {
-        const io = new IntersectionObserver((entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting) setCollapsed(true);
-          });
-        }, { threshold: 0.35 });
-        io.observe(sessions);
-      }
-    })();
-  </script>
-
 </body>
 </html>
