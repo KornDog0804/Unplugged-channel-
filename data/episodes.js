@@ -1,99 +1,36 @@
-/* Stripped & Turned Up — Sessions data
-   FULL UPDATED LIST (LOCKED)
-*/
+/* Joey’s Acoustic Corner — Sessions Data */
 
 window.EPISODES = [
-
-  /* =======================
-     FULL SESSIONS
-     ======================= */
-
   {
-    title: "Nirvana — MTV Unplugged",
+    title: "Nirvana — MTV Unplugged (Full Session)",
     artist: "Nirvana",
     year: 1993,
     mode: "fullshow",
-    tracks: [
-      { title: "Full Session", url: "https://youtu.be/pOTkCgkxqyg" }
-    ]
+    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/pOTkCgkxqyg" }]
   },
-
   {
-    title: "Alice In Chains — MTV Unplugged",
+    title: "Alice In Chains — MTV Unplugged (Full Session)",
     artist: "Alice In Chains",
     year: 1996,
     mode: "fullshow",
-    tracks: [
-      { title: "Full Session", url: "https://youtu.be/Jprla2NvHY0" }
-    ]
+    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/Jprla2NvHY0" }]
   },
-
   {
-    title: "JAY-Z — MTV Unplugged",
+    title: "JAY-Z — Unplugged / Live (Full Session)",
     artist: "JAY-Z",
     year: 2001,
     mode: "fullshow",
-    tracks: [
-      { title: "Full Session", url: "https://youtu.be/r2I_pGlvtAY" }
-    ]
+    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/r2I_pGlvtAY" }]
   },
-
   {
-    title: "Papa Roach — WRIF Acoustic",
+    title: "Papa Roach — WRIF Acoustic Set (Full Session)",
     artist: "Papa Roach",
     year: 2025,
     mode: "fullshow",
-    tracks: [
-      { title: "Full Session", url: "https://youtu.be/f4BK60WVPac" }
-    ]
+    tracks: [{ title: "Full Session Stream", url: "https://www.youtube.com/watch?v=f4BK60WVPac" }]
   },
-
   {
-    title: "Sevendust — Acoustic Session",
-    artist: "Sevendust",
-    year: 2025,
-    mode: "fullshow",
-    tracks: [
-      { title: "Full Session", url: "https://youtu.be/Q4s_nIG8rw0" }
-    ]
-  },
-
-  {
-    title: "Stevie Ray Vaughan & Joe Satriani — Blues Jam",
-    artist: "Stevie Ray Vaughan • Joe Satriani",
-    year: "1980s",
-    mode: "fullshow",
-    tracks: [
-      { title: "Live Jam", url: "https://youtu.be/e_UASyYu1iA" }
-    ]
-  },
-
-  {
-    title: "Chris Cornell — Acoustic / Unplugged Collection",
-    artist: "Chris Cornell",
-    year: "1990s–2010s",
-    mode: "fullshow",
-    tracks: [
-      { title: "Full Linked Set", url: "https://youtu.be/nqtO7-bE23E" }
-    ]
-  },
-
-  {
-    title: "KISS — MTV Unplugged (Playlist)",
-    artist: "KISS",
-    year: 1995,
-    mode: "fullshow",
-    tracks: [
-      { title: "Full Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
-    ]
-  },
-
-  /* =======================
-     QUEUE SESSIONS
-     ======================= */
-
-  {
-    title: "Wage War — Acoustic Queue",
+    title: "Wage War — Acoustic Queue (6 Songs)",
     artist: "Wage War",
     year: 2024,
     mode: "queue",
@@ -106,9 +43,15 @@ window.EPISODES = [
       { title: "Track 6", url: "https://youtu.be/7WVGNUVsDFw" }
     ]
   },
-
   {
-    title: "Smile Empty Soul — Acoustic Queue",
+    title: "The Home Team — Acoustic Session",
+    artist: "The Home Team",
+    year: 2023,
+    mode: "fullshow",
+    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/EGB3xoa7Cus" }]
+  },
+  {
+    title: "Smile Empty Soul — Acoustic Queue (4 Songs)",
     artist: "Smile Empty Soul",
     year: 2020,
     mode: "queue",
@@ -119,9 +62,8 @@ window.EPISODES = [
       { title: "Wonderwall", url: "https://youtu.be/C08X2DbSPfs" }
     ]
   },
-
   {
-    title: "Wind Walkers — Acoustic Queue",
+    title: "Wind Walkers — Acoustic Queue (2 Songs)",
     artist: "Wind Walkers",
     year: 2020,
     mode: "queue",
@@ -130,11 +72,27 @@ window.EPISODES = [
       { title: "Hangfire", url: "https://youtu.be/pqWTvbLTV0Q" }
     ]
   },
+  {
+    title: "Sevendust — Acoustic Session (Full)",
+    artist: "Sevendust",
+    year: 2025,
+    mode: "fullshow",
+    tracks: [{ title: "Full Session Stream", url: "https://youtu.be/Q4s_nIG8rw0" }]
+  },
+
+  /* Added today */
+  {
+    title: "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
+    artist: "SRV • Satriani",
+    year: "1980s",
+    mode: "fullshow",
+    tracks: [{ title: "Live Jam", url: "https://youtu.be/e_UASyYu1iA" }]
+  },
 
   {
-    title: "Shinedown — Acoustic Essentials",
+    title: "Shinedown — Acoustic Queue (8 Songs)",
     artist: "Shinedown",
-    year: "2000s–2010s",
+    year: "Acoustic",
     mode: "queue",
     tracks: [
       { title: "45", url: "https://youtu.be/PGiLaRC_U0g" },
@@ -149,9 +107,9 @@ window.EPISODES = [
   },
 
   {
-    title: "Dayseeker — Stripped Queue",
+    title: "Dayseeker — Acoustic Queue (5 Songs)",
     artist: "Dayseeker",
-    year: 2023,
+    year: "Acoustic",
     mode: "queue",
     tracks: [
       { title: "My Immortal", url: "https://youtu.be/rnJEV8tVSJc" },
@@ -163,9 +121,9 @@ window.EPISODES = [
   },
 
   {
-    title: "Bad Omens — Acoustic / Stripped Queue",
+    title: "Bad Omens — Acoustic/Stripped Queue (6 Songs)",
     artist: "Bad Omens",
-    year: 2023,
+    year: "Stripped",
     mode: "queue",
     tracks: [
       { title: "Never Know", url: "https://youtu.be/tIDxdXRvtLg" },
@@ -178,17 +136,29 @@ window.EPISODES = [
   },
 
   {
-    title: "I Prevail — Acoustic Queue",
+    title: "I Prevail — Acoustic Queue (5 Songs)",
     artist: "I Prevail",
-    year: 2023,
+    year: "Acoustic",
     mode: "queue",
     tracks: [
       { title: "Deep End", url: "https://youtu.be/wFXJapoQRBw" },
-      { title: "Every Time You Leave", url: "https://youtu.be/rABqYJAiFTA" },
+      { title: "Everytime You Leave", url: "https://youtu.be/rABqYJAiFTA" },
       { title: "Stuck In Your Head", url: "https://youtu.be/NUcvAirmEm4" },
       { title: "Scars", url: "https://youtu.be/vadGCs66ing" },
       { title: "My Heart I Surrender", url: "https://youtu.be/CqOgxKsIA88" }
     ]
-  }
+  },
 
+  {
+    title: "KISS — Unplugged (Playlist Stream)",
+    artist: "KISS",
+    year: 1995,
+    mode: "fullshow",
+    tracks: [
+      { title: "Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
+    ]
+  }
 ];
+
+// compatibility alias
+window.episodes = window.EPISODES;
