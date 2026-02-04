@@ -1,136 +1,378 @@
-/* Joey’s Acoustic Corner — app.js
-   Stable stitched player w/ TV handoff
+/* Joey’s Acoustic Corner — app.js (FIXED)
+   Crash-proof renderer + stitched queue autoplay (no YT API)
+   ✅ Fix: Watch on TV now opens REAL YouTube links (Android intent + fallback)
 */
 
 (function () {
-  const $ = (s) => document.querySelector(s);
+  const $ = (sel) => document.querySelector(sel);
 
   const el = {
-    episodes: $("#episodes"),
     status: $("#status"),
-    frame: $("#playerFrame"),
-    title: $("#nowPlayingTitle"),
-    line: $("#nowPlayingLine"),
-    toggle: $("#playerToggleBtn"),
-    watchTV: $("#watchTvBtn")
+    episodes: $("#episodes"),
+    playerFrame: $("#playerFrame"),
+    nowTitle: $("#nowPlayingTitle"),
+    nowLine: $("#nowPlayingLine"),
+    toggleBtn: $("#playerToggleBtn"),
+    watchTvBtn: $("#watchOnTvBtn")
   };
+
+  // Track what "Watch on TV" should open for the CURRENT thing playing
+  let currentExternalUrl = "";
+
+  function setStatus(msg) {
+    if (el.status) el.status.textContent = msg;
+  }
+
+  function safeText(v) {
+    return (v === undefined || v === null) ? "" : String(v);
+  }
+
+  function ua() {
+    return navigator.userAgent || "";
+  }
+
+  function isAndroid() {
+    return /Android/i.test(ua());
+  }
+
+  function isOculus() {
+    return /OculusBrowser/i.test(ua());
+  }
 
   function getVideoId(url) {
     try {
       const u = new URL(url);
-      if (u.hostname.includes("youtu.be")) return u.pathname.slice(1);
+      // youtu.be/<id>
+      if (u.hostname.includes("youtu.be")) {
+        return u.pathname.replace("/", "").trim();
+      }
+      // youtube.com/watch?v=<id>
       if (u.searchParams.get("v")) return u.searchParams.get("v");
-      const p = u.pathname.split("/").filter(Boolean);
-      const i = p.indexOf("embed");
-      return i >= 0 ? p[i + 1] : "";
-    } catch {
+      // youtube.com/embed/<id>
+      const parts = u.pathname.split("/").filter(Boolean);
+      const embedIndex = parts.indexOf("embed");
+      if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
+      return "";
+    } catch (e) {
       return "";
     }
   }
 
   function getPlaylistId(url) {
     try {
-      return new URL(url).searchParams.get("list") || "";
-    } catch {
+      const u = new URL(url);
+      return u.searchParams.get("list") || "";
+    } catch (e) {
       return "";
     }
   }
 
-  function embedQueue(urls) {
-    const ids = urls.map(getVideoId).filter(Boolean);
+  function buildEmbedForSingle(videoUrl) {
+    const id = getVideoId(videoUrl);
+    if (!id) return "";
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+  }
+
+  function buildEmbedForQueue(videoUrls) {
+    const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
-    const [first, ...rest] = ids;
-    return `https://www.youtube.com/embed/${first}?autoplay=1&playsinline=1&rel=0&modestbranding=1${rest.length ? `&playlist=${rest.join(",")}` : ""}`;
+    const first = ids[0];
+    const rest = ids.slice(1);
+    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
   }
 
-  function embedPlaylist(url) {
-    const list = getPlaylistId(url);
+  function buildEmbedForPlaylist(playlistUrl) {
+    const list = getPlaylistId(playlistUrl);
     if (!list) return "";
-    return `https://www.youtube.com/embed/videoseries?list=${list}&autoplay=1&playsinline=1&rel=0&modestbranding=1`;
+    return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
-  function play(ep) {
-    if (!ep || !ep.tracks?.length) return;
+  // ========== ✅ Watch on TV link builders ==========
+  function ytWatchUrl(id) {
+    return `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
+  }
 
-    const mode = ep.mode?.toLowerCase();
-    let src = "";
+  function ytPlaylistUrl(listId) {
+    return `https://www.youtube.com/playlist?list=${encodeURIComponent(listId)}`;
+  }
 
-    if (mode === "queue") src = embedQueue(ep.tracks.map(t => t.url));
-    else if (mode === "playlist") src = embedPlaylist(ep.tracks[0].url);
-    else src = embedQueue([ep.tracks[0].url]);
+  // This makes YouTube auto-advance through an ID list (works better than plain watch URL)
+  function ytQueueWatchUrl(ids) {
+    if (!ids || !ids.length) return "";
+    const first = ids[0];
+    const rest = ids.slice(1);
+    if (!rest.length) return ytWatchUrl(first);
+    return `https://www.youtube.com/watch?v=${encodeURIComponent(first)}&playlist=${encodeURIComponent(rest.join(","))}`;
+  }
 
-    if (!src) {
-      el.status.textContent = "Bad stream link";
+  // Android intent deep link (helps Shield/Android TV jump to YouTube app)
+  function ytIntentUrl(httpUrl) {
+    // Turn https://... into intent://... with YouTube package
+    // NOTE: Some TV browsers are picky — we always fallback to httpUrl.
+    const safe = String(httpUrl || "").replace(/^https?:\/\//i, "");
+    return `intent://${safe}#Intent;scheme=https;package=com.google.android.youtube;end`;
+  }
+
+  function setWatchOnTv(url) {
+    currentExternalUrl = url || "";
+
+    if (!el.watchTvBtn) return;
+
+    if (!currentExternalUrl) {
+      el.watchTvBtn.href = "#";
+      el.watchTvBtn.style.opacity = ".6";
+      el.watchTvBtn.style.pointerEvents = "none";
       return;
     }
 
-    el.frame.src = src;
-    el.title.textContent = ep.title || "Now Playing";
-    el.line.textContent = `Playing now: ${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`;
-
-    document.body.classList.remove("playerCollapsed");
-    el.toggle.textContent = "Hide player";
-    el.toggle.setAttribute("aria-expanded", "true");
-
-    document.querySelectorAll(".ep").forEach(e => e.classList.remove("isActive"));
-    document.querySelector(`[data-key="${ep.__key}"]`)?.classList.add("isActive");
-
-    if (el.watchTV) {
-      el.watchTV.href = ep.tracks[0].url;
-      el.watchTV.style.display = "inline-flex";
-    }
-
-    el.status.textContent = "Ready";
+    el.watchTvBtn.style.opacity = "1";
+    el.watchTvBtn.style.pointerEvents = "auto";
+    el.watchTvBtn.href = currentExternalUrl;
   }
 
-  function card(ep, i) {
-    const d = document.createElement("div");
-    ep.__key = `${i}-${ep.title}`;
-    d.className = "ep";
-    d.dataset.key = ep.__key;
-    d.innerHTML = `
+  function openWatchOnTv() {
+    if (!currentExternalUrl) return;
+
+    // On Android TV / Shield this often needs a direct navigation (not a new tab pop)
+    // We'll try intent first, then fall back to normal https.
+    const httpUrl = currentExternalUrl;
+
+    // If not Android or Oculus, open normally in a new tab (your existing target=_blank will work)
+    if (!isAndroid() || isOculus()) {
+      window.open(httpUrl, "_blank", "noopener");
+      return;
+    }
+
+    // Android: try intent deep link
+    try { window.location.href = ytIntentUrl(httpUrl); } catch (e) {}
+
+    // Fallback after a moment (if intent is ignored)
+    setTimeout(() => {
+      try { window.location.href = httpUrl; } catch (e) {}
+    }, 550);
+  }
+
+  // ========== Play logic ==========
+  function playEpisode(ep) {
+    if (!ep || !ep.tracks || !ep.tracks.length) return;
+
+    const mode = safeText(ep.mode).toLowerCase();
+    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
+
+    let src = "";
+    let external = "";
+
+    if (mode === "queue") {
+      src = buildEmbedForQueue(trackUrls);
+      const ids = trackUrls.map(getVideoId).filter(Boolean);
+      external = ytQueueWatchUrl(ids);
+    } else if (mode === "playlist") {
+      src = buildEmbedForPlaylist(trackUrls[0]);
+      const listId = getPlaylistId(trackUrls[0]);
+      external = listId ? ytPlaylistUrl(listId) : "";
+    } else {
+      src = buildEmbedForSingle(trackUrls[0]);
+      const id = getVideoId(trackUrls[0]);
+      external = id ? ytWatchUrl(id) : "";
+    }
+
+    if (!src) {
+      setStatus("Bad link in this session");
+      setWatchOnTv("");
+      return;
+    }
+
+    // Update UI
+    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
+    if (el.nowLine) {
+      const meta = `${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
+      el.nowLine.textContent = meta ? `Playing now: ${meta}` : "Playing now.";
+    }
+
+    // ✅ Update Watch on TV link for THIS session
+    setWatchOnTv(external);
+
+    // Make sure player is visible when you pick a session
+    document.body.classList.remove("playerCollapsed");
+    if (el.toggleBtn) {
+      el.toggleBtn.textContent = "Hide player";
+      el.toggleBtn.setAttribute("aria-expanded", "true");
+    }
+
+    // Set player
+    if (el.playerFrame) {
+      el.playerFrame.src = src;
+    }
+
+    // Highlight active
+    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
+    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
+    if (card) card.classList.add("isActive");
+
+    setStatus("Ready");
+  }
+
+  function buildCard(ep, idx) {
+    const div = document.createElement("div");
+    div.className = "ep";
+    div.tabIndex = 0;
+
+    ep.__key = `${idx}-${(ep.title || "").slice(0, 24)}`;
+    div.dataset.key = ep.__key;
+
+    const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
+    const mode = safeText(ep.mode).toLowerCase();
+
+    const small = (mode === "queue")
+      ? `${ep.tracks.length} tracks • stitched queue`
+      : (mode === "playlist")
+        ? `playlist`
+        : `full show`;
+
+    div.innerHTML = `
       <div class="epHead">
-        <div>
-          <div class="epTitle">${ep.title}</div>
-          <div class="epMeta">${ep.artist || ""}${ep.year ? " • " + ep.year : ""}</div>
-          <div class="epSmall">
-            ${ep.mode === "queue" ? `${ep.tracks.length} tracks • stitched queue` :
-              ep.mode === "playlist" ? "playlist" : "full show"}
-          </div>
+        <div style="min-width:0">
+          <div class="epTitle">${safeText(ep.title)}</div>
+          <div class="epMeta">${meta}</div>
+          <div class="epSmall">${small}</div>
         </div>
         <div class="chev">›</div>
       </div>
     `;
-    d.onclick = () => play(ep);
-    return d;
+
+    const activate = () => playEpisode(ep);
+
+    div.addEventListener("click", activate);
+    div.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activate();
+      }
+    });
+
+    return div;
   }
 
-  function initToggle() {
-    if (!el.toggle) return;
-    document.body.classList.add("playerCollapsed");
-    el.toggle.textContent = "Show player";
+  function flattenPlayAll(list) {
+    const urls = [];
+    list.forEach(ep => {
+      const mode = safeText(ep.mode).toLowerCase();
+      if (mode === "playlist") return; // skip playlist items from mega-queue
+      (ep.tracks || []).forEach(t => {
+        if (t && t.url) urls.push(t.url);
+      });
+    });
+    return urls;
+  }
 
-    el.toggle.onclick = () => {
-      const collapsed = document.body.classList.toggle("playerCollapsed");
-      el.toggle.textContent = collapsed ? "Show player" : "Hide player";
-      el.toggle.setAttribute("aria-expanded", String(!collapsed));
-    };
+  function wirePlayAllButton(episodes) {
+    const btn = document.getElementById("playAllBtn");
+    if (!btn) return;
+
+    btn.addEventListener("click", () => {
+      const urls = flattenPlayAll(episodes).filter(Boolean);
+      const src = buildEmbedForQueue(urls);
+
+      if (!src) {
+        setStatus("No playable items for Play All");
+        setWatchOnTv("");
+        return;
+      }
+
+      if (el.nowTitle) el.nowTitle.textContent = "Play All";
+      if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
+
+      // ✅ Watch on TV for Play All (stitches all IDs into a watch queue)
+      const ids = urls.map(getVideoId).filter(Boolean);
+      setWatchOnTv(ytQueueWatchUrl(ids));
+
+      document.body.classList.remove("playerCollapsed");
+      if (el.toggleBtn) {
+        el.toggleBtn.textContent = "Hide player";
+        el.toggleBtn.setAttribute("aria-expanded", "true");
+      }
+
+      if (el.playerFrame) el.playerFrame.src = src;
+      setStatus("Ready");
+    });
   }
 
   function init() {
-    const episodes = window.EPISODES;
-    if (!Array.isArray(episodes)) {
-      el.status.textContent = "episodes.js missing";
-      return;
+    try {
+      const episodes = window.EPISODES || window.episodes;
+
+      if (!Array.isArray(episodes)) {
+        setStatus("episodes.js not loaded");
+        if (el.episodes) {
+          el.episodes.innerHTML = `
+            <div class="ep" style="cursor:default;">
+              <div class="epTitle">No sessions found</div>
+              <div class="epMeta">episodes.js didn’t load or EPISODES wasn’t defined.</div>
+              <div class="epSmall">Check that sessions.html includes <b>./data/episodes.js</b> before app.js</div>
+            </div>
+          `;
+        }
+        return;
+      }
+
+      if (!el.episodes) return;
+
+      el.episodes.innerHTML = "";
+      episodes.forEach((ep, idx) => el.episodes.appendChild(buildCard(ep, idx)));
+
+      wirePlayAllButton(episodes);
+
+      setStatus(`${episodes.length} sessions`);
+
+      // Start with Watch on TV disabled until something plays
+      setWatchOnTv("");
+
+    } catch (err) {
+      setStatus("App crashed");
+      console.error(err);
+    }
+  }
+
+  // Player collapse toggle (safe)
+  function initPlayerToggle() {
+    if (!el.toggleBtn) return;
+
+    function setCollapsed(isCollapsed) {
+      document.body.classList.toggle("playerCollapsed", isCollapsed);
+      el.toggleBtn.textContent = isCollapsed ? "Show player" : "Hide player";
+      el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
     }
 
-    el.episodes.innerHTML = "";
-    episodes.forEach((ep, i) => el.episodes.appendChild(card(ep, i)));
-    el.status.textContent = `${episodes.length} sessions`;
+    // Start collapsed by default so it doesn’t block the list
+    setCollapsed(true);
+
+    el.toggleBtn.addEventListener("click", () => {
+      setCollapsed(!document.body.classList.contains("playerCollapsed"));
+    });
+  }
+
+  // ✅ Watch on TV behavior
+  function initWatchOnTv() {
+    if (!el.watchTvBtn) return;
+
+    // If you click it, force a direct navigation (works better than _blank on TV browsers)
+    el.watchTvBtn.addEventListener("click", (e) => {
+      // If no url yet, do nothing
+      if (!currentExternalUrl) {
+        e.preventDefault();
+        return;
+      }
+
+      // On Android TV, avoid the "opens then snaps back" behavior
+      e.preventDefault();
+      openWatchOnTv();
+    });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    initToggle();
+    initPlayerToggle();
+    initWatchOnTv();
     init();
   });
 })();
