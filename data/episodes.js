@@ -1,5 +1,7 @@
 /* Stripped & Turned Up — Sessions data
-   LOCKED BASELINE
+   LOCKED BASELINE (SAFE STRUCTURE)
+   - Every session must be INSIDE the EPISODES array.
+   - Every session must have tracks: [ { title, url } ]
 */
 
 window.EPISODES = [
@@ -114,7 +116,16 @@ window.EPISODES = [
       }
     ]
   }
+
+  /*
+    NEXT UP:
+    You mentioned building a “Cornell list” from:
+    https://youtu.be/nqtO7-bE23E?si=XYOeAWf4uGPM7wDt
+
+    Send me what you want that labeled as (artist/title/year + queue or fullshow)
+    and I’ll add it in here clean with no breakage.
+  */
 ];
 
-// compatibility alias
+// compatibility alias (older code might look for window.episodes)
 window.episodes = window.EPISODES;
