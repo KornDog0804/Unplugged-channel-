@@ -1,6 +1,6 @@
 /* Joey’s Acoustic Corner — app.js
    Crash-proof renderer + stitched queue autoplay (no YT API)
-   FIX: queues now start on track 1 (first song no longer skipped)
+   + Pro controls (collapse + Watch on TV)
 */
 
 (function () {
@@ -12,7 +12,8 @@
     playerFrame: $("#playerFrame"),
     nowTitle: $("#nowPlayingTitle"),
     nowLine: $("#nowPlayingLine"),
-    toggleBtn: $("#playerToggleBtn")
+    toggleBtn: $("#playerToggleBtn"),
+    watchOnTvBtn: document.getElementById("watchOnTvBtn")
   };
 
   function setStatus(msg) {
@@ -26,16 +27,20 @@
   function getVideoId(url) {
     try {
       const u = new URL(url);
+
       // youtu.be/<id>
       if (u.hostname.includes("youtu.be")) {
         return u.pathname.replace("/", "").trim();
       }
+
       // youtube.com/watch?v=<id>
       if (u.searchParams.get("v")) return u.searchParams.get("v");
+
       // youtube.com/embed/<id>
       const parts = u.pathname.split("/").filter(Boolean);
       const embedIndex = parts.indexOf("embed");
       if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
+
       return "";
     } catch (e) {
       return "";
@@ -57,16 +62,16 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
-  // ✅ FIXED: include ALL ids (including the first) in playlist=
-  // and force index=0 so the queue reliably starts on the first song.
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
 
     const first = ids[0];
-    const playlistAll = encodeURIComponent(ids.join(","));
+    const rest = ids.slice(1);
 
-    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&playlist=${playlistAll}&index=0`;
+    // NOTE: We do NOT repeat the first ID in playlist= (prevents skipping/odd behavior)
+    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
   }
 
   function buildEmbedForPlaylist(playlistUrl) {
@@ -75,11 +80,26 @@
     return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
+  function setWatchOnTvFromFirstUrl(url) {
+    const id = getVideoId(url || "");
+    if (!el.watchOnTvBtn) return;
+
+    if (!id) {
+      el.watchOnTvBtn.style.display = "none";
+      el.watchOnTvBtn.href = "#";
+      return;
+    }
+
+    // Opens YouTube page where Cast icon works reliably
+    el.watchOnTvBtn.href = `https://www.youtube.com/watch?v=${id}`;
+    el.watchOnTvBtn.style.display = "inline-flex";
+  }
+
   function playEpisode(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return;
 
     const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
+    const trackUrls = (ep.tracks || []).map(t => t && t.url).filter(Boolean);
 
     let src = "";
     if (mode === "queue") {
@@ -99,8 +119,11 @@
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
     if (el.nowLine) {
       const line = `Playing now: ${ep.artist || ""}${ep.year ? " • " + ep.year : ""}`.trim();
-      el.nowLine.textContent = line;
+      el.nowLine.textContent = line || "Playing now.";
     }
+
+    // Watch on TV uses the FIRST playable track of the set
+    setWatchOnTvFromFirstUrl(trackUrls[0] || "");
 
     // Make sure player is visible when you pick a session
     document.body.classList.remove("playerCollapsed");
@@ -110,9 +133,7 @@
     }
 
     // Set player
-    if (el.playerFrame) {
-      el.playerFrame.src = src;
-    }
+    if (el.playerFrame) el.playerFrame.src = src;
 
     // Highlight active
     document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
@@ -131,13 +152,13 @@
     div.dataset.key = ep.__key;
 
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
+
     const mode = safeText(ep.mode).toLowerCase();
-    const small =
-      (mode === "queue")
-        ? `${(ep.tracks || []).length} tracks • stitched queue`
-        : (mode === "playlist")
-          ? `playlist`
-          : `full show`;
+    const small = (mode === "queue")
+      ? `${(ep.tracks || []).length} tracks • stitched queue`
+      : (mode === "playlist")
+        ? `playlist`
+        : `full show`;
 
     div.innerHTML = `
       <div class="epHead">
@@ -164,14 +185,10 @@
   }
 
   function flattenPlayAll(list) {
-    // Build a single mega queue of IDs from all episodes (fullshow contributes 1, queue contributes many).
     const urls = [];
     list.forEach(ep => {
       const mode = safeText(ep.mode).toLowerCase();
-      if (mode === "playlist") {
-        // playlists can’t be merged into a single ID chain reliably — skip from Play All
-        return;
-      }
+      if (mode === "playlist") return; // skip playlists in mega-stitch
       (ep.tracks || []).forEach(t => {
         if (t && t.url) urls.push(t.url);
       });
@@ -194,6 +211,9 @@
 
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
+
+      // TV handoff uses first item
+      setWatchOnTvFromFirstUrl(urls[0] || "");
 
       document.body.classList.remove("playerCollapsed");
       if (el.toggleBtn) {
@@ -224,8 +244,10 @@
         return;
       }
 
-      if (!el.episodes) return;
+      // Hide TV button until something plays
+      if (el.watchOnTvBtn) el.watchOnTvBtn.style.display = "none";
 
+      if (!el.episodes) return;
       el.episodes.innerHTML = "";
       episodes.forEach((ep, idx) => el.episodes.appendChild(buildCard(ep, idx)));
 
@@ -238,7 +260,7 @@
     }
   }
 
-  // Player collapse toggle (safe)
+  // Player collapse toggle
   function initPlayerToggle() {
     if (!el.toggleBtn) return;
 
@@ -248,7 +270,7 @@
       el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
     }
 
-    // Start collapsed by default so it doesn’t block the list
+    // Start collapsed so it never blocks the list
     setCollapsed(true);
 
     el.toggleBtn.addEventListener("click", () => {
