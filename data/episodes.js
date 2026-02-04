@@ -1,4 +1,6 @@
-/* Stripped & Turned Up — Sessions data (LOCKED BASELINE) */
+/* Stripped & Turned Up — Sessions data
+   LOCKED BASELINE
+*/
 
 window.EPISODES = [
   {
@@ -91,7 +93,7 @@ window.EPISODES = [
   },
 
   {
-    title: "Sevendust — Acoustic Session (Full)",
+    title: "Sevendust — Acoustic Session (Full Stream)",
     artist: "Sevendust",
     year: 2025,
     mode: "fullshow",
@@ -111,34 +113,34 @@ window.EPISODES = [
   },
 
   {
-    title: "Chris Cornell — Acoustic Playlist",
+    title: "Chris Cornell — Acoustic / Live (Single)",
     artist: "Chris Cornell",
-    year: "Collection",
+    year: "Live",
     mode: "fullshow",
     tracks: [
-      { title: "Playlist", url: "https://youtu.be/nqtO7-bE23E?si=XYOeAWf4uGPM7wDt" }
+      { title: "Chris Cornell Live", url: "https://youtu.be/2xxonKSQ-1M" }
     ]
   },
 
   {
-    title: "Chris Cornell — Acoustic Set (Video Queue)",
+    title: "Chris Cornell — Acoustic / Live (Playlist)",
     artist: "Chris Cornell",
-    year: "Collection",
+    year: "Playlist",
     mode: "fullshow",
     tracks: [
-      { title: "Set / Collection", url: "https://youtu.be/2xxonKSQ-1M" }
+      { title: "Cornell Playlist", url: "https://youtu.be/nqtO7-bE23E" }
     ]
   },
 
   {
     title: "Shinedown — Acoustic Queue (8 Songs)",
     artist: "Shinedown",
-    year: "Collection",
+    year: "Acoustic",
     mode: "queue",
     tracks: [
       { title: "45", url: "https://youtu.be/PGiLaRC_U0g" },
       { title: "Call Me", url: "https://youtu.be/r2xsItCZqoo" },
-      { title: "I'll Follow You", url: "https://youtu.be/ECEK-g7xayc" },
+      { title: "I’ll Follow You", url: "https://youtu.be/ECEK-g7xayc" },
       { title: "If You Only Knew", url: "https://youtu.be/fyZStLSFGZY" },
       { title: "Second Chance", url: "https://youtu.be/6OJcBSvP40I" },
       { title: "Simple Man", url: "https://youtu.be/4pS84gSQ_OI" },
@@ -150,7 +152,7 @@ window.EPISODES = [
   {
     title: "Dayseeker — Acoustic Queue (5 Songs)",
     artist: "Dayseeker",
-    year: "Collection",
+    year: "Stripped",
     mode: "queue",
     tracks: [
       { title: "My Immortal", url: "https://youtu.be/rnJEV8tVSJc" },
@@ -164,17 +166,17 @@ window.EPISODES = [
   {
     title: "KISS — Unplugged (Playlist)",
     artist: "KISS",
-    year: 1995,
+    year: "Unplugged",
     mode: "fullshow",
     tracks: [
-      { title: "Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
+      { title: "KISS Unplugged Playlist", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
     ]
   },
 
   {
     title: "Bad Omens — Acoustic Queue (6 Songs)",
     artist: "Bad Omens",
-    year: "Collection",
+    year: "Acoustic",
     mode: "queue",
     tracks: [
       { title: "Never Know", url: "https://youtu.be/tIDxdXRvtLg" },
@@ -182,14 +184,14 @@ window.EPISODES = [
       { title: "Careful What You Wish For", url: "https://youtu.be/KlfSm9GZY5Y" },
       { title: "Mercy", url: "https://youtu.be/_5CaAIFdT2c" },
       { title: "Burning Out", url: "https://youtu.be/noGwAB46Bhk" },
-      { title: "If I'm There", url: "https://youtu.be/7vkBQFjrorU" }
+      { title: "If I’m There", url: "https://youtu.be/7vkBQFjrorU" }
     ]
   },
 
   {
     title: "I Prevail — Acoustic Queue (5 Songs)",
     artist: "I Prevail",
-    year: "Collection",
+    year: "Acoustic",
     mode: "queue",
     tracks: [
       { title: "Deep End", url: "https://youtu.be/wFXJapoQRBw" },
