@@ -575,3 +575,25 @@ body.landing{
   .epTitle{ font-size: 15px; }
   #playerFrame{ min-height: 210px; }
 }
+.installBtn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 9999;
+
+  padding: 12px 18px;
+  border-radius: 999px;
+
+  background: linear-gradient(135deg, #7cffb2, #4ddc7c);
+  color: #0b0f0c;
+  font-weight: 700;
+  font-size: 14px;
+
+  border: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,.35);
+  cursor: pointer;
+}
+
+.installBtn:hover {
+  transform: translateY(-1px);
+}
