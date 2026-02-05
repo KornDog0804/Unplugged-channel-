@@ -59,6 +59,19 @@ window.EPISODES = [
     ]
   },
 
+   {
+  title: "Korn — MTV Unplugged (Full Session)",
+  artist: "Korn",
+  year: 2007,
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Full Session Stream",
+      url: "https://youtu.be/El8-JgiqcUI?si=sMsV8duZuGIv4uc6"
+    }
+  ]
+},
+
   {
     title: "Papa Roach — WRIF Acoustic Set (Full Session)",
     artist: "Papa Roach",
