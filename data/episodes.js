@@ -34,6 +34,19 @@ window.EPISODES = [
       url: "https://youtu.be/P9fPF204icg?si=DSCqyJAdlgz2OmFK"
     }
   ]
+      
+},
+   {
+  title: "Stone Temple Pilots — Acoustic Full Show (4K)",
+  artist: "Stone Temple Pilots",
+  year: "Acoustic",
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Full Acoustic Performance (4K)",
+      url: "https://youtu.be/Apok0654Qnc?si=HZaYZkcjogvxSLRQ"
+    }
+  ]
 },
 
   {
