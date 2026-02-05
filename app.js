@@ -327,4 +327,43 @@
     navigator.serviceWorker.register("./sw.js");
   });
    }
+   /* ===============================
+   PWA INSTALL SUPPORT
+================================ */
+
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+// ANDROID / CHROME
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.hidden = false;
+
+  installBtn.addEventListener("click", async () => {
+    installBtn.hidden = true;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+  });
+});
+
+// IOS SAFARI FALLBACK
+const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
+
+if (isIOS && !isStandalone) {
+  installBtn.hidden = false;
+  installBtn.textContent = "＋ Add to Home Screen";
+  installBtn.addEventListener("click", () => {
+    alert("On iPhone:\nTap Share → Add to Home Screen");
+  });
+}
+
+// REGISTER SERVICE WORKER
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
 })();
