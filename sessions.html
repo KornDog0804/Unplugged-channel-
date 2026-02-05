@@ -3,8 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Joey’s Acoustic Corner — Sessions</title>
+  <titletitle>Joey’s Acoustic Corner — Sessions</title>
+
   <link rel="stylesheet" href="./styles.css" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#07070a">
+  <meta name="description" content="Stripped & unplugged sessions — handpicked only. Queues stitch tracks together automatically.">
+
+  <!-- iOS add-to-home -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+
+  <!-- Favicons (root level) -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 </head>
 
 <body class="sessions">
@@ -86,7 +102,7 @@
 
       <div id="episodes"></div>
 
-      <!-- NEW: LOAD MORE -->
+      <!-- LOAD MORE -->
       <div class="playAllWrap" style="padding-top: 6px;">
         <button id="loadMoreBtn" class="landingBtn playAllBtn" type="button">
           Load more
@@ -99,5 +115,14 @@
   <!-- MUST load episodes BEFORE app.js -->
   <script src="./data/episodes.js"></script>
   <script src="./app.js"></script>
+
+  <!-- PWA service worker (safe if already registered in index) -->
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
 </body>
 </html>
