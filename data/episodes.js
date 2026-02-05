@@ -72,6 +72,19 @@ window.EPISODES = [
   ]
 },
 
+   {
+  title: "Corey Taylor — Acoustic Session",
+  artist: "Corey Taylor",
+  year: "Acoustic",
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Acoustic Performance",
+      url: "https://youtu.be/uetFO7y8WPA?si=Ci9s5mRhIGGOyV-a"
+    }
+  ]
+},
+
   {
     title: "Papa Roach — WRIF Acoustic Set (Full Session)",
     artist: "Papa Roach",
