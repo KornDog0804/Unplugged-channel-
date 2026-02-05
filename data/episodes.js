@@ -22,6 +22,19 @@ window.EPISODES = [
       { title: "Full Session Stream", url: "https://youtu.be/Jprla2NvHY0" }
     ]
   },
+   
+   {
+  title: "Pearl Jam — MTV Unplugged (Full Session)",
+  artist: "Pearl Jam",
+  year: 1992,
+  mode: "fullshow",
+  tracks: [
+    {
+      title: "Unplugged Full Session",
+      url: "https://youtu.be/P9fPF204icg?si=DSCqyJAdlgz2OmFK"
+    }
+  ]
+},
 
   {
     title: "JAY-Z — Unplugged / Live (Full Session)",
