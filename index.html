@@ -4,7 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Joey’s Acoustic Corner</title>
+
   <link rel="stylesheet" href="./styles.css" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0b0f0c">
+  <meta name="description" content="Stripped & unplugged sessions — handpicked only. Queues stitch tracks together automatically.">
+
+  <!-- iOS add-to-home -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png">
 </head>
 
 <body class="landing">
@@ -49,6 +65,13 @@
           <a class="landingBtn" href="./sessions.html#sessionsList">Browse Sets</a>
         </div>
 
+        <!-- Install (Android/desktop). iOS won’t show this button; Safari uses Share → Add to Home Screen -->
+        <div class="landingBtns" style="margin-top:12px;">
+          <button id="installBtn" class="landingBtn" type="button" style="display:none;">
+            Install App
+          </button>
+        </div>
+
         <div class="landingMini">
           <div class="miniItem">
             <div class="miniLabel">How it works</div>
@@ -67,5 +90,35 @@
     </section>
 
   </main>
+
+  <!-- PWA install + SW -->
+  <script>
+    // Register service worker (safe if missing)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+
+    // Install button (Chrome/Edge/Android)
+    let deferredPrompt = null;
+    const installBtn = document.getElementById("installBtn");
+
+    window.addEventListener("beforeinstallprompt", (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.style.display = "inline-flex";
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener("click", async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice.catch(() => {});
+        deferredPrompt = null;
+        installBtn.style.display = "none";
+      });
+    }
+  </script>
 </body>
 </html>
