@@ -1,1 +1,19 @@
-.
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.joeysacousticcorner"
+       name="Joey’s Acoustic Corner"
+       version="1.0.0"
+       provider-name="Joey">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+
+  <extension point="xbmc.addon.metadata">
+    <summary>Stripped & unplugged sessions — handpicked only.</summary>
+    <description>MTV Unplugged energy, acoustic cuts, stitched queues and full sessions.</description>
+    <platform>all</platform>
+  </extension>
+</addon>
