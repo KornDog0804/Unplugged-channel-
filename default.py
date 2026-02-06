@@ -2,171 +2,152 @@
 import sys
 import json
 import re
-from urllib.parse import parse_qsl, urlencode
+import urllib.request
+import urllib.parse
 
 import xbmc
 import xbmcgui
 import xbmcplugin
 
-try:
-    import requests
-except Exception:
-    requests = None
-
-ADDON_HANDLE = int(sys.argv[1])
+HANDLE = int(sys.argv[1])
 BASE_URL = sys.argv[0]
 
-# CHANGE THIS to your Netlify URL endpoint (episodes.json at root)
-EPISODES_JSON_URL = "https://mellifluous-tanuki-51d911.netlify.app/episodes.json"
-
-YOUTUBE_PLUGIN = "plugin://plugin.video.youtube/play/?video_id="
-
-
-def log(msg):
-    xbmc.log(f"[JoeysAcousticCorner] {msg}", xbmc.LOGINFO)
-
-
-def get_params():
-    return dict(parse_qsl(sys.argv[2][1:]))
-
-
-def yt_id_from_url(url):
-    # Supports:
-    # https://youtu.be/VIDEOID
-    # https://www.youtube.com/watch?v=VIDEOID
-    # and extra ?si= stuff
-    if not url:
-        return None
-    m = re.search(r"youtu\.be/([A-Za-z0-9_-]{6,})", url)
-    if m:
-        return m.group(1)
-    m = re.search(r"v=([A-Za-z0-9_-]{6,})", url)
-    if m:
-        return m.group(1)
-    return None
-
-
-def fetch_episodes():
-    if requests is None:
-        raise Exception("Missing requests module in Kodi. Install 'requests' dependency.")
-    r = requests.get(EPISODES_JSON_URL, timeout=15)
-    r.raise_for_status()
-    data = r.json()
-    # Accept either { "episodes": [...] } or just [...]
-    if isinstance(data, dict) and "episodes" in data:
-        return data["episodes"]
-    if isinstance(data, list):
-        return data
-    return []
-
+# CHANGE THIS to your live site domain (Netlify)
+SITE = "https://mellifluous-tanuki-51d911.netlify.app"
+EP_URL = SITE + "/episodes.json"
 
 def build_url(query):
-    return BASE_URL + "?" + urlencode(query)
+  return BASE_URL + "?" + urllib.parse.urlencode(query)
 
+def http_get_json(url):
+  req = urllib.request.Request(url, headers={"User-Agent": "Kodi"})
+  with urllib.request.urlopen(req, timeout=15) as resp:
+    return json.loads(resp.read().decode("utf-8"))
 
-def list_sessions():
-    xbmcplugin.setPluginCategory(ADDON_HANDLE, "Joey’s Acoustic Corner")
-    xbmcplugin.setContent(ADDON_HANDLE, "videos")
+def yt_id_from_url(url):
+  # supports youtu.be/ID and youtube.com/watch?v=ID
+  m = re.search(r"youtu\.be/([A-Za-z0-9_\-]+)", url)
+  if m: return m.group(1)
+  m = re.search(r"v=([A-Za-z0-9_\-]+)", url)
+  if m: return m.group(1)
+  return None
 
-    try:
-        episodes = fetch_episodes()
-    except Exception as e:
-        xbmcgui.Dialog().ok("Joey’s Acoustic Corner", f"Couldn’t load episodes.json:\n\n{e}")
-        xbmcplugin.endOfDirectory(ADDON_HANDLE, succeeded=False)
-        return
+def playlist_id_from_url(url):
+  m = re.search(r"list=([A-Za-z0-9_\-]+)", url)
+  return m.group(1) if m else None
 
-    # Sort newest-ish first when year is numeric
-    def year_key(ep):
-        y = ep.get("year")
-        return y if isinstance(y, int) else -1
+def play_youtube(url):
+  vid = yt_id_from_url(url)
+  pid = playlist_id_from_url(url)
 
-    episodes_sorted = sorted(episodes, key=year_key, reverse=True)
+  # Prefer YouTube addon if installed
+  if pid and "playlist" in url:
+    plugin_url = "plugin://plugin.video.youtube/play/?playlist_id=" + pid
+  elif pid:
+    plugin_url = "plugin://plugin.video.youtube/play/?playlist_id=" + pid
+  elif vid:
+    plugin_url = "plugin://plugin.video.youtube/play/?video_id=" + vid
+  else:
+    plugin_url = url  # fallback
 
-    for idx, ep in enumerate(episodes_sorted):
-        title = ep.get("title", "Untitled")
-        artist = ep.get("artist", "")
-        year = ep.get("year", "")
-        mode = ep.get("mode", "fullshow")
-        tracks = ep.get("tracks", [])
+  li = xbmcgui.ListItem(path=plugin_url)
+  xbmcplugin.setResolvedUrl(HANDLE, True, li)
 
-        label = f"{title}"
-        subtitle = " • ".join([str(artist).strip(), str(year).strip(), str(mode).strip()]).strip(" •")
+def list_root():
+  items = [
+    ("Full Sessions", "fullshow"),
+    ("Queues", "queue"),
+    ("Playlists", "playlist"),
+    ("All Sessions", "all")
+  ]
+  for label, mode in items:
+    url = build_url({"action":"list", "mode":mode})
+    li = xbmcgui.ListItem(label=label)
+    li.setInfo("video", {"title": label})
+    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
 
-        li = xbmcgui.ListItem(label=label)
-        li.setInfo("video", {
-            "title": title,
-            "artist": artist,
-            "year": year if isinstance(year, int) else None,
-            "plot": subtitle
-        })
+  xbmcplugin.endOfDirectory(HANDLE)
 
-        # If it's a queue, go to track list. If fullshow, play first track.
-        if mode == "queue" and len(tracks) > 0:
-            url = build_url({"action": "tracks", "index": str(idx)})
-            xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=True)
-        else:
-            # play first track
-            if len(tracks) == 0:
-                continue
-            url = build_url({"action": "play", "u": tracks[0].get("url", "")})
-            li.setProperty("IsPlayable", "true")
-            xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=False)
+def list_mode(mode):
+  data = http_get_json(EP_URL)
+  eps = data if isinstance(data, list) else []
 
-    xbmcplugin.endOfDirectory(ADDON_HANDLE)
+  if mode != "all":
+    eps = [e for e in eps if str(e.get("mode","")).lower() == mode]
 
+  # Sort by artist then year then title
+  def key(e):
+    return (str(e.get("artist","")).lower(), str(e.get("year","")), str(e.get("title","")).lower())
+  eps.sort(key=key)
 
-def list_tracks(index_str):
-    try:
-        episodes = fetch_episodes()
-        idx = int(index_str)
-        ep = episodes[idx]
-    except Exception:
-        xbmcplugin.endOfDirectory(ADDON_HANDLE, succeeded=False)
-        return
+  for e in eps:
+    title = e.get("title","Untitled")
+    artist = e.get("artist","")
+    year = e.get("year","")
+    m = str(e.get("mode","")).lower()
+    tracks = e.get("tracks", []) or []
 
-    title = ep.get("title", "Queue")
-    tracks = ep.get("tracks", [])
+    label = f"{title}"
+    meta = {"title": title, "artist": artist}
 
-    xbmcplugin.setPluginCategory(ADDON_HANDLE, title)
-    xbmcplugin.setContent(ADDON_HANDLE, "songs")
-
-    for t in tracks:
-        ttitle = t.get("title", "Track")
-        url = t.get("url", "")
-
-        li = xbmcgui.ListItem(label=ttitle)
-        li.setInfo("music", {"title": ttitle})
-        li.setProperty("IsPlayable", "true")
-
-        play_url = build_url({"action": "play", "u": url})
-        xbmcplugin.addDirectoryItem(ADDON_HANDLE, play_url, li, isFolder=False)
-
-    xbmcplugin.endOfDirectory(ADDON_HANDLE)
-
-
-def play_url(youtube_url):
-    vid = yt_id_from_url(youtube_url)
-    if not vid:
-        xbmcgui.Dialog().ok("Joey’s Acoustic Corner", "Couldn’t parse YouTube video id.")
-        return
-
-    # Hand off to official YouTube add-on
-    target = YOUTUBE_PLUGIN + vid
-    li = xbmcgui.ListItem(path=target)
-    xbmcplugin.setResolvedUrl(ADDON_HANDLE, True, li)
-
-
-def router(params):
-    action = params.get("action")
-    if action is None:
-        list_sessions()
-    elif action == "tracks":
-        list_tracks(params.get("index", "0"))
-    elif action == "play":
-        play_url(params.get("u", ""))
+    # queue/playlist => folder to pick tracks
+    if m in ["queue", "playlist"] and len(tracks) > 0:
+      url = build_url({"action":"tracks", "title":title})
+      li = xbmcgui.ListItem(label=label)
+      li.setInfo("video", meta)
+      xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=True)
     else:
-        list_sessions()
+      # fullshow => play first track
+      play_url = tracks[0].get("url") if len(tracks) else None
+      if not play_url:
+        continue
+      url = build_url({"action":"play", "u":play_url})
+      li = xbmcgui.ListItem(label=label)
+      li.setInfo("video", meta)
+      li.setProperty("IsPlayable", "true")
+      xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
 
+  xbmcplugin.endOfDirectory(HANDLE)
 
-if __name__ == "__main__":
-    router(get_params())
+def list_tracks(title_match):
+  data = http_get_json(EP_URL)
+  eps = data if isinstance(data, list) else []
+  ep = None
+  for e in eps:
+    if e.get("title") == title_match:
+      ep = e
+      break
+  if not ep:
+    xbmcplugin.endOfDirectory(HANDLE)
+    return
+
+  tracks = ep.get("tracks", []) or []
+  for t in tracks:
+    tname = t.get("title","Track")
+    u = t.get("url","")
+    li = xbmcgui.ListItem(label=tname)
+    li.setProperty("IsPlayable", "true")
+    url = build_url({"action":"play", "u":u})
+    xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=False)
+
+  xbmcplugin.endOfDirectory(HANDLE)
+
+def router():
+  params = {}
+  if len(sys.argv) > 2 and sys.argv[2]:
+    params = dict(urllib.parse.parse_qsl(sys.argv[2][1:]))
+
+  action = params.get("action")
+  if not action:
+    return list_root()
+
+  if action == "list":
+    return list_mode(params.get("mode","all"))
+  if action == "tracks":
+    return list_tracks(params.get("title",""))
+  if action == "play":
+    return play_youtube(params.get("u",""))
+
+  return list_root()
+
+router()
