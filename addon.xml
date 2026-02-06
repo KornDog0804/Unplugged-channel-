@@ -5,7 +5,6 @@
        provider-name="Joey">
   <requires>
     <import addon="xbmc.python" version="3.0.0"/>
-    <import addon="script.module.requests"/>
   </requires>
 
   <extension point="xbmc.python.pluginsource" library="default.py">
@@ -14,13 +13,7 @@
 
   <extension point="xbmc.addon.metadata">
     <summary>Stripped & unplugged sessions — handpicked only.</summary>
-    <description>
-      Joey’s Acoustic Corner. Pulls episodes from your Netlify episodes.json and plays via Kodi YouTube add-on.
-    </description>
+    <description>MTV Unplugged energy, acoustic cuts, stitched queues and full sessions.</description>
     <platform>all</platform>
-    <assets>
-      <icon>icon.png</icon>
-      <fanart>fanart.jpg</fanart>
-    </assets>
   </extension>
 </addon>
