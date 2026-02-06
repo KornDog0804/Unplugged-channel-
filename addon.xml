@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="plugin.video.joeysacousticcorner"
+       name="Joey’s Acoustic Corner"
+       version="1.0.0"
+       provider-name="Joey">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+    <import addon="script.module.requests"/>
+  </requires>
+
+  <extension point="xbmc.python.pluginsource" library="default.py">
+    <provides>video</provides>
+  </extension>
+
+  <extension point="xbmc.addon.metadata">
+    <summary>Stripped & unplugged sessions — handpicked only.</summary>
+    <description>
+      Joey’s Acoustic Corner. Pulls episodes from your Netlify episodes.json and plays via Kodi YouTube add-on.
+    </description>
+    <platform>all</platform>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>
