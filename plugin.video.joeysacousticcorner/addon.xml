@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addon id="plugin.video.joeysacousticcorner"
-       name="Joey’s Acoustic Corner"
+       name="Joeys Acoustic Corner"
        version="1.0.1"
        provider-name="Joey">
 
@@ -13,8 +13,8 @@
   </extension>
 
   <extension point="xbmc.addon.metadata">
-    <summary>Stripped &amp; unplugged sessions — handpicked only.</summary>
-    <description>Full sessions, queues, and playlists pulled from your Netlify episodes.json.</description>
+    <summary>Stripped and unplugged sessions — handpicked only.</summary>
+    <description>Acoustic sessions and queues.</description>
     <platform>all</platform>
   </extension>
 
