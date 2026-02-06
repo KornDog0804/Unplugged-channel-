@@ -18,111 +18,104 @@
   <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-  <!-- Favicons (root level) -->
+  <!-- Favicons -->
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
 </head>
 
 <body class="sessions">
 
-  <header class="top">
-    <div class="brand">
-      <div class="brandMark"></div>
-      <div class="brandText">
-        <div class="titleRow">
-          <div class="title">JOEY’S ACOUSTIC CORNER</div>
-          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
-        </div>
-        <div class="sub">
-          <span class="subStrong">Stripped & unplugged sessions</span>
-          <span class="subSep">—</span>
-          <span>handpicked only.</span>
-        </div>
+<header class="top">
+  <div class="brand">
+    <div class="brandMark"></div>
+    <div class="brandText">
+      <div class="titleRow">
+        <div class="title">JOEY’S ACOUSTIC CORNER</div>
+        <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
+      </div>
+      <div class="sub">
+        <span class="subStrong">Stripped & unplugged sessions</span>
+        <span class="subSep">—</span>
+        <span>handpicked only.</span>
       </div>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="wrap">
+<main class="wrap">
 
-    <a href="/index.html" class="focusToggleBtn" style="justify-content:center;">
-      ← Back to home
-    </a>
+  <a href="/index.html" class="focusToggleBtn">← Back to home</a>
 
-    <!-- PLAYER -->
-    <section id="playerWrap" class="player-wrap player-wrap--collapsible">
-      <div class="now-playing-title" id="nowPlayingTitle">Now Playing</div>
+  <!-- PLAYER -->
+  <section id="playerWrap" class="player-wrap player-wrap--collapsible">
+    <div class="now-playing-title" id="nowPlayingTitle">Now Playing</div>
 
-      <div class="tvFrame">
-        <div class="tvTopBar">
-          <div class="tvLabel">JOEY’S ACOUSTIC CORNER</div>
+    <div class="tvFrame">
+      <div class="tvTopBar">
+        <div class="tvLabel">JOEY’S ACOUSTIC CORNER</div>
 
-          <div class="tvActions">
-            <a id="watchOnTvBtn" class="watchTvBtn" href="#" target="_blank" rel="noopener">
-              Watch on TV
-            </a>
+        <div class="tvActions">
+          <a id="watchOnTvBtn" class="watchTvBtn" href="#" target="_blank" rel="noopener">
+            Watch on TV
+          </a>
 
-            <button id="playerToggleBtn" class="sessionOverlayClose" type="button" aria-expanded="false">
-              Show player
-            </button>
-          </div>
-        </div>
-
-        <div class="playerFrameWrap" id="playerFrameWrap">
-          <iframe
-            id="playerFrame"
-            class="player-frame"
-            src=""
-            title="Player"
-            allow="autoplay; encrypted-media; picture-in-picture"
-            allowfullscreen
-          ></iframe>
-        </div>
-
-        <div id="nowPlayingLine" class="nowPlayingLine">
-          Playing now.
+          <button id="playerToggleBtn" type="button">Show player</button>
         </div>
       </div>
-    </section>
 
-    <!-- LIST -->
-    <section id="sessionsList">
-      <div class="sessionsHead">
-        <div>
-          <div class="sessionsTitle">Sessions</div>
-          <div class="sessionsSub">Pick a set. If it’s a queue, it stitches tracks together for you.</div>
+      <div class="playerFrameWrap" id="playerFrameWrap">
+        <iframe
+          id="playerFrame"
+          class="player-frame"
+          src=""
+          title="Player"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen>
+        </iframe>
+      </div>
+
+      <div id="nowPlayingLine" class="nowPlayingLine">
+        Playing now.
+      </div>
+    </div>
+  </section>
+
+  <!-- LIST -->
+  <section id="sessionsList">
+    <div class="sessionsHead">
+      <div>
+        <div class="sessionsTitle">Sessions</div>
+        <div class="sessionsSub">
+          Pick a set. If it’s a queue, it stitches tracks together for you.
         </div>
-        <div id="status">Loading…</div>
       </div>
+      <div id="status">Loading…</div>
+    </div>
 
-      <div class="playAllWrap">
-        <button id="playAllBtn" class="landingBtn playAllBtn">
-          Play All
-        </button>
-      </div>
+    <div class="playAllWrap">
+      <button id="playAllBtn" class="landingBtn playAllBtn">Play All</button>
+    </div>
 
-      <div id="episodes"></div>
+    <div id="episodes"></div>
 
-      <!-- LOAD MORE -->
-      <div class="playAllWrap" style="padding-top: 6px;">
-        <button id="loadMoreBtn" class="landingBtn playAllBtn" type="button">
-          Load more
-        </button>
-      </div>
-    </section>
+    <div class="playAllWrap">
+      <button id="loadMoreBtn" class="landingBtn playAllBtn">Load more</button>
+    </div>
+  </section>
 
-  </main>
+</main>
 
-  <!-- MUST load episodes BEFORE app.js -->
-  <script src="/data/episodes.js"></script>
-  <script src="/app.js"></script>
+<!-- DATA FIRST -->
+<script src="/data/episodes.js"></script>
+<script src="/app.js"></script>
 
-  <!-- PWA service worker -->
-  <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js").catch(() => {});
-      });
-    }
-  </script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {});
+  });
+}
+</script>
+
 </body>
 </html>
