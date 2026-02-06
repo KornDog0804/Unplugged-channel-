@@ -597,3 +597,10 @@ body.landing{
 .installBtn:hover {
   transform: translateY(-1px);
 }
+.brandMark {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: url("./icon-192.png") center/cover no-repeat;
+  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+}
