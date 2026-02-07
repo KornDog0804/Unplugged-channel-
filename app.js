@@ -1,10 +1,11 @@
 /* Joey’s Acoustic Corner — app.js
    Crash-proof renderer + stitched queue autoplay (no YT API)
-   + Load More pagination (no endless-scroll doom list)
+   + Load More pagination
+   FIX: queues no longer skip the first song
 */
 
 (function () {
-  const PAGE_SIZE = 12; // change to 15/20 if you want
+  const PAGE_SIZE = 12;
 
   const $ = (sel) => document.querySelector(sel);
 
@@ -21,7 +22,6 @@
 
   let ALL = [];
   let shownCount = 0;
-  let lastWatchUrl = ""; // what Watch on TV should open
 
   function setStatus(msg) {
     if (el.status) el.status.textContent = msg;
@@ -57,25 +57,31 @@
   function buildEmbedForSingle(videoUrl) {
     const id = getVideoId(videoUrl);
     if (!id) return "";
-    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+    const origin = encodeURIComponent(window.location.origin);
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
+  // ✅ FIXED: include ALL ids in playlist param + force index=0
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
+
     const first = ids[0];
-    const rest = ids.slice(1);
-    const playlistParam = rest.length ? `&playlist=${encodeURIComponent(rest.join(","))}` : "";
-    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1${playlistParam}`;
+    const origin = encodeURIComponent(window.location.origin);
+
+    // playlist MUST include the first too, and index=0 prevents “start on #2”
+    const playlistAll = encodeURIComponent(ids.join(","));
+
+    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}&playlist=${playlistAll}&index=0`;
   }
 
   function buildEmbedForPlaylist(playlistUrl) {
     const list = getPlaylistId(playlistUrl);
     if (!list) return "";
-    return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1`;
+    const origin = encodeURIComponent(window.location.origin);
+    return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
-  // A clean "Watch on TV" URL (opens normal youtube watch page, not embed)
   function buildWatchUrl(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return "";
 
@@ -88,19 +94,17 @@
       return `https://www.youtube.com/playlist?list=${encodeURIComponent(list)}`;
     }
 
-    // fullshow or queue -> open first video as a normal watch page
     const firstId = getVideoId(trackUrls[0] || "");
     if (!firstId) return "";
     return `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}`;
   }
 
   function setWatchOnTv(url) {
-    lastWatchUrl = url || "";
     if (!el.watchOnTvBtn) return;
-    el.watchOnTvBtn.href = lastWatchUrl || "#";
-    el.watchOnTvBtn.style.opacity = lastWatchUrl ? "1" : "0.6";
-    el.watchOnTvBtn.style.pointerEvents = lastWatchUrl ? "auto" : "none";
-    if (!lastWatchUrl) el.watchOnTvBtn.setAttribute("aria-disabled", "true");
+    el.watchOnTvBtn.href = url || "#";
+    el.watchOnTvBtn.style.opacity = url ? "1" : "0.6";
+    el.watchOnTvBtn.style.pointerEvents = url ? "auto" : "none";
+    if (!url) el.watchOnTvBtn.setAttribute("aria-disabled", "true");
     else el.watchOnTvBtn.removeAttribute("aria-disabled");
   }
 
@@ -119,36 +123,26 @@
     const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
 
     let src = "";
-    if (mode === "queue") {
-      src = buildEmbedForQueue(trackUrls);
-    } else if (mode === "playlist") {
-      src = buildEmbedForPlaylist(trackUrls[0]);
-    } else {
-      src = buildEmbedForSingle(trackUrls[0]);
-    }
+    if (mode === "queue") src = buildEmbedForQueue(trackUrls);
+    else if (mode === "playlist") src = buildEmbedForPlaylist(trackUrls[0]);
+    else src = buildEmbedForSingle(trackUrls[0]);
 
     if (!src) {
       setStatus("Bad link in this session");
       return;
     }
 
-    // Update UI
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
     if (el.nowLine) {
       const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
       el.nowLine.textContent = `Playing now: ${meta}`.trim();
     }
 
-    // Watch on TV
     setWatchOnTv(buildWatchUrl(ep));
-
-    // Make sure player is visible when you pick a session
     ensurePlayerVisible();
 
-    // Set player
     if (el.playerFrame) el.playerFrame.src = src;
 
-    // Highlight active
     document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
     const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
     if (card) card.classList.add("isActive");
@@ -200,10 +194,8 @@
     const urls = [];
     list.forEach(ep => {
       const mode = safeText(ep.mode).toLowerCase();
-      if (mode === "playlist") return; // skip playlists for mega queue
-      (ep.tracks || []).forEach(t => {
-        if (t && t.url) urls.push(t.url);
-      });
+      if (mode === "playlist") return;
+      (ep.tracks || []).forEach(t => { if (t && t.url) urls.push(t.url); });
     });
     return urls;
   }
@@ -224,7 +216,6 @@
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
 
-      // Watch on TV: open the first playable item as normal YouTube watch
       const firstId = getVideoId(urls[0] || "");
       setWatchOnTv(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "");
 
@@ -235,7 +226,6 @@
     });
   }
 
-  // NEW: Load More rendering
   function updateLoadMoreUI() {
     if (!el.loadMoreBtn) return;
     const done = shownCount >= ALL.length;
@@ -282,17 +272,13 @@
 
       if (el.episodes) el.episodes.innerHTML = "";
 
-      // Wire buttons once
       wirePlayAllButton(ALL);
 
       if (el.loadMoreBtn) {
         el.loadMoreBtn.addEventListener("click", () => renderNextBatch());
       }
 
-      // Start with first page
       renderNextBatch();
-
-      // Default Watch on TV disabled until something plays
       setWatchOnTv("");
     } catch (err) {
       setStatus("App crashed");
@@ -300,7 +286,6 @@
     }
   }
 
-  // Player collapse toggle (safe)
   function initPlayerToggle() {
     if (!el.toggleBtn) return;
 
@@ -310,7 +295,6 @@
       el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
     }
 
-    // Start collapsed so it doesn’t block the list
     setCollapsed(true);
 
     el.toggleBtn.addEventListener("click", () => {
@@ -322,48 +306,4 @@
     initPlayerToggle();
     init();
   });
-   if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
-  });
-   }
-   /* ===============================
-   PWA INSTALL SUPPORT
-================================ */
-
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
-
-// ANDROID / CHROME
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.hidden = false;
-
-  installBtn.addEventListener("click", async () => {
-    installBtn.hidden = true;
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-  });
-});
-
-// IOS SAFARI FALLBACK
-const isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-const isStandalone = window.matchMedia("(display-mode: standalone)").matches;
-
-if (isIOS && !isStandalone) {
-  installBtn.hidden = false;
-  installBtn.textContent = "＋ Add to Home Screen";
-  installBtn.addEventListener("click", () => {
-    alert("On iPhone:\nTap Share → Add to Home Screen");
-  });
-}
-
-// REGISTER SERVICE WORKER
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
-  });
-}
 })();
