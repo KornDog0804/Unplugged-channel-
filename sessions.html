@@ -44,7 +44,9 @@
 
 <main class="wrap">
 
-  <a href="/index.html" class="focusToggleBtn">← Back to home</a>
+  <a href="/index.html" class="focusToggleBtn" style="justify-content:center;">
+    ← Back to home
+  </a>
 
   <!-- PLAYER -->
   <section id="playerWrap" class="player-wrap player-wrap--collapsible">
@@ -59,7 +61,14 @@
             Watch on TV
           </a>
 
-          <button id="playerToggleBtn" type="button">Show player</button>
+          <button
+            id="playerToggleBtn"
+            class="sessionOverlayClose"
+            type="button"
+            aria-expanded="false"
+          >
+            Show player
+          </button>
         </div>
       </div>
 
@@ -93,13 +102,17 @@
     </div>
 
     <div class="playAllWrap">
-      <button id="playAllBtn" class="landingBtn playAllBtn">Play All</button>
+      <button id="playAllBtn" class="landingBtn playAllBtn" type="button">
+        Play All
+      </button>
     </div>
 
     <div id="episodes"></div>
 
-    <div class="playAllWrap">
-      <button id="loadMoreBtn" class="landingBtn playAllBtn">Load more</button>
+    <div class="playAllWrap" style="padding-top:6px;">
+      <button id="loadMoreBtn" class="landingBtn playAllBtn" type="button">
+        Load more
+      </button>
     </div>
   </section>
 
@@ -108,14 +121,6 @@
 <!-- DATA FIRST -->
 <script src="/data/episodes.js"></script>
 <script src="/app.js"></script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {});
-  });
-}
-</script>
 
 </body>
 </html>
