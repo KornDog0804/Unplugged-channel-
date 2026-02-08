@@ -11,17 +11,17 @@ import xbmcplugin
 
 HANDLE = int(sys.argv[1])
 
-# ====== CHANGE THIS to your live Netlify site ======
+# ====== Your live Netlify site ======
 SITE = "https://mellifluous-tanuki-51d911.netlify.app"
 
-# Kodi should read JSON (NOT episodes.js)
-# Put this file at your site root:
-#   /episodes_MASTER_22.json  (recommended)
-EP_URL = SITE + "/episodes_MASTER_22.json"
+# ✅ ONE SOURCE FOR BOTH SITE + KODI
+# Put this at your site root:
+#   /episodes.json
+EP_URL = SITE + "/episodes.json"
 
 UA = "Kodi/21 JoeysAcousticCorner"
 
-# ====== HARD-CODED FALLBACK (keeps you alive if JSON is down) ======
+# ====== FALLBACK (only used if JSON can't load) ======
 FALLBACK_EPISODES = [
     ("Nirvana — MTV Unplugged (Full Session)", "https://youtu.be/pOTkCgkxqyg"),
     ("Alice In Chains — MTV Unplugged (Full Session)", "https://youtu.be/Jprla2NvHY0"),
@@ -101,13 +101,6 @@ def load_episodes():
         log(f"JSON fetch failed: {e}")
         return None
 
-# ---------- ROUTING HELPERS ----------
-def build_queue_run_url(ep):
-    # IMPORTANT: encode episode JSON ONLY ONCE
-    ep_json = json.dumps(ep, ensure_ascii=False)
-    qs = urllib.parse.urlencode({"action": "play_queue", "ep": ep_json})
-    return sys.argv[0] + "?" + qs
-
 def safe_int(v, default=None):
     try:
         return int(v)
@@ -115,7 +108,6 @@ def safe_int(v, default=None):
         return default
 
 def has_encore(ep):
-    # Encore should ONLY apply if fields exist in this episode
     try:
         mode = str(ep.get("mode", "")).lower()
         encore = ep.get("encore") or {}
@@ -125,10 +117,15 @@ def has_encore(ep):
     except Exception:
         return False
 
-# ---------- RENDER ----------
+# ✅ NO MORE "ep={big json}" in the URL
+# We only pass the index.
+def build_queue_run_url(idx):
+    qs = urllib.parse.urlencode({"action": "play_queue", "idx": str(idx)})
+    return sys.argv[0] + "?" + qs
+
 def render_from_json(eps):
     count = 0
-    for ep in eps:
+    for i, ep in enumerate(eps):
         title = ep.get("title", "Untitled")
         mode = str(ep.get("mode", "")).lower()
         tracks = ep.get("tracks", []) or []
@@ -141,7 +138,7 @@ def render_from_json(eps):
         if mode == "playlist":
             if not tracks:
                 continue
-            pid = playlist_id_from_url(tracks[0].get("url", ""))
+            pid = playlist_id_from_url((tracks[0] or {}).get("url", ""))
             if not pid:
                 continue
             add_playable(title, youtube_play_playlist(pid))
@@ -152,22 +149,21 @@ def render_from_json(eps):
         if mode == "fullshow":
             if not tracks:
                 continue
-            vid = yt_id_from_url(tracks[0].get("url", ""))
+            vid = yt_id_from_url((tracks[0] or {}).get("url", ""))
             if not vid:
                 continue
             add_playable(title, youtube_play_video(vid))
             count += 1
             continue
 
-        # Queue: build a Kodi playlist (and inject encore if defined)
+        # Queue: play via idx (safe)
         if mode == "queue":
-            add_playable(title + "  (Queue)", build_queue_run_url(ep))
+            add_playable(title + "  (Queue)", build_queue_run_url(i))
             count += 1
             continue
 
     return count
 
-# ---------- PLAY QUEUE ----------
 def play_queue(ep):
     tracks = ep.get("tracks", []) or []
 
@@ -181,9 +177,9 @@ def play_queue(ep):
         notify("No playable tracks in this queue.")
         return
 
-    # ✅ Brad-only Encore injection (ONLY if episode has encore fields)
+    # ✅ Encore injection if defined
     if has_encore(ep):
-        after_idx = ep.get("encoreAfterTrackIndex")  # 0-based; after track 3 = index 2
+        after_idx = ep.get("encoreAfterTrackIndex")  # 0-based
         encore_url = (ep.get("encore") or {}).get("url")
         encore_id = yt_id_from_url(encore_url)
 
@@ -199,13 +195,11 @@ def play_queue(ep):
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
 
-    # Add in order — starts at index 0 ✅
     for vid in ids:
         pl.add(youtube_play_video(vid))
 
     xbmc.Player().play(pl)
 
-# ---------- FALLBACK ----------
 def render_fallback():
     notify("Using fallback list (JSON not reachable).")
     for title, url in FALLBACK_EPISODES:
@@ -215,7 +209,6 @@ def render_fallback():
         add_playable(title, youtube_play_video(vid))
     end_dir()
 
-# ---------- ROUTER ----------
 def router():
     params = {}
     if len(sys.argv) > 2 and sys.argv[2]:
@@ -224,13 +217,12 @@ def router():
     action = params.get("action")
 
     if action == "play_queue":
-        ep_raw = params.get("ep", "")
-        try:
-            ep = json.loads(ep_raw)  # we encoded ONLY once
-            play_queue(ep)
-        except Exception as e:
-            log(f"Queue play failed: {e}")
-            notify("Queue play failed.")
+        idx = safe_int(params.get("idx"), default=None)
+        eps = load_episodes()
+        if not eps or idx is None or idx < 0 or idx >= len(eps):
+            notify("Queue item not found.")
+            return
+        play_queue(eps[idx])
         return
 
     # Default: show listing
