@@ -1,12 +1,10 @@
 /* Joey’s Acoustic Corner — app.js
-   Crash-proof renderer + stitched queue autoplay (no YT API)
-   + Load More pagination
-   FIX: queues no longer skip the first song
+   Keeps your current queue behavior (no skipping first song)
+   + Brad-only Encore after track 3 ends (ONLY if episode has encore fields)
 */
 
 (function () {
   const PAGE_SIZE = 12;
-
   const $ = (sel) => document.querySelector(sel);
 
   const el = {
@@ -22,6 +20,53 @@
 
   let ALL = [];
   let shownCount = 0;
+
+  // --- YouTube IFrame API (only used for Encore episodes) ---
+  let ytReady = false;
+  let ytPlayer = null;
+
+  // Tracks the one episode currently playing w/ encore
+  let encoreContext = null; // { encoreVideoId, encoreAfterIndex, armed: true/false }
+
+  window.onYouTubeIframeAPIReady = function () {
+    ytReady = true;
+    tryInitYTPlayer();
+  };
+
+  function tryInitYTPlayer() {
+    if (!ytReady) return;
+    if (!el.playerFrame) return;
+    if (ytPlayer) return;
+
+    // Turn existing iframe into a YT API player when needed
+    // (It won’t do anything until we call loadPlaylist/loadVideoById)
+    ytPlayer = new YT.Player("playerFrame", {
+      events: {
+        onStateChange: onYTStateChange
+      }
+    });
+  }
+
+  function onYTStateChange(e) {
+    // Only care when we’re in a Brad-only encore flow
+    if (!encoreContext || !encoreContext.armed) return;
+
+    // 0 = ended
+    if (e.data === YT.PlayerState.ENDED) {
+      try {
+        const idx = ytPlayer.getPlaylistIndex(); // current index in playlist
+        if (idx === encoreContext.encoreAfterIndex) {
+          // ✅ Play Brad’s encore exactly after track 3 ends
+          encoreContext.armed = false;
+          ytPlayer.loadVideoById(encoreContext.encoreVideoId);
+
+          if (el.nowLine) {
+            el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
+          }
+        }
+      } catch (_) {}
+    }
+  }
 
   function setStatus(msg) {
     if (el.status) el.status.textContent = msg;
@@ -54,6 +99,7 @@
     }
   }
 
+  // --- Embed fallbacks (your current working method) ---
   function buildEmbedForSingle(videoUrl) {
     const id = getVideoId(videoUrl);
     if (!id) return "";
@@ -61,15 +107,13 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
-  // ✅ FIXED: include ALL ids in playlist param + force index=0
+  // ✅ Your “no-skip-first-song” embed fix remains
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
 
     const first = ids[0];
     const origin = encodeURIComponent(window.location.origin);
-
-    // playlist MUST include the first too, and index=0 prevents “start on #2”
     const playlistAll = encodeURIComponent(ids.join(","));
 
     return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}&playlist=${playlistAll}&index=0`;
@@ -122,6 +166,55 @@
     const mode = safeText(ep.mode).toLowerCase();
     const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
 
+    // Reset encore context every time
+    encoreContext = null;
+
+    // ✅ Brad-only Encore mode: ONLY if these fields exist
+    const hasEncore =
+      mode === "queue" &&
+      ep.encore &&
+      ep.encore.url &&
+      Number.isInteger(ep.encoreAfterTrackIndex);
+
+    // Update UI
+    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
+    if (el.nowLine) {
+      const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
+      el.nowLine.textContent = `Playing now: ${meta}`.trim();
+    }
+
+    setWatchOnTv(buildWatchUrl(ep));
+    ensurePlayerVisible();
+
+    // --- If Brad encore episode, use YT API so it triggers exactly after track 3 ends ---
+    if (hasEncore) {
+      tryInitYTPlayer();
+
+      const ids = trackUrls.map(getVideoId).filter(Boolean);
+      const encoreId = getVideoId(ep.encore.url);
+
+      if (ytPlayer && ids.length && encoreId) {
+        encoreContext = {
+          encoreVideoId: encoreId,
+          encoreAfterIndex: ep.encoreAfterTrackIndex,
+          armed: true
+        };
+
+        // ✅ Start at first track, no skipping
+        ytPlayer.loadPlaylist({ playlist: ids, index: 0 });
+
+        // Highlight active
+        document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
+        const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
+        if (card) card.classList.add("isActive");
+
+        setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
+        return;
+      }
+      // If API not available for any reason, fall through to embed
+    }
+
+    // --- Normal behavior (everyone else stays exactly how it works today) ---
     let src = "";
     if (mode === "queue") src = buildEmbedForQueue(trackUrls);
     else if (mode === "playlist") src = buildEmbedForPlaylist(trackUrls[0]);
@@ -131,15 +224,6 @@
       setStatus("Bad link in this session");
       return;
     }
-
-    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
-    if (el.nowLine) {
-      const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
-      el.nowLine.textContent = `Playing now: ${meta}`.trim();
-    }
-
-    setWatchOnTv(buildWatchUrl(ep));
-    ensurePlayerVisible();
 
     if (el.playerFrame) el.playerFrame.src = src;
 
@@ -160,9 +244,13 @@
 
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
     const m = safeText(ep.mode).toLowerCase();
+
+    const hasEncore = (m === "queue" && ep.encore && ep.encore.url && Number.isInteger(ep.encoreAfterTrackIndex));
+    const encoreTag = hasEncore ? " • encore 🕯️" : "";
+
     const small =
       (m === "queue")
-        ? `${(ep.tracks || []).length} tracks • stitched queue`
+        ? `${(ep.tracks || []).length} tracks • stitched queue${encoreTag}`
         : (m === "playlist")
           ? `playlist`
           : `full show`;
@@ -205,6 +293,7 @@
     if (!btn) return;
 
     btn.addEventListener("click", () => {
+      // Play All stays your existing embed method (no encore mixing)
       const urls = flattenPlayAll(episodes).filter(Boolean);
       const src = buildEmbedForQueue(urls);
 
@@ -212,6 +301,8 @@
         setStatus("No playable items for Play All");
         return;
       }
+
+      encoreContext = null;
 
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
@@ -252,18 +343,8 @@
   function init() {
     try {
       const episodes = window.EPISODES || window.episodes;
-
       if (!Array.isArray(episodes)) {
         setStatus("episodes.js not loaded");
-        if (el.episodes) {
-          el.episodes.innerHTML = `
-            <div class="ep" style="cursor:default;">
-              <div class="epTitle">No sessions found</div>
-              <div class="epMeta">episodes.js didn’t load or EPISODES wasn’t defined.</div>
-              <div class="epSmall">Check that sessions.html includes <b>./data/episodes.js</b> before app.js</div>
-            </div>
-          `;
-        }
         return;
       }
 
