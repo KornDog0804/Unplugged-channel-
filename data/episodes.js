@@ -1,6 +1,6 @@
 /* Joey’s Acoustic Corner
    Episodes data (WEB APP VERSION)
-   LOCKED: 22 sessions (+ Brad tribute added)
+   LOCKED: 22 sessions + Brad tribute (Encore)
    Do NOT convert this to JSON. This must stay JS.
 */
 
@@ -205,21 +205,31 @@ window.EPISODES = [
     tracks: [{ title: "Tiny Desk Concert", url: "https://youtu.be/WgqaxMOKfnI" }]
   },
 
-  /* ============================
-     BRAD TRIBUTE — 3 Doors Down
-     Change of pace: live performances
-     ============================ */
+  // 🕯️ Brad Tribute — Encore is special and DOES NOT autoplay
   {
-    title: "3 Doors Down — Live (For Brad) 🕯️",
+    title: "3 Doors Down — Live for Brad (Tribute)",
     artist: "3 Doors Down",
-    year: "Live Tribute",
-    tribute: true,
+    year: "Live",
     mode: "queue",
+
+    // These fields won’t break anything if app.js ignores them.
+    // They’re here so we can light the candle + show Encore only on this one.
+    memorial: true,
+    memorial_name: "Brad",
+    memorial_icon: "candle",
+
+    // The 3-song set (plays like a normal stitched queue)
     tracks: [
-      { title: "Kryptonite (Live)", url: "https://youtu.be/xocNHKBHsSg?si=IIMuvbUVdBPdk2wa" },
-      { title: "Here Without You (Live)", url: "https://youtu.be/5XpuvhHhx_s?si=DmhfqA4FSJlnveUj" },
-      { title: "When I’m Gone (Live)", url: "https://youtu.be/m3lSLLklu7Q?si=ND28qLHUg_Ia7IIr" }
-    ]
+      { title: "Here Without You (Live)", url: "https://youtu.be/xocNHKBHsSg?si=IIMuvbUVdBPdk2wa" },
+      { title: "When I'm Gone (Live)", url: "https://youtu.be/5XpuvhHhx_s?si=DmhfqA4FSJlnveUj" },
+      { title: "Kryptonite (Live)", url: "https://youtu.be/m3lSLLklu7Q?si=ND28qLHUg_Ia7IIr" }
+    ],
+
+    // Encore only after the 3rd song ends (button-triggered)
+    encore: {
+      title: "Encore: Ticket to Heaven (Live)",
+      url: "https://youtu.be/mdV9iLyrPv8?si=2NjHzwnZV5O09jke"
+    }
   }
 ];
 
