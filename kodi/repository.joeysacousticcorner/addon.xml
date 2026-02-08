@@ -1,22 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<addon
-  id="repository.joeysacousticcorner"
-  name="Joey’s Acoustic Corner Repo"
-  version="1.0.0"
-  provider-name="Joey">
+<addons>
 
-  <extension
-    point="xbmc.addon.repository"
-    name="Joey’s Acoustic Corner Repo">
-    <info>https://raw.githubusercontent.com/KornDog0804/Unplugged-channel/main/kodi/addons.xml</info>
-    <checksum>https://raw.githubusercontent.com/KornDog0804/Unplugged-channel/main/kodi/addons.xml.md5</checksum>
-    <datadir zip="true">https://raw.githubusercontent.com/KornDog0804/Unplugged-channel/main/kodi/</datadir>
-  </extension>
+  <addon
+    id="repository.joeysacousticcorner"
+    name="Joey’s Acoustic Corner Repo"
+    version="1.0.0"
+    provider-name="Joey">
 
-  <extension point="xbmc.addon.metadata">
-    <summary>Joey’s Acoustic Corner Repository</summary>
-    <description>Official repository for Joey’s Acoustic Corner addons.</description>
-    <platform>all</platform>
-  </extension>
+    <extension point="xbmc.addon.repository" name="Joey’s Acoustic Corner Repo">
+      <info compressed="false">https://raw.githubusercontent.com/KornDog0804/Unplugged-channel/main/kodi/addons.xml</info>
+      <checksum>https://raw.githubusercontent.com/KornDog0804/Unplugged-channel/main/kodi/addons.xml.md5</checksum>
+      <datadir zip="true">https://raw.githubusercontent.com/KornDog0804/Unplugged-channel/main/kodi/</datadir>
+    </extension>
 
-</addon>
+    <extension point="xbmc.addon.metadata">
+      <summary>Joey’s Acoustic Corner Repository</summary>
+      <description>Official repository for Joey’s Acoustic Corner addons.</description>
+      <platform>all</platform>
+    </extension>
+  </addon>
+
+
+  <addon
+    id="plugin.video.joeysacousticcorner"
+    name="Joey’s Acoustic Corner"
+    version="1.0.5"
+    provider-name="Joey">
+
+    <requires>
+      <import addon="xbmc.python" version="3.0.0"/>
+    </requires>
+
+    <extension point="xbmc.python.pluginsource" library="default.py">
+      <provides>video</provides>
+    </extension>
+
+    <extension point="xbmc.addon.metadata">
+      <summary>Stripped &amp; Unplugged Sessions</summary>
+      <description>Hand-picked acoustic, unplugged, and stripped sessions.</description>
+      <platform>all</platform>
+    </extension>
+
+  </addon>
+
+</addons>
