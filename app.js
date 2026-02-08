@@ -2,10 +2,14 @@
    Keeps your current queue behavior (no skipping first song)
    + Brad-only Encore after track 3 ends
    (ONLY if episode has: encore.url AND encoreAfterTrackIndex)
+
+   ✅ UPDATE: Site now loads the SAME master list as Kodi:
+      /episodes.json  (fallback to episodes.js if JSON fails)
 */
 
 (function () {
   const PAGE_SIZE = 12;
+  const MASTER_JSON = "/episodes.json"; // ✅ one source for site + kodi
   const $ = (sel) => document.querySelector(sel);
 
   const el = {
@@ -128,6 +132,30 @@
     if (card) card.classList.add("isActive");
   }
 
+  // ===== MASTER LOAD (JSON first, fallback to episodes.js) =====
+  async function loadEpisodesMaster() {
+    // 1) Master JSON (same as Kodi)
+    try {
+      const r = await fetch(MASTER_JSON, { cache: "no-store" });
+      if (r.ok) {
+        const data = await r.json();
+        if (Array.isArray(data)) {
+          setStatus(`Loaded master list ✅ (${data.length})`);
+          return data;
+        }
+      }
+    } catch (_) {}
+
+    // 2) Fallback (episodes.js)
+    const fallback = window.EPISODES || window.episodes;
+    if (Array.isArray(fallback)) {
+      setStatus(`Loaded fallback list ⚠️ (${fallback.length})`);
+      return fallback;
+    }
+
+    return null;
+  }
+
   // ===== YouTube API Loader (ONLY when needed) =====
   window.onYouTubeIframeAPIReady = function () {
     ytReady = true;
@@ -151,16 +179,10 @@
     if (!el.playerFrame) return;
     if (ytPlayer) return;
 
-    // IMPORTANT: the iframe must be blank-ish before YT.Player takes control
-    // We'll set it to about:blank the first time we init API
-    try {
-      el.playerFrame.src = "about:blank";
-    } catch (_) {}
+    try { el.playerFrame.src = "about:blank"; } catch (_) {}
 
     ytPlayer = new YT.Player("playerFrame", {
-      events: {
-        onStateChange: onYTStateChange
-      }
+      events: { onStateChange: onYTStateChange }
     });
   }
 
@@ -168,16 +190,12 @@
     if (!encoreContext || !encoreContext.armed || !encoreContext.usingApi) return;
     if (!ytPlayer) return;
 
-    // 0 = ended
     if (e.data === YT.PlayerState.ENDED) {
       try {
         const idx = ytPlayer.getPlaylistIndex();
-
-        // ✅ Only fire when the song that ended is track #3 (index 2)
         if (idx === encoreContext.encoreAfterIndex) {
           encoreContext.armed = false;
           ytPlayer.loadVideoById(encoreContext.encoreVideoId);
-
           if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
         }
       } catch (_) {}
@@ -213,15 +231,12 @@
 
     // ===== Brad-only Encore path (YT API) =====
     if (hasEncore) {
-      // Lazy-load API only when needed
       loadYTApiIfNeeded();
       tryInitYTPlayer();
 
       const ids = trackUrls.map(getVideoId).filter(Boolean);
       const encoreId = getVideoId(ep.encore.url);
 
-      // We only support "encore after playlist index" (0-based)
-      // For 3 songs, you want encoreAfterTrackIndex = 2
       if (ytPlayer && ids.length && encoreId) {
         encoreContext = {
           encoreVideoId: encoreId,
@@ -231,15 +246,12 @@
         };
 
         try {
-          // ✅ Start at track 0, no skipping
-          ytPlayer.loadPlaylist(ids, 0, 0);
+          ytPlayer.loadPlaylist(ids, 0, 0); // start at track 0 ✅
           setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
           return;
-        } catch (_) {
-          // fall through to embed if API fails
-        }
+        } catch (_) {}
       }
-      // If API isn't ready yet, fall back to embed (still works; encore just won’t be “exact timing”)
+      // fall back to embed if API not ready
     }
 
     // ===== Normal behavior (embed) =====
@@ -251,11 +263,6 @@
     if (!src) {
       setStatus("Bad link in this session");
       return;
-    }
-
-    // If we were previously using API, kill the API context and go back to iframe embeds
-    if (encoreContext && encoreContext.usingApi) {
-      encoreContext = null;
     }
 
     if (el.playerFrame) el.playerFrame.src = src;
@@ -370,11 +377,12 @@
     setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
   }
 
-  function init() {
+  async function init() {
     try {
-      const episodes = window.EPISODES || window.episodes;
+      const episodes = await loadEpisodesMaster();
+
       if (!Array.isArray(episodes)) {
-        setStatus("episodes.js not loaded");
+        setStatus("No episode list found (JSON + fallback failed)");
         return;
       }
 
