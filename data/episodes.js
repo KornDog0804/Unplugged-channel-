@@ -213,6 +213,7 @@ window.EPISODES = [
     title: "3 Doors Down — Live (For Brad) 🕯️",
     artist: "3 Doors Down",
     year: "Live Tribute",
+    tribute: true,
     mode: "queue",
     tracks: [
       { title: "Kryptonite (Live)", url: "https://youtu.be/xocNHKBHsSg?si=IIMuvbUVdBPdk2wa" },
