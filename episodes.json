@@ -173,15 +173,6 @@
     ]
   },
   {
-    "title": "KISS — MTV Unplugged (Playlist)",
-    "artist": "KISS",
-    "year": 1995,
-    "mode": "playlist",
-    "tracks": [
-      { "title": "Playlist Stream", "url": "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
-    ]
-  },
-  {
     "title": "Bad Omens — Acoustic Queue (6 Songs)",
     "artist": "Bad Omens",
     "year": "Acoustic",
@@ -234,13 +225,10 @@
     "memorial": true,
     "memorial_name": "Brad",
     "tracks": [
-      { "title": "Here Without You (Live)", "url": "https://youtu.be/xocNHKBHsSg" },
-      { "title": "When I'm Gone (Live)", "url": "https://youtu.be/5XpuvhHhx_s" },
-      { "title": "Kryptonite (Live)", "url": "https://youtu.be/m3lSLLklu7Q" }
-    ],
-    "encore": {
-      "title": "Ticket to Heaven (Live)",
-      "url": "https://youtu.be/mdV9iLyrPv8"
-    }
+      { "title": "01. Here Without You (Live)", "url": "https://youtu.be/xocNHKBHsSg" },
+      { "title": "02. When I'm Gone (Live)", "url": "https://youtu.be/5XpuvhHhx_s" },
+      { "title": "03. Kryptonite (Live)", "url": "https://youtu.be/m3lSLLklu7Q" },
+      { "title": "04. Ticket to Heaven (Live)", "url": "https://youtu.be/mdV9iLyrPv8" }
+    ]
   }
 ]
