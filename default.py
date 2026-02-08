@@ -21,7 +21,6 @@ EP_URL = SITE + "/episodes.json"
 
 UA = "Kodi/21 JoeysAcousticCorner"
 
-# ====== FALLBACK (only used if JSON can't load) ======
 FALLBACK_EPISODES = [
     ("Nirvana — MTV Unplugged (Full Session)", "https://youtu.be/pOTkCgkxqyg"),
     ("Alice In Chains — MTV Unplugged (Full Session)", "https://youtu.be/Jprla2NvHY0"),
@@ -48,19 +47,15 @@ def http_get_json(url):
 def yt_id_from_url(url):
     if not url:
         return None
-
     m = re.search(r"youtu\.be/([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
-
     m = re.search(r"[?&]v=([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
-
     m = re.search(r"/embed/([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
-
     return None
 
 def playlist_id_from_url(url):
@@ -70,7 +65,6 @@ def playlist_id_from_url(url):
     return m.group(1) if m else None
 
 def youtube_play_video(video_id):
-    # requires plugin.video.youtube installed
     return f"plugin://plugin.video.youtube/play/?video_id={video_id}"
 
 def youtube_play_playlist(playlist_id):
@@ -81,17 +75,14 @@ def add_playable(label, path):
     li.setProperty("IsPlayable", "true")
     xbmcplugin.addDirectoryItem(HANDLE, path, li, isFolder=False)
 
+def add_folder(label, path):
+    li = xbmcgui.ListItem(label=label)
+    xbmcplugin.addDirectoryItem(HANDLE, path, li, isFolder=True)
+
 def end_dir():
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
 
 def load_episodes():
-    # Expected JSON format:
-    # [
-    #   { title, artist, year, mode, tracks:[{title,url}, ...],
-    #     encore: { title?, url }, encoreAfterTrackIndex: 2
-    #   },
-    #   ...
-    # ]
     try:
         data = http_get_json(EP_URL)
         if isinstance(data, list):
@@ -117,24 +108,21 @@ def has_encore(ep):
     except Exception:
         return False
 
-# ✅ NO MORE "ep={big json}" in the URL
-# We only pass the index.
-def build_queue_run_url(idx):
-    qs = urllib.parse.urlencode({"action": "play_queue", "idx": str(idx)})
+def build_url(action, **kwargs):
+    qs = urllib.parse.urlencode({"action": action, **kwargs})
     return sys.argv[0] + "?" + qs
 
-def render_from_json(eps):
+# ---------- RENDER ROOT ----------
+def render_root(eps):
     count = 0
     for i, ep in enumerate(eps):
         title = ep.get("title", "Untitled")
         mode = str(ep.get("mode", "")).lower()
         tracks = ep.get("tracks", []) or []
 
-        # Brad-only marker if encore exists
         if has_encore(ep):
             title = title + "  🕯️"
 
-        # Playlist
         if mode == "playlist":
             if not tracks:
                 continue
@@ -145,7 +133,6 @@ def render_from_json(eps):
             count += 1
             continue
 
-        # Fullshow: play first track
         if mode == "fullshow":
             if not tracks:
                 continue
@@ -156,59 +143,59 @@ def render_from_json(eps):
             count += 1
             continue
 
-        # Queue: play via idx (safe)
+        # ✅ Queue becomes a folder (stable)
         if mode == "queue":
-            add_playable(title + "  (Queue)", build_queue_run_url(i))
+            add_folder(title + "  (Queue)", build_url("open_queue", idx=str(i)))
             count += 1
             continue
 
     return count
 
-def play_queue(ep):
-    tracks = ep.get("tracks", []) or []
-
-    ids = []
-    for t in tracks:
-        vid = yt_id_from_url((t or {}).get("url", ""))
-        if vid:
-            ids.append(vid)
-
-    if not ids:
-        notify("No playable tracks in this queue.")
+# ---------- QUEUE FOLDER ----------
+def open_queue(eps, idx):
+    if idx < 0 or idx >= len(eps):
+        notify("Queue not found.")
         return
 
-    # ✅ Encore injection if defined
+    ep = eps[idx]
+    title = ep.get("title", "Queue")
+    tracks = ep.get("tracks", []) or []
+
+    xbmcplugin.setPluginCategory(HANDLE, title)
+
+    # Track items
+    n = 0
+    for t in tracks:
+        url = (t or {}).get("url", "")
+        name = (t or {}).get("title", f"Track {n+1}")
+        vid = yt_id_from_url(url)
+        if not vid:
+            continue
+        add_playable(f"{n+1}. {name}", youtube_play_video(vid))
+        n += 1
+
+    # Encore item (separate, stable)
     if has_encore(ep):
-        after_idx = ep.get("encoreAfterTrackIndex")  # 0-based
-        encore_url = (ep.get("encore") or {}).get("url")
-        encore_id = yt_id_from_url(encore_url)
+        encore = ep.get("encore") or {}
+        encore_vid = yt_id_from_url(encore.get("url"))
+        if encore_vid:
+            add_playable("Encore 🕯️ — " + (encore.get("title") or "Encore"), youtube_play_video(encore_vid))
 
-        if encore_id:
-            insert_at = after_idx + 1
-            if insert_at < 0:
-                insert_at = len(ids)
-            if insert_at > len(ids):
-                insert_at = len(ids)
-            ids.insert(insert_at, encore_id)
-            notify("Encore queued for Brad 🕯️")
+    if n == 0:
+        notify("No playable tracks found in this queue.")
 
-    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()
+    end_dir()
 
-    for vid in ids:
-        pl.add(youtube_play_video(vid))
-
-    xbmc.Player().play(pl)
-
+# ---------- FALLBACK ----------
 def render_fallback():
     notify("Using fallback list (JSON not reachable).")
     for title, url in FALLBACK_EPISODES:
         vid = yt_id_from_url(url)
-        if not vid:
-            continue
-        add_playable(title, youtube_play_video(vid))
+        if vid:
+            add_playable(title, youtube_play_video(vid))
     end_dir()
 
+# ---------- ROUTER ----------
 def router():
     params = {}
     if len(sys.argv) > 2 and sys.argv[2]:
@@ -216,22 +203,18 @@ def router():
 
     action = params.get("action")
 
-    if action == "play_queue":
-        idx = safe_int(params.get("idx"), default=None)
-        eps = load_episodes()
-        if not eps or idx is None or idx < 0 or idx >= len(eps):
-            notify("Queue item not found.")
-            return
-        play_queue(eps[idx])
-        return
-
-    # Default: show listing
     eps = load_episodes()
     if not eps:
         render_fallback()
         return
 
-    count = render_from_json(eps)
+    if action == "open_queue":
+        idx = safe_int(params.get("idx"), default=-1)
+        open_queue(eps, idx)
+        return
+
+    # Default: root listing
+    count = render_root(eps)
     if not count:
         notify("JSON loaded but no playable items found.")
     end_dir()
