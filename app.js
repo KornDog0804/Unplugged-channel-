@@ -1,6 +1,7 @@
 /* Joey’s Acoustic Corner — app.js
    Keeps your current queue behavior (no skipping first song)
-   + Brad-only Encore after track 3 ends (ONLY if episode has encore fields)
+   + Brad-only Encore after track 3 ends
+   (ONLY if episode has: encore.url AND encoreAfterTrackIndex)
 */
 
 (function () {
@@ -21,53 +22,15 @@
   let ALL = [];
   let shownCount = 0;
 
-  // --- YouTube IFrame API (only used for Encore episodes) ---
+  // --- YouTube IFrame API (used ONLY for Encore episodes) ---
   let ytReady = false;
   let ytPlayer = null;
+  let ytApiLoading = false;
 
-  // Tracks the one episode currently playing w/ encore
-  let encoreContext = null; // { encoreVideoId, encoreAfterIndex, armed: true/false }
+  // Encore state: { encoreVideoId, encoreAfterIndex, armed, usingApi }
+  let encoreContext = null;
 
-  window.onYouTubeIframeAPIReady = function () {
-    ytReady = true;
-    tryInitYTPlayer();
-  };
-
-  function tryInitYTPlayer() {
-    if (!ytReady) return;
-    if (!el.playerFrame) return;
-    if (ytPlayer) return;
-
-    // Turn existing iframe into a YT API player when needed
-    // (It won’t do anything until we call loadPlaylist/loadVideoById)
-    ytPlayer = new YT.Player("playerFrame", {
-      events: {
-        onStateChange: onYTStateChange
-      }
-    });
-  }
-
-  function onYTStateChange(e) {
-    // Only care when we’re in a Brad-only encore flow
-    if (!encoreContext || !encoreContext.armed) return;
-
-    // 0 = ended
-    if (e.data === YT.PlayerState.ENDED) {
-      try {
-        const idx = ytPlayer.getPlaylistIndex(); // current index in playlist
-        if (idx === encoreContext.encoreAfterIndex) {
-          // ✅ Play Brad’s encore exactly after track 3 ends
-          encoreContext.armed = false;
-          ytPlayer.loadVideoById(encoreContext.encoreVideoId);
-
-          if (el.nowLine) {
-            el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
-          }
-        }
-      } catch (_) {}
-    }
-  }
-
+  // ===== Helpers =====
   function setStatus(msg) {
     if (el.status) el.status.textContent = msg;
   }
@@ -99,7 +62,6 @@
     }
   }
 
-  // --- Embed fallbacks (your current working method) ---
   function buildEmbedForSingle(videoUrl) {
     const id = getVideoId(videoUrl);
     if (!id) return "";
@@ -160,6 +122,69 @@
     }
   }
 
+  function highlightActive(ep) {
+    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
+    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
+    if (card) card.classList.add("isActive");
+  }
+
+  // ===== YouTube API Loader (ONLY when needed) =====
+  window.onYouTubeIframeAPIReady = function () {
+    ytReady = true;
+    tryInitYTPlayer();
+  };
+
+  function loadYTApiIfNeeded() {
+    if (ytReady || ytApiLoading) return;
+    ytApiLoading = true;
+
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    s.async = true;
+    s.onload = () => {};
+    s.onerror = () => { ytApiLoading = false; };
+    document.head.appendChild(s);
+  }
+
+  function tryInitYTPlayer() {
+    if (!ytReady) return;
+    if (!el.playerFrame) return;
+    if (ytPlayer) return;
+
+    // IMPORTANT: the iframe must be blank-ish before YT.Player takes control
+    // We'll set it to about:blank the first time we init API
+    try {
+      el.playerFrame.src = "about:blank";
+    } catch (_) {}
+
+    ytPlayer = new YT.Player("playerFrame", {
+      events: {
+        onStateChange: onYTStateChange
+      }
+    });
+  }
+
+  function onYTStateChange(e) {
+    if (!encoreContext || !encoreContext.armed || !encoreContext.usingApi) return;
+    if (!ytPlayer) return;
+
+    // 0 = ended
+    if (e.data === YT.PlayerState.ENDED) {
+      try {
+        const idx = ytPlayer.getPlaylistIndex();
+
+        // ✅ Only fire when the song that ended is track #3 (index 2)
+        if (idx === encoreContext.encoreAfterIndex) {
+          encoreContext.armed = false;
+          ytPlayer.loadVideoById(encoreContext.encoreVideoId);
+
+          if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
+        }
+      } catch (_) {}
+    }
+  }
+
+  // ===== Core play =====
   function playEpisode(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return;
 
@@ -169,7 +194,6 @@
     // Reset encore context every time
     encoreContext = null;
 
-    // ✅ Brad-only Encore mode: ONLY if these fields exist
     const hasEncore =
       mode === "queue" &&
       ep.encore &&
@@ -185,36 +209,40 @@
 
     setWatchOnTv(buildWatchUrl(ep));
     ensurePlayerVisible();
+    highlightActive(ep);
 
-    // --- If Brad encore episode, use YT API so it triggers exactly after track 3 ends ---
+    // ===== Brad-only Encore path (YT API) =====
     if (hasEncore) {
+      // Lazy-load API only when needed
+      loadYTApiIfNeeded();
       tryInitYTPlayer();
 
       const ids = trackUrls.map(getVideoId).filter(Boolean);
       const encoreId = getVideoId(ep.encore.url);
 
+      // We only support "encore after playlist index" (0-based)
+      // For 3 songs, you want encoreAfterTrackIndex = 2
       if (ytPlayer && ids.length && encoreId) {
         encoreContext = {
           encoreVideoId: encoreId,
           encoreAfterIndex: ep.encoreAfterTrackIndex,
-          armed: true
+          armed: true,
+          usingApi: true
         };
 
-        // ✅ Start at first track, no skipping
-        ytPlayer.loadPlaylist({ playlist: ids, index: 0 });
-
-        // Highlight active
-        document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
-        const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
-        if (card) card.classList.add("isActive");
-
-        setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
-        return;
+        try {
+          // ✅ Start at track 0, no skipping
+          ytPlayer.loadPlaylist(ids, 0, 0);
+          setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
+          return;
+        } catch (_) {
+          // fall through to embed if API fails
+        }
       }
-      // If API not available for any reason, fall through to embed
+      // If API isn't ready yet, fall back to embed (still works; encore just won’t be “exact timing”)
     }
 
-    // --- Normal behavior (everyone else stays exactly how it works today) ---
+    // ===== Normal behavior (embed) =====
     let src = "";
     if (mode === "queue") src = buildEmbedForQueue(trackUrls);
     else if (mode === "playlist") src = buildEmbedForPlaylist(trackUrls[0]);
@@ -225,15 +253,16 @@
       return;
     }
 
+    // If we were previously using API, kill the API context and go back to iframe embeds
+    if (encoreContext && encoreContext.usingApi) {
+      encoreContext = null;
+    }
+
     if (el.playerFrame) el.playerFrame.src = src;
-
-    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
-    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
-    if (card) card.classList.add("isActive");
-
     setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
   }
 
+  // ===== Cards =====
   function buildCard(ep, idx) {
     const div = document.createElement("div");
     div.className = "ep";
@@ -278,6 +307,7 @@
     return div;
   }
 
+  // ===== Play All =====
   function flattenPlayAll(list) {
     const urls = [];
     list.forEach(ep => {
@@ -293,7 +323,6 @@
     if (!btn) return;
 
     btn.addEventListener("click", () => {
-      // Play All stays your existing embed method (no encore mixing)
       const urls = flattenPlayAll(episodes).filter(Boolean);
       const src = buildEmbedForQueue(urls);
 
@@ -317,6 +346,7 @@
     });
   }
 
+  // ===== Load More =====
   function updateLoadMoreUI() {
     if (!el.loadMoreBtn) return;
     const done = shownCount >= ALL.length;
