@@ -15,8 +15,8 @@ HANDLE = int(sys.argv[1])
 SITE = "https://mellifluous-tanuki-51d911.netlify.app"
 
 # Kodi should read JSON (NOT episodes.js)
-# Put this file at your site root (recommended):
-#   /episodes.json   OR   /episodes_MASTER_22.json
+# Put this file at your site root:
+#   /episodes_MASTER_22.json  (recommended)
 EP_URL = SITE + "/episodes_MASTER_22.json"
 
 UA = "Kodi/21 JoeysAcousticCorner"
@@ -31,7 +31,6 @@ FALLBACK_EPISODES = [
     ("Korn — MTV Unplugged (Full Session)", "https://youtu.be/El8-JgiqcUI"),
     ("Corey Taylor — Acoustic Session", "https://youtu.be/uetFO7y8WPA"),
     ("Papa Roach — WRIF Acoustic Set (Full Session)", "https://www.youtube.com/watch?v=f4BK60WVPac"),
-    # Add more if you want, but ideally JSON handles it.
 ]
 
 def log(msg):
@@ -50,17 +49,14 @@ def yt_id_from_url(url):
     if not url:
         return None
 
-    # youtu.be/ID
     m = re.search(r"youtu\.be/([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
 
-    # youtube.com/watch?v=ID
     m = re.search(r"[?&]v=([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
 
-    # youtube.com/embed/ID
     m = re.search(r"/embed/([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
@@ -74,7 +70,7 @@ def playlist_id_from_url(url):
     return m.group(1) if m else None
 
 def youtube_play_video(video_id):
-    # requires plugin.video.youtube installed (you already have it)
+    # requires plugin.video.youtube installed
     return f"plugin://plugin.video.youtube/play/?video_id={video_id}"
 
 def youtube_play_playlist(playlist_id):
@@ -89,9 +85,11 @@ def end_dir():
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
 
 def load_episodes():
-    # JSON format expected:
+    # Expected JSON format:
     # [
-    #   { title, artist, year, mode, tracks:[{title,url}, ...] },
+    #   { title, artist, year, mode, tracks:[{title,url}, ...],
+    #     encore: { title?, url }, encoreAfterTrackIndex: 2
+    #   },
     #   ...
     # ]
     try:
@@ -103,15 +101,43 @@ def load_episodes():
         log(f"JSON fetch failed: {e}")
         return None
 
+# ---------- ROUTING HELPERS ----------
+def build_queue_run_url(ep):
+    # IMPORTANT: encode episode JSON ONLY ONCE
+    ep_json = json.dumps(ep, ensure_ascii=False)
+    qs = urllib.parse.urlencode({"action": "play_queue", "ep": ep_json})
+    return sys.argv[0] + "?" + qs
+
+def safe_int(v, default=None):
+    try:
+        return int(v)
+    except Exception:
+        return default
+
+def has_encore(ep):
+    # Encore should ONLY apply if fields exist in this episode
+    try:
+        mode = str(ep.get("mode", "")).lower()
+        encore = ep.get("encore") or {}
+        encore_url = encore.get("url")
+        after_idx = ep.get("encoreAfterTrackIndex")
+        return (mode == "queue" and encore_url and isinstance(after_idx, int))
+    except Exception:
+        return False
+
+# ---------- RENDER ----------
 def render_from_json(eps):
     count = 0
-
     for ep in eps:
         title = ep.get("title", "Untitled")
         mode = str(ep.get("mode", "")).lower()
         tracks = ep.get("tracks", []) or []
 
-        # Playlists (one URL with list=)
+        # Brad-only marker if encore exists
+        if has_encore(ep):
+            title = title + "  🕯️"
+
+        # Playlist
         if mode == "playlist":
             if not tracks:
                 continue
@@ -133,26 +159,21 @@ def render_from_json(eps):
             count += 1
             continue
 
-        # Queue: play as a stitched Kodi playlist (no skipping)
+        # Queue: build a Kodi playlist (and inject encore if defined)
         if mode == "queue":
-            # We add it as a playable item that triggers queue playback
-            # (Simpler menu; still matches your site)
             add_playable(title + "  (Queue)", build_queue_run_url(ep))
             count += 1
             continue
 
     return count
 
-def build_queue_run_url(ep):
-    # We pass the episode object via querystring (encoded JSON)
-    payload = urllib.parse.quote(json.dumps(ep))
-    return sys.argv[0] + "?" + urllib.parse.urlencode({"action": "play_queue", "ep": payload})
-
+# ---------- PLAY QUEUE ----------
 def play_queue(ep):
     tracks = ep.get("tracks", []) or []
+
     ids = []
     for t in tracks:
-        vid = yt_id_from_url(t.get("url", ""))
+        vid = yt_id_from_url((t or {}).get("url", ""))
         if vid:
             ids.append(vid)
 
@@ -160,15 +181,31 @@ def play_queue(ep):
         notify("No playable tracks in this queue.")
         return
 
+    # ✅ Brad-only Encore injection (ONLY if episode has encore fields)
+    if has_encore(ep):
+        after_idx = ep.get("encoreAfterTrackIndex")  # 0-based; after track 3 = index 2
+        encore_url = (ep.get("encore") or {}).get("url")
+        encore_id = yt_id_from_url(encore_url)
+
+        if encore_id:
+            insert_at = after_idx + 1
+            if insert_at < 0:
+                insert_at = len(ids)
+            if insert_at > len(ids):
+                insert_at = len(ids)
+            ids.insert(insert_at, encore_id)
+            notify("Encore queued for Brad 🕯️")
+
     pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     pl.clear()
 
-    # Add in order — starts at track 1 (index 0) ✅
+    # Add in order — starts at index 0 ✅
     for vid in ids:
         pl.add(youtube_play_video(vid))
 
     xbmc.Player().play(pl)
 
+# ---------- FALLBACK ----------
 def render_fallback():
     notify("Using fallback list (JSON not reachable).")
     for title, url in FALLBACK_EPISODES:
@@ -178,6 +215,7 @@ def render_fallback():
         add_playable(title, youtube_play_video(vid))
     end_dir()
 
+# ---------- ROUTER ----------
 def router():
     params = {}
     if len(sys.argv) > 2 and sys.argv[2]:
@@ -188,8 +226,7 @@ def router():
     if action == "play_queue":
         ep_raw = params.get("ep", "")
         try:
-            ep_json = urllib.parse.unquote(ep_raw)
-            ep = json.loads(ep_json)
+            ep = json.loads(ep_raw)  # we encoded ONLY once
             play_queue(ep)
         except Exception as e:
             log(f"Queue play failed: {e}")
