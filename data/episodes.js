@@ -1,6 +1,6 @@
 /* Joey’s Acoustic Corner
    Episodes data (WEB APP VERSION)
-   LOCKED: 22 sessions
+   LOCKED: 22 sessions (+ Brad tribute added)
    Do NOT convert this to JSON. This must stay JS.
 */
 
@@ -159,7 +159,9 @@ window.EPISODES = [
     artist: "KISS",
     year: 1995,
     mode: "playlist",
-    tracks: [{ title: "Playlist Stream", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }]
+    tracks: [
+      { title: "Playlist Stream", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
+    ]
   },
   {
     title: "Bad Omens — Acoustic Queue (6 Songs)",
@@ -201,6 +203,22 @@ window.EPISODES = [
     year: 2019,
     mode: "fullshow",
     tracks: [{ title: "Tiny Desk Concert", url: "https://youtu.be/WgqaxMOKfnI" }]
+  },
+
+  /* ============================
+     BRAD TRIBUTE — 3 Doors Down
+     Change of pace: live performances
+     ============================ */
+  {
+    title: "3 Doors Down — Live (For Brad) 🕯️",
+    artist: "3 Doors Down",
+    year: "Live Tribute",
+    mode: "queue",
+    tracks: [
+      { title: "Kryptonite (Live)", url: "https://youtu.be/xocNHKBHsSg?si=IIMuvbUVdBPdk2wa" },
+      { title: "Here Without You (Live)", url: "https://youtu.be/5XpuvhHhx_s?si=DmhfqA4FSJlnveUj" },
+      { title: "When I’m Gone (Live)", url: "https://youtu.be/m3lSLLklu7Q?si=ND28qLHUg_Ia7IIr" }
+    ]
   }
 ];
 
