@@ -604,3 +604,29 @@ body.landing{
   background: url("./icon-192.png") center/cover no-repeat;
   box-shadow: 0 10px 30px rgba(0,0,0,.45);
 }
+.encoreBlackout{
+  position: fixed;
+  inset: 0;
+  background: #000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 700ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.encoreBlackout.on{
+  opacity: 1;
+  pointer-events: all;
+}
+
+.encoreText{
+  font-size: 22px;
+  letter-spacing: 1px;
+  text-align: center;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: rgba(0,0,0,0.35);
+}
