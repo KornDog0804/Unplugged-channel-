@@ -1,15 +1,14 @@
 /* Joey’s Acoustic Corner — app.js
-   Keeps your current queue behavior (no skipping first song)
-   + Brad-only Encore after track 3 ends
-   (ONLY if episode has: encore.url AND encoreAfterTrackIndex)
+   Queue behavior: does NOT skip first song ✅
+   Brad-only Encore: Track 3 ends -> blackout -> Ticket to Heaven -> lights up ✅
 
-   ✅ UPDATE: Site now loads the SAME master list as Kodi:
-      /episodes.json  (fallback to episodes.js if JSON fails)
+   Site loads:
+     /episodes.json  (fallback to episodes.js if JSON fails)
 */
 
 (function () {
   const PAGE_SIZE = 12;
-  const MASTER_JSON = "/episodes.json"; // ✅ one source for site + kodi
+  const MASTER_JSON = "/episodes.json";
   const $ = (sel) => document.querySelector(sel);
 
   const el = {
@@ -73,7 +72,7 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
-  // ✅ Your “no-skip-first-song” embed fix remains
+  // ✅ No-skip-first-song queue embed
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
@@ -132,9 +131,58 @@
     if (card) card.classList.add("isActive");
   }
 
+  // ===== Encore Blackout Overlay (auto-created) =====
+  function ensureEncoreOverlay() {
+    // Inject CSS once
+    if (!document.getElementById("encoreBlackoutCss")) {
+      const css = document.createElement("style");
+      css.id = "encoreBlackoutCss";
+      css.textContent = `
+        .encoreBlackout{
+          position: fixed; inset: 0;
+          background: #000;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 700ms ease;
+          display:flex; align-items:center; justify-content:center;
+          z-index: 999999;
+        }
+        .encoreBlackout.on{ opacity: 1; pointer-events: all; }
+        .encoreBlackout .encoreText{
+          font-size: 22px;
+          letter-spacing: 1px;
+          text-align:center;
+          padding: 14px 18px;
+          border-radius: 14px;
+          background: rgba(0,0,0,0.35);
+        }`;
+      document.head.appendChild(css);
+    }
+
+    // Create overlay div once
+    let b = document.getElementById("encoreBlackout");
+    if (!b) {
+      b = document.createElement("div");
+      b.id = "encoreBlackout";
+      b.className = "encoreBlackout";
+      b.setAttribute("aria-hidden", "true");
+      b.innerHTML = `<div class="encoreText">🕯️ Encore for Brad</div>`;
+      document.body.appendChild(b);
+    }
+    return b;
+  }
+
+  function showEncoreBlackout(on, text) {
+    const b = ensureEncoreOverlay();
+    if (!b) return;
+    const t = b.querySelector(".encoreText");
+    if (t && text) t.textContent = text;
+    b.classList.toggle("on", !!on);
+    b.setAttribute("aria-hidden", on ? "false" : "true");
+  }
+
   // ===== MASTER LOAD (JSON first, fallback to episodes.js) =====
   async function loadEpisodesMaster() {
-    // 1) Master JSON (same as Kodi)
     try {
       const r = await fetch(MASTER_JSON, { cache: "no-store" });
       if (r.ok) {
@@ -146,13 +194,11 @@
       }
     } catch (_) {}
 
-    // 2) Fallback (episodes.js)
     const fallback = window.EPISODES || window.episodes;
     if (Array.isArray(fallback)) {
       setStatus(`Loaded fallback list ⚠️ (${fallback.length})`);
       return fallback;
     }
-
     return null;
   }
 
@@ -169,7 +215,6 @@
     const s = document.createElement("script");
     s.src = "https://www.youtube.com/iframe_api";
     s.async = true;
-    s.onload = () => {};
     s.onerror = () => { ytApiLoading = false; };
     document.head.appendChild(s);
   }
@@ -186,6 +231,7 @@
     });
   }
 
+  // ✅ NEW: Track-end Encore with blackout + delay + lights up
   function onYTStateChange(e) {
     if (!encoreContext || !encoreContext.armed || !encoreContext.usingApi) return;
     if (!ytPlayer) return;
@@ -193,10 +239,21 @@
     if (e.data === YT.PlayerState.ENDED) {
       try {
         const idx = ytPlayer.getPlaylistIndex();
+
+        // When Track 3 ends (index 2) -> blackout -> play encore
         if (idx === encoreContext.encoreAfterIndex) {
           encoreContext.armed = false;
-          ytPlayer.loadVideoById(encoreContext.encoreVideoId);
-          if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
+
+          showEncoreBlackout(true, "🕯️ Lights out…");
+          if (el.nowLine) el.nowLine.textContent = "🕯️ Lights out…";
+
+          setTimeout(() => {
+            try { ytPlayer.loadVideoById(encoreContext.encoreVideoId); } catch (_) {}
+
+            if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
+
+            setTimeout(() => showEncoreBlackout(false), 900);
+          }, 1600);
         }
       } catch (_) {}
     }
@@ -211,6 +268,7 @@
 
     // Reset encore context every time
     encoreContext = null;
+    showEncoreBlackout(false);
 
     const hasEncore =
       mode === "queue" &&
@@ -281,7 +339,8 @@
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
     const m = safeText(ep.mode).toLowerCase();
 
-    const hasEncore = (m === "queue" && ep.encore && ep.encore.url && Number.isInteger(ep.encoreAfterTrackIndex));
+    const hasEncore =
+      (m === "queue" && ep.encore && ep.encore.url && Number.isInteger(ep.encoreAfterTrackIndex));
     const encoreTag = hasEncore ? " • encore 🕯️" : "";
 
     const small =
@@ -339,6 +398,7 @@
       }
 
       encoreContext = null;
+      showEncoreBlackout(false);
 
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
