@@ -1,7 +1,7 @@
 /* Joey’s Acoustic Corner — app.js
    Queue behavior: does NOT skip first song ✅
    Brad-only TRUE Encore:
-     Track 1 -> Track 2 -> Track 3 -> BLACKOUT -> Ticket to Heaven -> lights up ✅
+     Track 1 -> Track 2 -> Track 3 -> HARD STOP -> BLACKOUT -> Ticket to Heaven -> lights up ✅
 
    Site loads:
      /episodes.json  (fallback to episodes.js if JSON fails)
@@ -31,7 +31,7 @@
   let ytPlayer = null;
   let ytApiLoading = false;
 
-  // Brad manual-queue context:
+  // Brad manual-queue context
   // { enabled, ids, step, encoreId, encoreAfterIndex, blackoutMs, lightsUpMs }
   let bradCtx = null;
 
@@ -132,6 +132,7 @@
 
   // ===== Encore Blackout Overlay (auto-created) =====
   function ensureEncoreOverlay() {
+    // Inject CSS once
     if (!document.getElementById("encoreBlackoutCss")) {
       const css = document.createElement("style");
       css.id = "encoreBlackoutCss";
@@ -143,11 +144,12 @@
           pointer-events: none;
           transition: opacity 700ms ease;
           display:flex; align-items:center; justify-content:center;
-          z-index: 999999;
+          z-index: 2147483647; /* MAX */
         }
         .encoreBlackout.on{ opacity: 1; pointer-events: all; }
         .encoreBlackout .encoreText{
-          font-size: 22px;
+          color: #fff;              /* ✅ force readable */
+          font-size: 24px;
           letter-spacing: 1px;
           text-align:center;
           padding: 14px 18px;
@@ -157,6 +159,7 @@
       document.head.appendChild(css);
     }
 
+    // Create overlay div once
     let b = document.getElementById("encoreBlackout");
     if (!b) {
       b = document.createElement("div");
@@ -169,13 +172,23 @@
     return b;
   }
 
+  // ✅ KEY FIX: blackout also forces iframe invisible so YouTube can't visually “win”
   function showEncoreBlackout(on, text) {
     const b = ensureEncoreOverlay();
     if (!b) return;
+
     const t = b.querySelector(".encoreText");
     if (t && text) t.textContent = text;
+
     b.classList.toggle("on", !!on);
     b.setAttribute("aria-hidden", on ? "false" : "true");
+
+    // Force the iframe to disappear during blackout
+    if (el.playerFrame) {
+      el.playerFrame.style.transition = "opacity 400ms ease";
+      el.playerFrame.style.opacity = on ? "0" : "1";
+      el.playerFrame.style.pointerEvents = on ? "none" : "auto";
+    }
   }
 
   // ===== MASTER LOAD (JSON first, fallback to episodes.js) =====
@@ -228,15 +241,15 @@
     });
   }
 
-  // ===== Brad TRUE Encore engine (manual queue) =====
+  // ===== Brad TRUE Encore engine (manual queue, NO playlist auto-advance) =====
   function startBradShow(trackIds, encoreId, encoreAfterIndex) {
     bradCtx = {
       enabled: true,
       ids: trackIds,
-      step: 0, // 0..(encoreAfterIndex) then encore
+      step: 0,
       encoreId,
       encoreAfterIndex,
-      blackoutMs: 2200,
+      blackoutMs: 3000,  // ✅ longer so you actually feel it
       lightsUpMs: 1400
     };
 
@@ -253,12 +266,10 @@
 
   function onYTStateChange(e) {
     if (!ytPlayer) return;
-
-    // only intercept when Brad mode is active
     if (!bradCtx || !bradCtx.enabled) return;
 
     if (e.data === YT.PlayerState.ENDED) {
-      // If we just ended Track 1 or 2, play next track immediately
+      // Track 1 or 2 ended -> play next
       if (bradCtx.step < bradCtx.encoreAfterIndex) {
         bradCtx.step += 1;
         const nextId = bradCtx.ids[bradCtx.step];
@@ -268,11 +279,11 @@
         return;
       }
 
-      // If we just ended Track 3 -> TRUE encore moment
+      // Track 3 ended -> TRUE encore moment
       if (bradCtx.step === bradCtx.encoreAfterIndex) {
-        bradCtx.step += 1; // move past main set so we don't re-trigger
+        bradCtx.step += 1;
 
-        // HARD STOP so nothing auto-advances (this is the key fix)
+        // HARD STOP (kills any lingering autoplay behavior)
         try { ytPlayer.stopVideo(); } catch (_) {}
 
         showEncoreBlackout(true, "🕯️ Lights out…");
@@ -280,10 +291,12 @@
 
         setTimeout(() => {
           try { ytPlayer.loadVideoById(bradCtx.encoreId); } catch (_) {}
+
           setTimeout(() => {
             showEncoreBlackout(false);
             if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
           }, bradCtx.lightsUpMs);
+
         }, bradCtx.blackoutMs);
 
         return;
@@ -332,14 +345,13 @@
 
       if (ytPlayer && ids.length && encoreId) {
         // Only play main set up through track 3 as “the set”
-        // (If you ever add more tracks to this episode later, it still won’t auto-run them.)
         const mainSet = ids.slice(0, ep.encoreAfterTrackIndex + 1);
 
         setStatus("Brad Tribute mode 🕯️ (true encore armed)");
         startBradShow(mainSet, encoreId, ep.encoreAfterTrackIndex);
         return;
       }
-      // fallback if API not ready:
+
       setStatus("Encore needs YouTube API — falling back");
     }
 
@@ -459,7 +471,7 @@
     const next = ALL.slice(shownCount, shownCount + PAGE_SIZE);
     next.forEach((ep, i) => {
       const trueIndex = shownCount + i;
-      el.episodes.appendChild(buildCard(ep, trueIndex));
+      el.episodes.appendChild(buildCard(ep, shownCount + i));
     });
 
     shownCount += next.length;
