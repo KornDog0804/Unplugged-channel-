@@ -1,6 +1,6 @@
 /* Joey’s Acoustic Corner — app.js
    Queue behavior: does NOT skip first song ✅
-   Brad-only Encore: Track 3 ends -> blackout -> Ticket to Heaven -> lights up ✅
+   Brad-only Encore: Track 3 ends -> HARD STOP -> blackout -> Ticket to Heaven -> lights up ✅
 
    Site loads:
      /episodes.json  (fallback to episodes.js if JSON fails)
@@ -32,6 +32,9 @@
 
   // Encore state: { encoreVideoId, encoreAfterIndex, armed, usingApi }
   let encoreContext = null;
+
+  // ✅ critical: reliable “current track” tracking (YT index can be flaky on ENDED)
+  let lastKnownPlaylistIndex = -1;
 
   // ===== Helpers =====
   function setStatus(msg) {
@@ -231,31 +234,50 @@
     });
   }
 
-  // ✅ NEW: Track-end Encore with blackout + delay + lights up
+  // ✅ TRUE ENCORE: Track 3 end -> stop autoplay -> blackout -> encore -> lights up
   function onYTStateChange(e) {
-    if (!encoreContext || !encoreContext.armed || !encoreContext.usingApi) return;
     if (!ytPlayer) return;
 
-    if (e.data === YT.PlayerState.ENDED) {
+    // Keep a reliable “what track are we on” value
+    if (
+      e.data === YT.PlayerState.PLAYING ||
+      e.data === YT.PlayerState.BUFFERING ||
+      e.data === YT.PlayerState.PAUSED
+    ) {
       try {
         const idx = ytPlayer.getPlaylistIndex();
-
-        // When Track 3 ends (index 2) -> blackout -> play encore
-        if (idx === encoreContext.encoreAfterIndex) {
-          encoreContext.armed = false;
-
-          showEncoreBlackout(true, "🕯️ Lights out…");
-          if (el.nowLine) el.nowLine.textContent = "🕯️ Lights out…";
-
-          setTimeout(() => {
-            try { ytPlayer.loadVideoById(encoreContext.encoreVideoId); } catch (_) {}
-
-            if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
-
-            setTimeout(() => showEncoreBlackout(false), 900);
-          }, 1600);
-        }
+        if (Number.isInteger(idx) && idx >= 0) lastKnownPlaylistIndex = idx;
       } catch (_) {}
+    }
+
+    if (!encoreContext || !encoreContext.armed || !encoreContext.usingApi) return;
+
+    // Track ended
+    if (e.data === YT.PlayerState.ENDED) {
+      const idx = lastKnownPlaylistIndex;
+
+      // When Track 3 ends (index 2) -> TRUE encore moment
+      if (idx === encoreContext.encoreAfterIndex) {
+        encoreContext.armed = false;
+
+        // HARD STOP prevents the “auto-advance flash”
+        try { ytPlayer.stopVideo(); } catch (_) {}
+
+        showEncoreBlackout(true, "🕯️ Lights out…");
+        if (el.nowLine) el.nowLine.textContent = "🕯️ Lights out…";
+
+        // Concert pause…
+        setTimeout(() => {
+          try { ytPlayer.loadVideoById(encoreContext.encoreVideoId); } catch (_) {}
+
+          // Hold blackout for a beat so it feels intentional
+          setTimeout(() => {
+            showEncoreBlackout(false);
+            if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
+          }, 1400);
+
+        }, 2200);
+      }
     }
   }
 
@@ -269,6 +291,7 @@
     // Reset encore context every time
     encoreContext = null;
     showEncoreBlackout(false);
+    lastKnownPlaylistIndex = -1;
 
     const hasEncore =
       mode === "queue" &&
@@ -298,10 +321,12 @@
       if (ytPlayer && ids.length && encoreId) {
         encoreContext = {
           encoreVideoId: encoreId,
-          encoreAfterIndex: ep.encoreAfterTrackIndex,
+          encoreAfterIndex: ep.encoreAfterTrackIndex, // should be 2
           armed: true,
           usingApi: true
         };
+
+        lastKnownPlaylistIndex = 0;
 
         try {
           ytPlayer.loadPlaylist(ids, 0, 0); // start at track 0 ✅
@@ -399,6 +424,7 @@
 
       encoreContext = null;
       showEncoreBlackout(false);
+      lastKnownPlaylistIndex = -1;
 
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
