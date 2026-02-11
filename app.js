@@ -1,13 +1,12 @@
 /* Joey’s Acoustic Corner — app.js
-   Queue behavior: does NOT skip first song ✅
-   Brad-only TRUE Encore:
-     Track 1 -> Track 2 -> Track 3 -> HARD STOP -> BLACKOUT -> Ticket to Heaven -> lights up ✅
-
-   Site loads:
-     /episodes.json  (fallback to episodes.js if JSON fails)
+   Pulls from /episodes.json via Netlify (GitHub deploy)
+   Queue: no skip first song
+   Brad Tribute: TRUE Encore (manual queue)
+   Playlist auto-detect (Monster Jam works)
 */
 
 (function () {
+
   const PAGE_SIZE = 12;
   const MASTER_JSON = "/episodes.json";
   const $ = (sel) => document.querySelector(sel);
@@ -26,16 +25,15 @@
   let ALL = [];
   let shownCount = 0;
 
-  // --- YouTube IFrame API (used ONLY for Brad Encore episode) ---
   let ytReady = false;
   let ytPlayer = null;
   let ytApiLoading = false;
-
-  // Brad manual-queue context
-  // { enabled, ids, step, encoreId, encoreAfterIndex, blackoutMs, lightsUpMs }
   let bradCtx = null;
 
-  // ===== Helpers =====
+  /* =============================
+     Helpers
+  ============================= */
+
   function setStatus(msg) {
     if (el.status) el.status.textContent = msg;
   }
@@ -47,13 +45,12 @@
   function getVideoId(url) {
     try {
       const u = new URL(url);
-      if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "").trim();
-      if (u.searchParams.get("v")) return u.searchParams.get("v");
-      const parts = u.pathname.split("/").filter(Boolean);
-      const embedIndex = parts.indexOf("embed");
-      if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
+      if (u.hostname.includes("youtu.be"))
+        return u.pathname.replace("/", "").trim();
+      if (u.searchParams.get("v"))
+        return u.searchParams.get("v");
       return "";
-    } catch (_) {
+    } catch {
       return "";
     }
   }
@@ -62,470 +59,225 @@
     try {
       const u = new URL(url);
       return u.searchParams.get("list") || "";
-    } catch (_) {
+    } catch {
       return "";
     }
   }
 
-  function buildEmbedForSingle(videoUrl) {
-    const id = getVideoId(videoUrl);
+  function buildEmbedSingle(url) {
+    const id = getVideoId(url);
     if (!id) return "";
-    const origin = encodeURIComponent(window.location.origin);
-    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
+    return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1`;
   }
 
-  // ✅ No-skip-first-song queue embed (non-Brad)
-  function buildEmbedForQueue(videoUrls) {
-    const ids = videoUrls.map(getVideoId).filter(Boolean);
+  function buildEmbedQueue(urls) {
+    const ids = urls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
     const first = ids[0];
-    const origin = encodeURIComponent(window.location.origin);
-    const playlistAll = encodeURIComponent(ids.join(","));
-    return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}&playlist=${playlistAll}&index=0`;
+    return `https://www.youtube.com/embed/${first}?autoplay=1&playlist=${ids.join(",")}&index=0`;
   }
 
-  function buildEmbedForPlaylist(playlistUrl) {
-    const list = getPlaylistId(playlistUrl);
+  function buildEmbedPlaylist(url) {
+    const list = getPlaylistId(url);
     if (!list) return "";
-    const origin = encodeURIComponent(window.location.origin);
-    return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
+    return `https://www.youtube.com/embed/videoseries?list=${list}&autoplay=1`;
   }
 
   function buildWatchUrl(ep) {
-    if (!ep || !ep.tracks || !ep.tracks.length) return "";
-    const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
-
-    if (mode === "playlist") {
-      const list = getPlaylistId(trackUrls[0] || "");
-      if (!list) return "";
-      return `https://www.youtube.com/playlist?list=${encodeURIComponent(list)}`;
-    }
-
-    const firstId = getVideoId(trackUrls[0] || "");
-    if (!firstId) return "";
-    return `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}`;
+    const url = (ep.tracks[0] || {}).url || "";
+    const list = getPlaylistId(url);
+    if (list) return `https://www.youtube.com/playlist?list=${list}`;
+    const id = getVideoId(url);
+    return id ? `https://www.youtube.com/watch?v=${id}` : "";
   }
 
   function setWatchOnTv(url) {
     if (!el.watchOnTvBtn) return;
     el.watchOnTvBtn.href = url || "#";
-    el.watchOnTvBtn.style.opacity = url ? "1" : "0.6";
-    el.watchOnTvBtn.style.pointerEvents = url ? "auto" : "none";
-    if (!url) el.watchOnTvBtn.setAttribute("aria-disabled", "true");
-    else el.watchOnTvBtn.removeAttribute("aria-disabled");
+    el.watchOnTvBtn.style.opacity = url ? "1" : "0.5";
   }
 
   function ensurePlayerVisible() {
     document.body.classList.remove("playerCollapsed");
-    if (el.toggleBtn) {
-      el.toggleBtn.textContent = "Hide player";
-      el.toggleBtn.setAttribute("aria-expanded", "true");
-    }
+    if (el.toggleBtn) el.toggleBtn.textContent = "Hide player";
   }
 
-  function highlightActive(ep) {
-    document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
-    const card = document.querySelector(`.ep[data-key="${CSS.escape(ep.__key)}"]`);
-    if (card) card.classList.add("isActive");
-  }
+  /* =============================
+     Brad Encore Overlay
+  ============================= */
 
-  // ===== Encore Blackout Overlay (auto-created) =====
-  function ensureEncoreOverlay() {
-    // Inject CSS once
-    if (!document.getElementById("encoreBlackoutCss")) {
-      const css = document.createElement("style");
-      css.id = "encoreBlackoutCss";
-      css.textContent = `
+  function ensureBlackout() {
+    if (!document.getElementById("encoreCss")) {
+      const style = document.createElement("style");
+      style.id = "encoreCss";
+      style.innerHTML = `
         .encoreBlackout{
-          position: fixed; inset: 0;
-          background: #000;
-          opacity: 0;
-          pointer-events: none;
-          transition: opacity 700ms ease;
+          position:fixed; inset:0;
+          background:#000;
+          opacity:0;
+          transition:opacity .7s;
           display:flex; align-items:center; justify-content:center;
-          z-index: 2147483647; /* MAX */
+          z-index:999999;
         }
-        .encoreBlackout.on{ opacity: 1; pointer-events: all; }
-        .encoreBlackout .encoreText{
-          color: #fff;              /* ✅ force readable */
-          font-size: 24px;
-          letter-spacing: 1px;
-          text-align:center;
-          padding: 14px 18px;
-          border-radius: 14px;
-          background: rgba(0,0,0,0.35);
+        .encoreBlackout.on{ opacity:1; }
+        .encoreText{
+          color:#fff; font-size:24px;
         }`;
-      document.head.appendChild(css);
+      document.head.appendChild(style);
     }
 
-    // Create overlay div once
-    let b = document.getElementById("encoreBlackout");
-    if (!b) {
-      b = document.createElement("div");
-      b.id = "encoreBlackout";
-      b.className = "encoreBlackout";
-      b.setAttribute("aria-hidden", "true");
-      b.innerHTML = `<div class="encoreText">🕯️ Encore for Brad</div>`;
-      document.body.appendChild(b);
+    let div = document.getElementById("encoreBlackout");
+    if (!div) {
+      div = document.createElement("div");
+      div.id = "encoreBlackout";
+      div.className = "encoreBlackout";
+      div.innerHTML = `<div class="encoreText">🕯️ Encore for Brad</div>`;
+      document.body.appendChild(div);
     }
-    return b;
-  }
-
-  // ✅ KEY FIX: blackout also forces iframe invisible so YouTube can't visually “win”
-  function showEncoreBlackout(on, text) {
-    const b = ensureEncoreOverlay();
-    if (!b) return;
-
-    const t = b.querySelector(".encoreText");
-    if (t && text) t.textContent = text;
-
-    b.classList.toggle("on", !!on);
-    b.setAttribute("aria-hidden", on ? "false" : "true");
-
-    // Force the iframe to disappear during blackout
-    if (el.playerFrame) {
-      el.playerFrame.style.transition = "opacity 400ms ease";
-      el.playerFrame.style.opacity = on ? "0" : "1";
-      el.playerFrame.style.pointerEvents = on ? "none" : "auto";
-    }
-  }
-
-  // ===== MASTER LOAD (JSON first, fallback to episodes.js) =====
-  async function loadEpisodesMaster() {
-    try {
-      const r = await fetch(MASTER_JSON, { cache: "no-store" });
-      if (r.ok) {
-        const data = await r.json();
-        if (Array.isArray(data)) {
-          setStatus(`Loaded master list ✅ (${data.length})`);
-          return data;
-        }
-      }
-    } catch (_) {}
-
-    const fallback = window.EPISODES || window.episodes;
-    if (Array.isArray(fallback)) {
-      setStatus(`Loaded fallback list ⚠️ (${fallback.length})`);
-      return fallback;
-    }
-    return null;
-  }
-
-  // ===== YouTube API Loader (ONLY when needed) =====
-  window.onYouTubeIframeAPIReady = function () {
-    ytReady = true;
-    tryInitYTPlayer();
-  };
-
-  function loadYTApiIfNeeded() {
-    if (ytReady || ytApiLoading) return;
-    ytApiLoading = true;
-
-    const s = document.createElement("script");
-    s.src = "https://www.youtube.com/iframe_api";
-    s.async = true;
-    s.onerror = () => { ytApiLoading = false; };
-    document.head.appendChild(s);
-  }
-
-  function tryInitYTPlayer() {
-    if (!ytReady) return;
-    if (!el.playerFrame) return;
-    if (ytPlayer) return;
-
-    try { el.playerFrame.src = "about:blank"; } catch (_) {}
-
-    ytPlayer = new YT.Player("playerFrame", {
-      events: { onStateChange: onYTStateChange }
-    });
-  }
-
-  // ===== Brad TRUE Encore engine (manual queue, NO playlist auto-advance) =====
-  function startBradShow(trackIds, encoreId, encoreAfterIndex) {
-    bradCtx = {
-      enabled: true,
-      ids: trackIds,
-      step: 0,
-      encoreId,
-      encoreAfterIndex,
-      blackoutMs: 3000,  // ✅ longer so you actually feel it
-      lightsUpMs: 1400
-    };
-
-    showEncoreBlackout(false);
-
-    // start Track 1
-    try {
-      ytPlayer.loadVideoById(trackIds[0]);
-      bradCtx.step = 0;
-    } catch (_) {
-      setStatus("Brad Encore player failed to start");
-    }
-  }
-
-  function onYTStateChange(e) {
-    if (!ytPlayer) return;
-    if (!bradCtx || !bradCtx.enabled) return;
-
-    if (e.data === YT.PlayerState.ENDED) {
-      // Track 1 or 2 ended -> play next
-      if (bradCtx.step < bradCtx.encoreAfterIndex) {
-        bradCtx.step += 1;
-        const nextId = bradCtx.ids[bradCtx.step];
-        if (nextId) {
-          try { ytPlayer.loadVideoById(nextId); } catch (_) {}
-        }
-        return;
-      }
-
-      // Track 3 ended -> TRUE encore moment
-      if (bradCtx.step === bradCtx.encoreAfterIndex) {
-        bradCtx.step += 1;
-
-        // HARD STOP (kills any lingering autoplay behavior)
-        try { ytPlayer.stopVideo(); } catch (_) {}
-
-        showEncoreBlackout(true, "🕯️ Lights out…");
-        if (el.nowLine) el.nowLine.textContent = "🕯️ Lights out…";
-
-        setTimeout(() => {
-          try { ytPlayer.loadVideoById(bradCtx.encoreId); } catch (_) {}
-
-          setTimeout(() => {
-            showEncoreBlackout(false);
-            if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
-          }, bradCtx.lightsUpMs);
-
-        }, bradCtx.blackoutMs);
-
-        return;
-      }
-
-      // Encore ended — done
-      bradCtx.enabled = false;
-    }
-  }
-
-  // ===== Core play =====
-  function playEpisode(ep) {
-    if (!ep || !ep.tracks || !ep.tracks.length) return;
-
-    const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
-
-    // reset special modes
-    bradCtx = null;
-    showEncoreBlackout(false);
-
-    // Update UI
-    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
-    if (el.nowLine) {
-      const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
-      el.nowLine.textContent = `Playing now: ${meta}`.trim();
-    }
-
-    setWatchOnTv(buildWatchUrl(ep));
-    ensurePlayerVisible();
-    highlightActive(ep);
-
-    // ===== Brad TRUE Encore path (YT API manual queue) =====
-    const hasEncore =
-      mode === "queue" &&
-      ep.encore &&
-      ep.encore.url &&
-      Number.isInteger(ep.encoreAfterTrackIndex);
-
-    if (hasEncore) {
-      loadYTApiIfNeeded();
-      tryInitYTPlayer();
-
-      const ids = trackUrls.map(getVideoId).filter(Boolean);
-      const encoreId = getVideoId(ep.encore.url);
-
-      if (ytPlayer && ids.length && encoreId) {
-        // Only play main set up through track 3 as “the set”
-        const mainSet = ids.slice(0, ep.encoreAfterTrackIndex + 1);
-
-        setStatus("Brad Tribute mode 🕯️ (true encore armed)");
-        startBradShow(mainSet, encoreId, ep.encoreAfterTrackIndex);
-        return;
-      }
-
-      setStatus("Encore needs YouTube API — falling back");
-    }
-
-    // ===== Normal behavior (embed) =====
-    let src = "";
-    if (mode === "queue") src = buildEmbedForQueue(trackUrls);
-    else if (mode === "playlist") src = buildEmbedForPlaylist(trackUrls[0]);
-    else src = buildEmbedForSingle(trackUrls[0]);
-
-    if (!src) {
-      setStatus("Bad link in this session");
-      return;
-    }
-
-    if (el.playerFrame) el.playerFrame.src = src;
-    setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
-  }
-
-  // ===== Cards =====
-  function buildCard(ep, idx) {
-    const div = document.createElement("div");
-    div.className = "ep";
-    div.tabIndex = 0;
-
-    ep.__key = `${idx}-${(ep.title || "").slice(0, 24)}`;
-    div.dataset.key = ep.__key;
-
-    const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`;
-    const m = safeText(ep.mode).toLowerCase();
-
-    const hasEncore =
-      (m === "queue" && ep.encore && ep.encore.url && Number.isInteger(ep.encoreAfterTrackIndex));
-    const encoreTag = hasEncore ? " • encore 🕯️" : "";
-
-    const small =
-      (m === "queue")
-        ? `${(ep.tracks || []).length} tracks • stitched queue${encoreTag}`
-        : (m === "playlist")
-          ? `playlist`
-          : `full show`;
-
-    div.innerHTML = `
-      <div class="epHead">
-        <div style="min-width:0">
-          <div class="epTitle">${safeText(ep.title)}</div>
-          <div class="epMeta">${meta}</div>
-          <div class="epSmall">${small}</div>
-        </div>
-        <div class="chev">›</div>
-      </div>
-    `;
-
-    const activate = () => playEpisode(ep);
-    div.addEventListener("click", activate);
-    div.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        activate();
-      }
-    });
-
     return div;
   }
 
-  // ===== Play All =====
-  function flattenPlayAll(list) {
-    const urls = [];
-    list.forEach(ep => {
-      const mode = safeText(ep.mode).toLowerCase();
-      if (mode === "playlist") return;
-      (ep.tracks || []).forEach(t => { if (t && t.url) urls.push(t.url); });
-    });
-    return urls;
+  function blackout(on, text) {
+    const b = ensureBlackout();
+    if (text) b.querySelector(".encoreText").textContent = text;
+    b.classList.toggle("on", on);
+    if (el.playerFrame)
+      el.playerFrame.style.opacity = on ? "0" : "1";
   }
 
-  function wirePlayAllButton(episodes) {
-    const btn = document.getElementById("playAllBtn");
-    if (!btn) return;
+  /* =============================
+     JSON Loader (Netlify)
+  ============================= */
 
-    btn.addEventListener("click", () => {
-      const urls = flattenPlayAll(episodes).filter(Boolean);
-      const src = buildEmbedForQueue(urls);
-
-      if (!src) {
-        setStatus("No playable items for Play All");
-        return;
-      }
-
-      bradCtx = null;
-      showEncoreBlackout(false);
-
-      if (el.nowTitle) el.nowTitle.textContent = "Play All";
-      if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
-
-      const firstId = getVideoId(urls[0] || "");
-      setWatchOnTv(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "");
-
-      ensurePlayerVisible();
-      if (el.playerFrame) el.playerFrame.src = src;
-
-      setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
-    });
+  async function loadEpisodes() {
+    try {
+      const r = await fetch(MASTER_JSON + "?v=" + Date.now());
+      const data = await r.json();
+      if (Array.isArray(data)) return data;
+    } catch {}
+    return window.EPISODES || window.episodes || [];
   }
 
-  // ===== Load More =====
-  function updateLoadMoreUI() {
-    if (!el.loadMoreBtn) return;
-    const done = shownCount >= ALL.length;
-    el.loadMoreBtn.style.display = (ALL.length > PAGE_SIZE) ? "block" : "none";
-    el.loadMoreBtn.disabled = done;
-    el.loadMoreBtn.textContent = done ? "All loaded" : "Load more";
+  /* =============================
+     Brad Encore Engine
+  ============================= */
+
+  window.onYouTubeIframeAPIReady = function () {
+    ytReady = true;
+    if (!ytPlayer)
+      ytPlayer = new YT.Player("playerFrame", {
+        events: { onStateChange: onYTStateChange }
+      });
+  };
+
+  function loadYTApi() {
+    if (ytApiLoading || ytReady) return;
+    ytApiLoading = true;
+    const s = document.createElement("script");
+    s.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(s);
   }
 
-  function renderNextBatch() {
-    if (!el.episodes) return;
+  function onYTStateChange(e) {
+    if (!bradCtx || e.data !== YT.PlayerState.ENDED) return;
 
+    if (bradCtx.step < bradCtx.cutoff) {
+      bradCtx.step++;
+      ytPlayer.loadVideoById(bradCtx.ids[bradCtx.step]);
+      return;
+    }
+
+    blackout(true, "🕯️ Lights out…");
+
+    setTimeout(() => {
+      ytPlayer.loadVideoById(bradCtx.encore);
+      setTimeout(() => blackout(false), 1500);
+    }, 3000);
+
+    bradCtx = null;
+  }
+
+  /* =============================
+     Play Episode
+  ============================= */
+
+  function playEpisode(ep) {
+
+    const urls = ep.tracks.map(t => t.url);
+
+    bradCtx = null;
+    blackout(false);
+
+    if (el.nowTitle) el.nowTitle.textContent = ep.title;
+    if (el.nowLine)
+      el.nowLine.textContent = ep.artist + (ep.year ? " • " + ep.year : "");
+
+    setWatchOnTv(buildWatchUrl(ep));
+    ensurePlayerVisible();
+
+    const firstUrl = urls[0];
+    const playlistId = getPlaylistId(firstUrl);
+
+    if (ep.memorial && ep.encoreAfterTrackIndex !== undefined) {
+      loadYTApi();
+      const ids = urls.map(getVideoId);
+      bradCtx = {
+        ids: ids,
+        step: 0,
+        cutoff: ep.encoreAfterTrackIndex,
+        encore: getVideoId(ep.tracks[ep.encoreAfterTrackIndex + 1].url)
+      };
+      return;
+    }
+
+    let src = "";
+
+    if (playlistId) {
+      src = buildEmbedPlaylist(firstUrl);
+    } else if (ep.mode === "queue") {
+      src = buildEmbedQueue(urls);
+    } else {
+      src = buildEmbedSingle(firstUrl);
+    }
+
+    if (el.playerFrame) el.playerFrame.src = src;
+  }
+
+  /* =============================
+     UI Rendering
+  ============================= */
+
+  function buildCard(ep, i) {
+    const div = document.createElement("div");
+    div.className = "ep";
+    div.innerHTML = `
+      <div class="epTitle">${safeText(ep.title)}</div>
+      <div class="epMeta">${safeText(ep.artist)} ${ep.year ? "• " + ep.year : ""}</div>
+    `;
+    div.addEventListener("click", () => playEpisode(ep));
+    return div;
+  }
+
+  function renderNext() {
     const next = ALL.slice(shownCount, shownCount + PAGE_SIZE);
-    next.forEach((ep, i) => {
-      const trueIndex = shownCount + i;
-      el.episodes.appendChild(buildCard(ep, shownCount + i));
-    });
-
+    next.forEach((ep, i) =>
+      el.episodes.appendChild(buildCard(ep, shownCount + i))
+    );
     shownCount += next.length;
-
-    updateLoadMoreUI();
-    setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
   }
+
+  /* =============================
+     Init
+  ============================= */
 
   async function init() {
-    try {
-      const episodes = await loadEpisodesMaster();
-
-      if (!Array.isArray(episodes)) {
-        setStatus("No episode list found (JSON + fallback failed)");
-        return;
-      }
-
-      ALL = episodes;
-      shownCount = 0;
-
-      if (el.episodes) el.episodes.innerHTML = "";
-
-      wirePlayAllButton(ALL);
-
-      if (el.loadMoreBtn) {
-        el.loadMoreBtn.addEventListener("click", () => renderNextBatch());
-      }
-
-      renderNextBatch();
-      setWatchOnTv("");
-    } catch (err) {
-      setStatus("App crashed");
-      console.error(err);
-    }
+    ALL = await loadEpisodes();
+    shownCount = 0;
+    if (el.episodes) el.episodes.innerHTML = "";
+    renderNext();
+    setStatus(`Loaded ${ALL.length} sessions`);
   }
 
-  function initPlayerToggle() {
-    if (!el.toggleBtn) return;
+  document.addEventListener("DOMContentLoaded", init);
 
-    function setCollapsed(isCollapsed) {
-      document.body.classList.toggle("playerCollapsed", isCollapsed);
-      el.toggleBtn.textContent = isCollapsed ? "Show player" : "Hide player";
-      el.toggleBtn.setAttribute("aria-expanded", String(!isCollapsed));
-    }
-
-    setCollapsed(true);
-
-    el.toggleBtn.addEventListener("click", () => {
-      setCollapsed(!document.body.classList.contains("playerCollapsed"));
-    });
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    initPlayerToggle();
-    init();
-  });
 })();
