@@ -1,6 +1,7 @@
 /* Joey’s Acoustic Corner — app.js
    Queue behavior: does NOT skip first song ✅
-   Brad-only Encore: Track 3 ends -> HARD STOP -> blackout -> Ticket to Heaven -> lights up ✅
+   Brad-only TRUE Encore:
+     Track 1 -> Track 2 -> Track 3 -> BLACKOUT -> Ticket to Heaven -> lights up ✅
 
    Site loads:
      /episodes.json  (fallback to episodes.js if JSON fails)
@@ -25,16 +26,14 @@
   let ALL = [];
   let shownCount = 0;
 
-  // --- YouTube IFrame API (used ONLY for Encore episodes) ---
+  // --- YouTube IFrame API (used ONLY for Brad Encore episode) ---
   let ytReady = false;
   let ytPlayer = null;
   let ytApiLoading = false;
 
-  // Encore state: { encoreVideoId, encoreAfterIndex, armed, usingApi }
-  let encoreContext = null;
-
-  // ✅ critical: reliable “current track” tracking (YT index can be flaky on ENDED)
-  let lastKnownPlaylistIndex = -1;
+  // Brad manual-queue context:
+  // { enabled, ids, step, encoreId, encoreAfterIndex, blackoutMs, lightsUpMs }
+  let bradCtx = null;
 
   // ===== Helpers =====
   function setStatus(msg) {
@@ -54,7 +53,7 @@
       const embedIndex = parts.indexOf("embed");
       if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
       return "";
-    } catch (e) {
+    } catch (_) {
       return "";
     }
   }
@@ -63,7 +62,7 @@
     try {
       const u = new URL(url);
       return u.searchParams.get("list") || "";
-    } catch (e) {
+    } catch (_) {
       return "";
     }
   }
@@ -75,15 +74,13 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
-  // ✅ No-skip-first-song queue embed
+  // ✅ No-skip-first-song queue embed (non-Brad)
   function buildEmbedForQueue(videoUrls) {
     const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
-
     const first = ids[0];
     const origin = encodeURIComponent(window.location.origin);
     const playlistAll = encodeURIComponent(ids.join(","));
-
     return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}&playlist=${playlistAll}&index=0`;
   }
 
@@ -96,7 +93,6 @@
 
   function buildWatchUrl(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return "";
-
     const mode = safeText(ep.mode).toLowerCase();
     const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
 
@@ -136,7 +132,6 @@
 
   // ===== Encore Blackout Overlay (auto-created) =====
   function ensureEncoreOverlay() {
-    // Inject CSS once
     if (!document.getElementById("encoreBlackoutCss")) {
       const css = document.createElement("style");
       css.id = "encoreBlackoutCss";
@@ -162,7 +157,6 @@
       document.head.appendChild(css);
     }
 
-    // Create overlay div once
     let b = document.getElementById("encoreBlackout");
     if (!b) {
       b = document.createElement("div");
@@ -234,50 +228,69 @@
     });
   }
 
-  // ✅ TRUE ENCORE: Track 3 end -> stop autoplay -> blackout -> encore -> lights up
+  // ===== Brad TRUE Encore engine (manual queue) =====
+  function startBradShow(trackIds, encoreId, encoreAfterIndex) {
+    bradCtx = {
+      enabled: true,
+      ids: trackIds,
+      step: 0, // 0..(encoreAfterIndex) then encore
+      encoreId,
+      encoreAfterIndex,
+      blackoutMs: 2200,
+      lightsUpMs: 1400
+    };
+
+    showEncoreBlackout(false);
+
+    // start Track 1
+    try {
+      ytPlayer.loadVideoById(trackIds[0]);
+      bradCtx.step = 0;
+    } catch (_) {
+      setStatus("Brad Encore player failed to start");
+    }
+  }
+
   function onYTStateChange(e) {
     if (!ytPlayer) return;
 
-    // Keep a reliable “what track are we on” value
-    if (
-      e.data === YT.PlayerState.PLAYING ||
-      e.data === YT.PlayerState.BUFFERING ||
-      e.data === YT.PlayerState.PAUSED
-    ) {
-      try {
-        const idx = ytPlayer.getPlaylistIndex();
-        if (Number.isInteger(idx) && idx >= 0) lastKnownPlaylistIndex = idx;
-      } catch (_) {}
-    }
+    // only intercept when Brad mode is active
+    if (!bradCtx || !bradCtx.enabled) return;
 
-    if (!encoreContext || !encoreContext.armed || !encoreContext.usingApi) return;
-
-    // Track ended
     if (e.data === YT.PlayerState.ENDED) {
-      const idx = lastKnownPlaylistIndex;
+      // If we just ended Track 1 or 2, play next track immediately
+      if (bradCtx.step < bradCtx.encoreAfterIndex) {
+        bradCtx.step += 1;
+        const nextId = bradCtx.ids[bradCtx.step];
+        if (nextId) {
+          try { ytPlayer.loadVideoById(nextId); } catch (_) {}
+        }
+        return;
+      }
 
-      // When Track 3 ends (index 2) -> TRUE encore moment
-      if (idx === encoreContext.encoreAfterIndex) {
-        encoreContext.armed = false;
+      // If we just ended Track 3 -> TRUE encore moment
+      if (bradCtx.step === bradCtx.encoreAfterIndex) {
+        bradCtx.step += 1; // move past main set so we don't re-trigger
 
-        // HARD STOP prevents the “auto-advance flash”
+        // HARD STOP so nothing auto-advances (this is the key fix)
         try { ytPlayer.stopVideo(); } catch (_) {}
 
         showEncoreBlackout(true, "🕯️ Lights out…");
         if (el.nowLine) el.nowLine.textContent = "🕯️ Lights out…";
 
-        // Concert pause…
         setTimeout(() => {
-          try { ytPlayer.loadVideoById(encoreContext.encoreVideoId); } catch (_) {}
-
-          // Hold blackout for a beat so it feels intentional
+          try { ytPlayer.loadVideoById(bradCtx.encoreId); } catch (_) {}
           setTimeout(() => {
             showEncoreBlackout(false);
             if (el.nowLine) el.nowLine.textContent = "Encore for Brad 🕯️ — Ticket to Heaven";
-          }, 1400);
+          }, bradCtx.lightsUpMs);
+        }, bradCtx.blackoutMs);
 
-        }, 2200);
+        return;
       }
+
+      // Encore ended — done
+      bradCtx.enabled = false;
     }
   }
 
@@ -288,16 +301,9 @@
     const mode = safeText(ep.mode).toLowerCase();
     const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
 
-    // Reset encore context every time
-    encoreContext = null;
+    // reset special modes
+    bradCtx = null;
     showEncoreBlackout(false);
-    lastKnownPlaylistIndex = -1;
-
-    const hasEncore =
-      mode === "queue" &&
-      ep.encore &&
-      ep.encore.url &&
-      Number.isInteger(ep.encoreAfterTrackIndex);
 
     // Update UI
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
@@ -310,7 +316,13 @@
     ensurePlayerVisible();
     highlightActive(ep);
 
-    // ===== Brad-only Encore path (YT API) =====
+    // ===== Brad TRUE Encore path (YT API manual queue) =====
+    const hasEncore =
+      mode === "queue" &&
+      ep.encore &&
+      ep.encore.url &&
+      Number.isInteger(ep.encoreAfterTrackIndex);
+
     if (hasEncore) {
       loadYTApiIfNeeded();
       tryInitYTPlayer();
@@ -319,22 +331,16 @@
       const encoreId = getVideoId(ep.encore.url);
 
       if (ytPlayer && ids.length && encoreId) {
-        encoreContext = {
-          encoreVideoId: encoreId,
-          encoreAfterIndex: ep.encoreAfterTrackIndex, // should be 2
-          armed: true,
-          usingApi: true
-        };
+        // Only play main set up through track 3 as “the set”
+        // (If you ever add more tracks to this episode later, it still won’t auto-run them.)
+        const mainSet = ids.slice(0, ep.encoreAfterTrackIndex + 1);
 
-        lastKnownPlaylistIndex = 0;
-
-        try {
-          ytPlayer.loadPlaylist(ids, 0, 0); // start at track 0 ✅
-          setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
-          return;
-        } catch (_) {}
+        setStatus("Brad Tribute mode 🕯️ (true encore armed)");
+        startBradShow(mainSet, encoreId, ep.encoreAfterTrackIndex);
+        return;
       }
-      // fall back to embed if API not ready
+      // fallback if API not ready:
+      setStatus("Encore needs YouTube API — falling back");
     }
 
     // ===== Normal behavior (embed) =====
@@ -422,9 +428,8 @@
         return;
       }
 
-      encoreContext = null;
+      bradCtx = null;
       showEncoreBlackout(false);
-      lastKnownPlaylistIndex = -1;
 
       if (el.nowTitle) el.nowTitle.textContent = "Play All";
       if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
