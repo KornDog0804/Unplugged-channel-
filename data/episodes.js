@@ -1,6 +1,6 @@
 /* Joey’s Acoustic Corner
    Episodes data (WEB APP VERSION)
-   LOCKED: 22 sessions + Brad tribute (Encore)
+   LOCKED: sessions + Brad tribute (Encore)
    Do NOT convert this to JSON. This must stay JS.
 */
 
@@ -61,6 +61,16 @@ window.EPISODES = [
     mode: "fullshow",
     tracks: [{ title: "Full Session Stream", url: "https://www.youtube.com/watch?v=f4BK60WVPac" }]
   },
+
+  // ✅ NEW: Flyleaf
+  {
+    title: "Flyleaf — Full Show / Live Session",
+    artist: "Flyleaf",
+    year: "Live",
+    mode: "fullshow",
+    tracks: [{ title: "Full Show", url: "https://youtu.be/oSKBnczdyMg" }]
+  },
+
   {
     title: "Wage War — Acoustic Queue (6 Songs)",
     artist: "Wage War",
@@ -155,15 +165,6 @@ window.EPISODES = [
     ]
   },
   {
-    title: "KISS — MTV Unplugged (Playlist)",
-    artist: "KISS",
-    year: 1995,
-    mode: "playlist",
-    tracks: [
-      { title: "Playlist Stream", url: "https://youtube.com/playlist?list=PLUH2TCeWydqJJ4cr44qjQyAwOJEytle_N" }
-    ]
-  },
-  {
     title: "Bad Omens — Acoustic Queue (6 Songs)",
     artist: "Bad Omens",
     year: "Acoustic",
@@ -205,30 +206,29 @@ window.EPISODES = [
     tracks: [{ title: "Tiny Desk Concert", url: "https://youtu.be/WgqaxMOKfnI" }]
   },
 
-  // 🕯️ Brad Tribute — Encore is special and DOES NOT autoplay
+  // 🕯️ Brad Tribute — TRUE Encore blackout -> Track 4
   {
     title: "3 Doors Down — Live for Brad (Tribute)",
     artist: "3 Doors Down",
     year: "Live",
     mode: "queue",
-
-    // These fields won’t break anything if app.js ignores them.
-    // They’re here so we can light the candle + show Encore only on this one.
     memorial: true,
     memorial_name: "Brad",
     memorial_icon: "candle",
 
-    // The 3-song set (plays like a normal stitched queue)
+    // main set: 3 songs
     tracks: [
-      { title: "Here Without You (Live)", url: "https://youtu.be/xocNHKBHsSg?si=IIMuvbUVdBPdk2wa" },
-      { title: "When I'm Gone (Live)", url: "https://youtu.be/5XpuvhHhx_s?si=DmhfqA4FSJlnveUj" },
-      { title: "Kryptonite (Live)", url: "https://youtu.be/m3lSLLklu7Q?si=ND28qLHUg_Ia7IIr" }
+      { title: "01. Here Without You (Live)", url: "https://youtu.be/xocNHKBHsSg" },
+      { title: "02. When I'm Gone (Live)", url: "https://youtu.be/5XpuvhHhx_s" },
+      { title: "03. Kryptonite (Live)", url: "https://youtu.be/m3lSLLklu7Q" }
     ],
 
-    // Encore only after the 3rd song ends (button-triggered)
+    // ✅ after track index 2 (the 3rd track)
+    encoreAfterTrackIndex: 2,
+
     encore: {
-      title: "Encore: Ticket to Heaven (Live)",
-      url: "https://youtu.be/mdV9iLyrPv8?si=2NjHzwnZV5O09jke"
+      title: "04. Ticket to Heaven (Live)",
+      url: "https://youtu.be/mdV9iLyrPv8"
     }
   }
 ];
