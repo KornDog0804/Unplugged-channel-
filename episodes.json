@@ -220,6 +220,15 @@
     ]
   },
   {
+  "title": "TEST EPISODE",
+  "artist": "Test",
+  "year": "Now",
+  "mode": "fullshow",
+  "tracks": [
+    {"title": "Test", "url": "https://youtu.be/dQw4w9WgXcQ"}
+  ]
+  }
+  {
     "title": "Billy Strings — Tiny Desk Concert",
     "artist": "Billy Strings",
     "year": 2019,
