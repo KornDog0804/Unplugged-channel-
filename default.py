@@ -15,8 +15,8 @@ HANDLE = int(sys.argv[1])
 # ====== CHANGE THIS to your live Netlify site ======
 SITE = "https://mellifluous-tanuki-51d911.netlify.app"
 
-# ✅ ONE SOURCE OF TRUTH (cache-busted)
-EP_URL = SITE + "/episodes.json?v=" + str(int(time.time()))
+# ✅ ONE SOURCE OF TRUTH (cache-busted every run)
+EP_URL = SITE + "/episodes.json?nocache=" + str(int(time.time()))
 
 UA = "Kodi/21 JoeysAcousticCorner"
 
@@ -33,7 +33,14 @@ def notify(msg):
     xbmcgui.Dialog().notification("Joey’s Acoustic Corner", msg, xbmcgui.NOTIFICATION_INFO, 4000)
 
 def http_get_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Cache-Control": "no-cache"})
+    # Extra cache-killers (Kodi/Android can be stubborn)
+    headers = {
+        "User-Agent": UA,
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
+    req = urllib.request.Request(url, headers=headers)
     with urllib.request.urlopen(req, timeout=20) as resp:
         data = resp.read().decode("utf-8")
         return json.loads(data)
@@ -64,13 +71,9 @@ def youtube_play_video(video_id):
 def youtube_play_playlist(playlist_id):
     return f"plugin://plugin.video.youtube/play/?playlist_id={playlist_id}"
 
-# ✅ Browse playlist variants (YouTube addon differs by version)
-def youtube_browse_playlist_a(playlist_id):
+# ✅ Browse (shows playlist items inside YouTube addon)
+def youtube_browse_playlist(playlist_id):
     return f"plugin://plugin.video.youtube/playlist/?playlist_id={playlist_id}"
-
-def youtube_browse_playlist_b(playlist_id):
-    # some builds like this style better
-    return f"plugin://plugin.video.youtube/special/playlist/{playlist_id}/"
 
 def add_item(label, action=None, params=None, is_folder=False, playable=False):
     li = xbmcgui.ListItem(label=label)
@@ -97,10 +100,12 @@ def end_dir():
 
 def load_episodes():
     try:
+        log("EP_URL USED: " + EP_URL)
         data = http_get_json(EP_URL)
         if isinstance(data, list):
-            log(f"Loaded JSON OK ({len(data)} items) from {EP_URL}")
+            log(f"Loaded JSON OK ({len(data)} items)")
             return data
+        log("JSON was not a list (bad format).")
         return None
     except Exception as e:
         log(f"JSON fetch failed: {e}")
@@ -134,7 +139,7 @@ def get_track_video_ids(ep):
             ids.insert(insert_at, encore_id)
     return ids
 
-# ✅ Smart mode: if first track is a playlist link, treat as playlist
+# ✅ Smart mode: if first track is a playlist link, treat as playlist no matter what mode says
 def is_playlist_episode(ep):
     tracks = ep.get("tracks", []) or []
     if not tracks:
@@ -143,8 +148,6 @@ def is_playlist_episode(ep):
     return bool(playlist_id_from_url(url))
 
 def root_menu(eps):
-    xbmcplugin.setContent(HANDLE, "videos")
-
     for idx, ep in enumerate(eps):
         title = ep.get("title", "Untitled")
         mode = str(ep.get("mode", "")).lower()
@@ -160,12 +163,8 @@ def root_menu(eps):
             if not pid:
                 continue
 
-            # Play (usually works)
             add_item(f"{title} (▶ Play)", action="play_playlist", params={"idx": str(idx)}, playable=True, is_folder=False)
-
-            # Browse (two methods so one will work)
-            add_external(f"{title} (📂 Browse A)", youtube_browse_playlist_a(pid), is_folder=True, playable=False)
-            add_external(f"{title} (📂 Browse B)", youtube_browse_playlist_b(pid), is_folder=True, playable=False)
+            add_external(f"{title} (📂 Browse videos)", youtube_browse_playlist(pid), is_folder=True, playable=False)
             continue
 
         if mode == "fullshow":
@@ -194,7 +193,6 @@ def browse_queue(eps, idx):
     ids = get_track_video_ids(ep)
 
     for i, vid in enumerate(ids):
-        label = f"{i+1}. Track"
         if i < len(tracks):
             label = f"{i+1}. {(tracks[i] or {}).get('title', 'Track')}"
         else:
