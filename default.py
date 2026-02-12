@@ -2,6 +2,7 @@
 import sys
 import json
 import re
+import time
 import urllib.request
 import urllib.parse
 
@@ -14,8 +15,8 @@ HANDLE = int(sys.argv[1])
 # ====== CHANGE THIS to your live Netlify site ======
 SITE = "https://mellifluous-tanuki-51d911.netlify.app"
 
-# ✅ ONE SOURCE OF TRUTH
-EP_URL = SITE + "/episodes.json"
+# ✅ ONE SOURCE OF TRUTH (cache-busted)
+EP_URL = SITE + "/episodes.json?v=" + str(int(time.time()))
 
 UA = "Kodi/21 JoeysAcousticCorner"
 
@@ -63,9 +64,13 @@ def youtube_play_video(video_id):
 def youtube_play_playlist(playlist_id):
     return f"plugin://plugin.video.youtube/play/?playlist_id={playlist_id}"
 
-# ✅ Browse (shows video list inside YouTube addon)
-def youtube_browse_playlist(playlist_id):
+# ✅ Browse playlist variants (YouTube addon differs by version)
+def youtube_browse_playlist_a(playlist_id):
     return f"plugin://plugin.video.youtube/playlist/?playlist_id={playlist_id}"
+
+def youtube_browse_playlist_b(playlist_id):
+    # some builds like this style better
+    return f"plugin://plugin.video.youtube/special/playlist/{playlist_id}/"
 
 def add_item(label, action=None, params=None, is_folder=False, playable=False):
     li = xbmcgui.ListItem(label=label)
@@ -129,7 +134,7 @@ def get_track_video_ids(ep):
             ids.insert(insert_at, encore_id)
     return ids
 
-# ✅ Smart mode: if first track is a playlist link, treat as playlist no matter what mode says
+# ✅ Smart mode: if first track is a playlist link, treat as playlist
 def is_playlist_episode(ep):
     tracks = ep.get("tracks", []) or []
     if not tracks:
@@ -138,6 +143,8 @@ def is_playlist_episode(ep):
     return bool(playlist_id_from_url(url))
 
 def root_menu(eps):
+    xbmcplugin.setContent(HANDLE, "videos")
+
     for idx, ep in enumerate(eps):
         title = ep.get("title", "Untitled")
         mode = str(ep.get("mode", "")).lower()
@@ -153,8 +160,12 @@ def root_menu(eps):
             if not pid:
                 continue
 
+            # Play (usually works)
             add_item(f"{title} (▶ Play)", action="play_playlist", params={"idx": str(idx)}, playable=True, is_folder=False)
-            add_external(f"{title} (📂 Browse  videos)", youtube_browse_playlist(pid), is_folder=True, playable=False)
+
+            # Browse (two methods so one will work)
+            add_external(f"{title} (📂 Browse A)", youtube_browse_playlist_a(pid), is_folder=True, playable=False)
+            add_external(f"{title} (📂 Browse B)", youtube_browse_playlist_b(pid), is_folder=True, playable=False)
             continue
 
         if mode == "fullshow":
@@ -216,7 +227,6 @@ def play_fullshow(eps, idx):
     url = (tracks[0] or {}).get("url", "")
     vid = yt_id_from_url(url)
     if not vid:
-        # ✅ If it’s actually a playlist URL but mode is wrong
         pid = playlist_id_from_url(url)
         if pid:
             xbmc.Player().play(youtube_play_playlist(pid))
