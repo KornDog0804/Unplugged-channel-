@@ -14,13 +14,12 @@ HANDLE = int(sys.argv[1])
 # ====== CHANGE THIS to your live Netlify site ======
 SITE = "https://mellifluous-tanuki-51d911.netlify.app"
 
-# ✅ ONE SOURCE OF TRUTH (NOT master_22)
-# Put your real JSON at site root as: /episodes.json
+# ✅ ONE SOURCE OF TRUTH
 EP_URL = SITE + "/episodes.json"
 
 UA = "Kodi/21 JoeysAcousticCorner"
 
-# ====== HARD-CODED FALLBACK (only if JSON is unreachable) ======
+# ====== FALLBACK (only if JSON is unreachable) ======
 FALLBACK_EPISODES = [
     ("Nirvana — MTV Unplugged (Full Session)", "https://youtu.be/pOTkCgkxqyg"),
     ("Alice In Chains — MTV Unplugged (Full Session)", "https://youtu.be/Jprla2NvHY0"),
@@ -33,7 +32,7 @@ def notify(msg):
     xbmcgui.Dialog().notification("Joey’s Acoustic Corner", msg, xbmcgui.NOTIFICATION_INFO, 4000)
 
 def http_get_json(url):
-    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Cache-Control": "no-cache"})
     with urllib.request.urlopen(req, timeout=20) as resp:
         data = resp.read().decode("utf-8")
         return json.loads(data)
@@ -41,15 +40,12 @@ def http_get_json(url):
 def yt_id_from_url(url):
     if not url:
         return None
-    # youtu.be/ID
     m = re.search(r"youtu\.be/([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
-    # youtube.com/watch?v=ID
     m = re.search(r"[?&]v=([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
-    # youtube.com/embed/ID
     m = re.search(r"/embed/([A-Za-z0-9_\-]+)", url)
     if m:
         return m.group(1)
@@ -67,6 +63,10 @@ def youtube_play_video(video_id):
 def youtube_play_playlist(playlist_id):
     return f"plugin://plugin.video.youtube/play/?playlist_id={playlist_id}"
 
+# ✅ Browse (shows video list inside YouTube addon)
+def youtube_browse_playlist(playlist_id):
+    return f"plugin://plugin.video.youtube/playlist/?playlist_id={playlist_id}"
+
 def add_item(label, action=None, params=None, is_folder=False, playable=False):
     li = xbmcgui.ListItem(label=label)
     if playable:
@@ -81,6 +81,12 @@ def add_item(label, action=None, params=None, is_folder=False, playable=False):
 
     xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=is_folder)
 
+def add_external(label, path, is_folder=False, playable=False):
+    li = xbmcgui.ListItem(label=label)
+    if playable:
+        li.setProperty("IsPlayable", "true")
+    xbmcplugin.addDirectoryItem(HANDLE, path, li, isFolder=is_folder)
+
 def end_dir():
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
 
@@ -88,6 +94,7 @@ def load_episodes():
     try:
         data = http_get_json(EP_URL)
         if isinstance(data, list):
+            log(f"Loaded JSON OK ({len(data)} items) from {EP_URL}")
             return data
         return None
     except Exception as e:
@@ -113,7 +120,6 @@ def get_track_video_ids(ep):
         if vid:
             ids.append(vid)
 
-    # ✅ Brad-only encore injected as an extra track (Kodi-safe)
     if has_encore(ep):
         after_idx = ep.get("encoreAfterTrackIndex")
         encore_url = (ep.get("encore") or {}).get("url")
@@ -123,36 +129,41 @@ def get_track_video_ids(ep):
             ids.insert(insert_at, encore_id)
     return ids
 
+# ✅ Smart mode: if first track is a playlist link, treat as playlist no matter what mode says
+def is_playlist_episode(ep):
+    tracks = ep.get("tracks", []) or []
+    if not tracks:
+        return False
+    url = (tracks[0] or {}).get("url", "")
+    return bool(playlist_id_from_url(url))
+
 def root_menu(eps):
-    # Shows list
     for idx, ep in enumerate(eps):
         title = ep.get("title", "Untitled")
         mode = str(ep.get("mode", "")).lower()
 
-        # Candle marker if encore exists
         if has_encore(ep):
             title = title + "  🕯️"
 
-        if mode == "playlist":
-            # play playlist directly
+        # ✅ Force playlist detection from the URL
+        if is_playlist_episode(ep):
             tracks = ep.get("tracks", []) or []
-            if not tracks:
-                continue
             pid = playlist_id_from_url((tracks[0] or {}).get("url", ""))
+
             if not pid:
                 continue
-            # playable item (not a folder)
-            add_item(title, action="play_playlist", params={"idx": str(idx)}, playable=True, is_folder=False)
 
-        elif mode == "fullshow":
+            add_item(f"{title} (▶ Play)", action="play_playlist", params={"idx": str(idx)}, playable=True, is_folder=False)
+            add_external(f"{title} (📂 Browse  videos)", youtube_browse_playlist(pid), is_folder=True, playable=False)
+            continue
+
+        if mode == "fullshow":
             add_item(title, action="play_fullshow", params={"idx": str(idx)}, playable=True, is_folder=False)
 
         elif mode == "queue":
-            # ✅ queue becomes a folder of tracks (NO crash)
             add_item(title, action="browse_queue", params={"idx": str(idx)}, playable=False, is_folder=True)
 
         else:
-            # unknown mode -> treat as fullshow if possible
             add_item(title, action="play_fullshow", params={"idx": str(idx)}, playable=True, is_folder=False)
 
     end_dir()
@@ -166,25 +177,16 @@ def browse_queue(eps, idx):
         end_dir()
         return
 
-    title = ep.get("title", "Queue")
     add_item("▶ Play All (Queue)", action="play_queue_all", params={"idx": str(idx)}, playable=True, is_folder=False)
 
-    # list each track
     tracks = ep.get("tracks", []) or []
     ids = get_track_video_ids(ep)
 
-    # If we injected encore, the ids list may be longer than tracks list.
-    # We'll label injected encore nicely.
-    injected_encore = has_encore(ep)
-    encore_inserted = injected_encore and len(ids) > len(tracks)
-
-    # Build track labels
     for i, vid in enumerate(ids):
         label = f"{i+1}. Track"
         if i < len(tracks):
             label = f"{i+1}. {(tracks[i] or {}).get('title', 'Track')}"
         else:
-            # this is the injected encore
             encore_title = ((ep.get("encore") or {}).get("title")) or "Encore"
             label = f"{i+1}. {encore_title} 🕯️"
 
@@ -210,10 +212,18 @@ def play_fullshow(eps, idx):
     if not tracks:
         notify("No tracks.")
         return
-    vid = yt_id_from_url((tracks[0] or {}).get("url", ""))
+
+    url = (tracks[0] or {}).get("url", "")
+    vid = yt_id_from_url(url)
     if not vid:
+        # ✅ If it’s actually a playlist URL but mode is wrong
+        pid = playlist_id_from_url(url)
+        if pid:
+            xbmc.Player().play(youtube_play_playlist(pid))
+            return
         notify("Bad YouTube link.")
         return
+
     xbmc.Player().play(youtube_play_video(vid))
 
 def play_playlist(eps, idx):
@@ -297,7 +307,6 @@ def router():
         play_queue_all(eps, params.get("idx"))
         return
 
-    # default
     root_menu(eps)
 
 router()
