@@ -1,66 +1,84 @@
 [
   {
-    "title": "✅ TEST - IF YOU SEE THIS, JSON IS LOADING",
+    "title": "Nirvana — MTV Unplugged (Full Session)",
     "artist": "Nirvana",
     "year": 1993,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/pOTkCgkxqyg" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://youtu.be/pOTkCgkxqyg" }
+    ]
   },
   {
     "title": "Alice In Chains — MTV Unplugged (Full Session)",
     "artist": "Alice In Chains",
     "year": 1996,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/Jprla2NvHY0" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://youtu.be/Jprla2NvHY0" }
+    ]
   },
   {
     "title": "Pearl Jam — MTV Unplugged (Full Session)",
     "artist": "Pearl Jam",
     "year": 1992,
     "mode": "fullshow",
-    "tracks": [{ "title": "Unplugged Full Session", "url": "https://youtu.be/P9fPF204icg" }]
+    "tracks": [
+      { "title": "Unplugged Full Session", "url": "https://youtu.be/P9fPF204icg" }
+    ]
   },
   {
     "title": "Stone Temple Pilots — Acoustic Full Show (4K)",
     "artist": "Stone Temple Pilots",
     "year": "Acoustic",
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Acoustic Performance (4K)", "url": "https://youtu.be/Apok0654Qnc" }]
+    "tracks": [
+      { "title": "Full Acoustic Performance (4K)", "url": "https://youtu.be/Apok0654Qnc" }
+    ]
   },
   {
     "title": "JAY-Z — Unplugged / Live (Full Session)",
     "artist": "JAY-Z",
     "year": 2001,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/r2I_pGlvtAY" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://youtu.be/r2I_pGlvtAY" }
+    ]
   },
   {
     "title": "Korn — MTV Unplugged (Full Session)",
     "artist": "Korn",
     "year": 2007,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/El8-JgiqcUI" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://youtu.be/El8-JgiqcUI" }
+    ]
   },
   {
     "title": "Corey Taylor — Acoustic Session",
     "artist": "Corey Taylor",
     "year": "Acoustic",
     "mode": "fullshow",
-    "tracks": [{ "title": "Acoustic Performance", "url": "https://youtu.be/uetFO7y8WPA" }]
+    "tracks": [
+      { "title": "Acoustic Performance", "url": "https://youtu.be/uetFO7y8WPA" }
+    ]
   },
   {
     "title": "Papa Roach — WRIF Acoustic Set (Full Session)",
     "artist": "Papa Roach",
     "year": 2025,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=f4BK60WVPac" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=f4BK60WVPac" }
+    ]
   },
   {
     "title": "Flyleaf — Acoustic Session (Bonus DVD)",
     "artist": "Flyleaf",
     "year": "DVD",
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }]
+    "tracks": [
+      { "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }
+    ]
   },
   {
     "title": "Wage War — Acoustic Queue (6 Songs)",
@@ -73,7 +91,7 @@
       { "title": "Track 3", "url": "https://youtu.be/2lcJUfE2LsQ" },
       { "title": "Track 4", "url": "https://youtu.be/fT9SJV8KCE8" },
       { "title": "Track 5", "url": "https://youtu.be/laiLOhKO9yU" },
-      { "title": "Track 6", "url": "https://youtu.be/7WVGNUVsDFw" }
+      { "title": "Johnny Cash (Acoustic)", "url": "https://youtu.be/7WVGNUVsDFw" }
     ]
   },
   {
@@ -81,7 +99,9 @@
     "artist": "The Home Team",
     "year": 2023,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/EGB3xoa7Cus" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://youtu.be/EGB3xoa7Cus" }
+    ]
   },
   {
     "title": "Smile Empty Soul — Acoustic Queue (4 Songs)",
@@ -110,21 +130,27 @@
     "artist": "Sevendust",
     "year": 2025,
     "mode": "fullshow",
-    "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/Q4s_nIG8rw0" }]
+    "tracks": [
+      { "title": "Full Session Stream", "url": "https://youtu.be/Q4s_nIG8rw0" }
+    ]
   },
   {
     "title": "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
     "artist": "Stevie Ray Vaughan • Joe Satriani",
     "year": "1980s",
     "mode": "fullshow",
-    "tracks": [{ "title": "Live Jam", "url": "https://youtu.be/e_UASyYu1iA" }]
+    "tracks": [
+      { "title": "Live Jam", "url": "https://youtu.be/e_UASyYu1iA" }
+    ]
   },
   {
     "title": "Chris Cornell — Acoustic Collection",
     "artist": "Chris Cornell",
     "year": "Various",
     "mode": "fullshow",
-    "tracks": [{ "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }]
+    "tracks": [
+      { "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }
+    ]
   },
   {
     "title": "Shinedown — Acoustic Queue (8 Songs)",
@@ -166,7 +192,7 @@
       { "title": "Careful What You Wish For", "url": "https://youtu.be/KlfSm9GZY5Y" },
       { "title": "Mercy", "url": "https://youtu.be/_5CaAIFdT2c" },
       { "title": "Burning Out", "url": "https://youtu.be/noGwAB46Bhk" },
-      { "title": "If I'm There", "url": "https://youtu.be/7WVGNUVsDFw" }
+      { "title": "If I'm There", "url": "https://youtu.be/7vkBQFjrorU" }
     ]
   },
   {
@@ -187,14 +213,18 @@
     "artist": "Scarface",
     "year": 2023,
     "mode": "fullshow",
-    "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }]
+    "tracks": [
+      { "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }
+    ]
   },
   {
     "title": "Billy Strings — Tiny Desk Concert",
     "artist": "Billy Strings",
     "year": 2019,
     "mode": "fullshow",
-    "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }]
+    "tracks": [
+      { "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }
+    ]
   },
   {
     "title": "3 Doors Down — Live for Brad (Tribute)",
@@ -211,14 +241,14 @@
     ]
   },
   {
-    "title": "Monster Jam — Official Playlist (Auto Updates)",
+    "title": "Monster Jam — Full Episodes (Playlist)",
     "artist": "Monster Jam",
-    "year": "Live Updates",
-    "mode": "fullshow",
+    "year": "Playlist",
+    "mode": "playlist",
     "tracks": [
       {
-        "title": "Open Playlist",
-        "url": "https://youtube.com/playlist?list=PLaSx_lF7AsqyraPQ6exjOY5C7e-aye_AW"
+        "title": "Monster Jam - Full Episodes",
+        "url": "https://www.youtube.com/playlist?list=PLaSx_lF7AsqyraPQ6exjOY5C7e-aye_AW"
       }
     ]
   }
