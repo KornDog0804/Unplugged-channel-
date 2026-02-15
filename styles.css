@@ -681,3 +681,25 @@ body.landing{
   from { transform: translateX(0%); }
   to   { transform: translateX(100%); }
 }
+/* make sure nothing invisible blocks taps */
+.playerFrameWrap,
+.playerShell,
+.top {
+  pointer-events: auto;
+}
+
+#episodes, .episodes, .ep {
+  pointer-events: auto;
+}
+
+.playerFrameWrap iframe {
+  pointer-events: auto;
+}
+
+/* common culprit: some overlay/div with position fixed */
+.backdrop,
+.overlay,
+.landing,
+.heroGlow {
+  pointer-events: none;
+}
