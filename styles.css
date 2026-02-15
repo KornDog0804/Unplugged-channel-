@@ -630,3 +630,54 @@ body.landing{
   border-radius: 14px;
   background: rgba(0,0,0,0.35);
 }
+/* ===== Slide Navigation (Mobile App Feel) ===== */
+
+#viewWrap {
+  position: relative;
+  overflow: hidden;
+}
+
+/* This is the element that holds ONE "page" at a time */
+#view {
+  will-change: transform;
+}
+
+/* We create a temporary incoming page and slide it */
+.slidePage {
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+  opacity: 1;
+  will-change: transform;
+}
+
+/* Animations */
+.slide-in-left {
+  animation: slideInLeft 220ms ease-out forwards;
+}
+.slide-out-left {
+  animation: slideOutLeft 220ms ease-out forwards;
+}
+.slide-in-right {
+  animation: slideInRight 220ms ease-out forwards;
+}
+.slide-out-right {
+  animation: slideOutRight 220ms ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0%); }
+}
+@keyframes slideOutLeft {
+  from { transform: translateX(0%); }
+  to   { transform: translateX(-25%); } /* slight parallax vibe */
+}
+@keyframes slideInRight {
+  from { transform: translateX(-25%); }
+  to   { transform: translateX(0%); }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0%); }
+  to   { transform: translateX(100%); }
+}
