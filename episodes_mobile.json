@@ -3,7 +3,6 @@
     "title": "🎸 Artists",
     "mode": "folder",
     "items": [
-
       {
         "title": "3 Doors Down",
         "mode": "folder",
@@ -101,6 +100,21 @@
       },
 
       {
+        "title": "Flyleaf",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Session (Bonus DVD)",
+            "artist": "Flyleaf",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }
+            ]
+          }
+        ]
+      },
+
+      {
         "title": "Wage War",
         "mode": "folder",
         "items": [
@@ -153,6 +167,25 @@
           }
         ]
       },
+      {
+        "title": "Bad Omens",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Queue",
+            "artist": "Bad Omens",
+            "mode": "queue",
+            "tracks": [
+              { "title": "Never Know", "url": "https://youtu.be/tIDxdXRvtLg" },
+              { "title": "Limits", "url": "https://youtu.be/BDMt9gnvMe0" },
+              { "title": "Careful What You Wish For", "url": "https://youtu.be/KlfSm9GZY5Y" },
+              { "title": "Mercy", "url": "https://youtu.be/_5CaAIFdT2c" },
+              { "title": "Burning Out", "url": "https://youtu.be/noGwAB46Bhk" },
+              { "title": "If I'm There", "url": "https://youtu.be/7vkBQFjrorU" }
+            ]
+          }
+        ]
+      }
 
       {
         "title": "Dayseeker",
@@ -191,7 +224,6 @@
           }
         ]
       }
-
     ]
   },
 
