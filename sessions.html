@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sessions • Joey’s Acoustic Corner</title>
+  <title>Joey’s Acoustic Corner — Sessions</title>
 
   <link rel="stylesheet" href="./styles.css" />
 
@@ -12,29 +12,26 @@
   <meta name="theme-color" content="#07070a">
   <meta name="description" content="Stripped & unplugged sessions — handpicked only.">
 
-  <!-- iOS add-to-home -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
-  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
-
-  <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 </head>
 
 <body class="sessions">
 
+  <!-- HEADER -->
   <header class="top">
     <div class="brand">
       <div class="brandMark"></div>
       <div class="brandText">
         <div class="titleRow">
           <div class="title">JOEY’S ACOUSTIC CORNER</div>
-          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
+          <div class="liveBadge">
+            <span class="liveDot"></span> LIVE
+          </div>
         </div>
         <div class="sub">
-          <span class="subStrong">Stripped &amp; unplugged sessions</span>
+          <span class="subStrong">Stripped & unplugged sessions</span>
           <span class="subSep">—</span>
           <span>handpicked only.</span>
         </div>
@@ -42,57 +39,90 @@
     </div>
   </header>
 
-  <main class="appWrap">
+  <!-- PLAYER SECTION -->
+  <section class="playerShell">
 
-    <!-- Player -->
-    <section class="playerShell">
-      <div class="playerTop">
-        <div class="playerLeft">
-          <div class="playerTitle" id="nowPlayingTitle">Now Playing</div>
-          <div class="playerLine" id="nowPlayingLine"></div>
-        </div>
+    <div class="playerTop">
 
-        <div class="playerRight">
-          <a id="watchOnTvBtn" class="watchBtn" href="#" target="_blank" rel="noopener">Watch on TV</a>
-          <button id="playerToggleBtn" class="toggleBtn" type="button">Show player</button>
+      <div class="npBlock">
+        <div class="npTitle" id="nowPlayingTitle">Now Playing</div>
+        <div class="npLine" id="nowPlayingLine">
+          Pick a session below 👇
         </div>
       </div>
 
-      <div class="playerFrameWrap">
-        <iframe
-          id="playerFrame"
-          title="Player"
-          frameborder="0"
-          referrerpolicy="strict-origin-when-cross-origin"
-          allow="autoplay; encrypted-media; picture-in-picture"
-          allowfullscreen
-        ></iframe>
+      <div class="npBtns">
+        <a
+          id="watchOnTvBtn"
+          class="btn ghost"
+          href="#"
+          target="_blank"
+          rel="noopener"
+        >
+          Watch on TV
+        </a>
+
+        <button
+          id="playerToggleBtn"
+          class="btn"
+          type="button"
+        >
+          Show player
+        </button>
       </div>
 
-      <div class="statusRow">
-        <div id="status" class="status"></div>
+    </div>
+
+    <!-- YOUTUBE IFRAME -->
+    <div class="playerFrameWrap">
+      <iframe
+        id="playerFrame"
+        title="YouTube Player"
+        loading="lazy"
+        allow="autoplay; encrypted-media; picture-in-picture"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <div id="status" class="statusLine"></div>
+
+  </section>
+
+  <!-- MAIN LIST -->
+  <main class="wrap">
+
+    <section class="listHead">
+      <div class="listTitle">Sessions</div>
+      <div class="listSub">
+        Swipe left/right on mobile to go back or forward.
+        Tap into folders. Queues stitch tracks together automatically.
       </div>
     </section>
 
-    <!-- Slides container required by the new app.js -->
-    <section class="listShell">
-      <div id="viewWrap">
-        <div id="view"></div>
-      </div>
-    </section>
+    <button id="playAllBtn" class="btn wide" type="button">
+      Play All
+    </button>
+
+    <div id="episodes" class="episodes"></div>
+
+    <button
+      id="loadMoreBtn"
+      class="btn wide ghost"
+      type="button"
+    >
+      Load more
+    </button>
+
+    <div class="backRow">
+      <a class="btn ghost" href="./index.html">
+        ← Back to home
+      </a>
+    </div>
 
   </main>
 
-  <script>
-    // SW (safe if missing)
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
-      });
-    }
-  </script>
-
-  <!-- Your new app.js goes here -->
+  <!-- APP SCRIPT -->
   <script src="./app.js"></script>
+
 </body>
 </html>
