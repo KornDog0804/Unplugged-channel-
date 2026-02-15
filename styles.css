@@ -558,6 +558,181 @@ body.playerCollapsed #playerFrame{ display:none; }
   .epTitle{ font-size: 15px; }
   #playerFrame{ min-height: 210px; }
 }
+/* =========================================================
+   TRACK DRILL-DOWN VIEW (app.js new UI)
+   Paste at the BOTTOM of styles.css
+   ========================================================= */
+
+.trackHeader{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  padding: 14px;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.35);
+}
+
+.trackBackBtn{
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  font-weight: 900;
+  letter-spacing: .2px;
+  cursor: pointer;
+  position: relative;
+  z-index: 60; /* make sure it’s always tappable */
+}
+
+.trackBackBtn:hover{
+  border-color: rgba(201,162,77,.28);
+  background: rgba(255,255,255,.075);
+}
+
+.trackHeaderText{
+  min-width: 0;
+  flex: 1;
+}
+
+.trackHeaderTitle{
+  font-weight: 1000;
+  letter-spacing: -.01em;
+  font-size: 18px;
+  line-height: 1.15;
+  color: rgba(255,255,255,.95);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackHeaderSub{
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 850;
+  color: rgba(255,255,255,.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trackHeaderSmall{
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 850;
+  color: rgba(255,255,255,.55);
+}
+
+/* Track rows */
+.trackRow{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+
+  margin: 10px 12px;
+  padding: 12px 12px;
+
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+
+  cursor: pointer;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  outline: none;
+  position: relative;
+  z-index: 20; /* keep it above decorative layers */
+}
+
+.trackRow:active{ transform: scale(.99); }
+
+.trackRow:hover{
+  border-color: rgba(201,162,77,.35);
+  background: rgba(255,255,255,.07);
+  box-shadow: 0 16px 46px rgba(0,0,0,.55);
+}
+
+.trackRowTitle{
+  font-weight: 950;
+  letter-spacing: -.01em;
+  font-size: 15px;
+  line-height: 1.2;
+  color: rgba(255,255,255,.92);
+
+  /* long titles don’t break your layout */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trackRowChevron{
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+
+  border: 1px solid rgba(201,162,77,.35);
+  background: rgba(201,162,77,.12);
+  color: rgba(255,255,255,.92);
+  font-size: 16px;
+}
+
+/* Footer controls */
+.trackFooter{
+  display:flex;
+  gap:10px;
+  padding: 12px 12px 14px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  background: rgba(0,0,0,.35);
+}
+
+.trackPlayAllBtn,
+.trackMoreBtn{
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-weight: 950;
+  letter-spacing: .2px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  cursor: pointer;
+  position: relative;
+  z-index: 60; /* always tappable */
+}
+
+.trackPlayAllBtn:hover,
+.trackMoreBtn:hover{
+  border-color: rgba(201,162,77,.28);
+  background: rgba(255,255,255,.075);
+}
+
+.trackPlayAllBtn{
+  border-color: rgba(201,162,77,.45);
+  background: linear-gradient(90deg, rgba(201,162,77,.92), rgba(158,135,66,.88));
+  color: #0B0B0D;
+}
+
+.trackPlayAllBtn:hover{
+  filter: brightness(1.02);
+}
+
+/* Make sure nothing “invisible” blocks taps in this view */
+.trackHeader,
+.trackRow,
+.trackFooter{
+  pointer-events: auto;
+}
+
+/* Small phones */
+@media (max-width: 420px){
+  .trackHeaderTitle{ font-size: 17px; }
+  .trackRowTitle{ font-size: 14px; }
+  .trackRowChevron{ width: 36px; height: 36px; border-radius: 13px; }
+}
 
 /* =========================
    IMPORTANT:
