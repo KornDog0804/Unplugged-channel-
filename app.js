@@ -1,21 +1,19 @@
-/* Joey’s Acoustic Corner — app.js (FUTURE-PROOF BUILD)
-   ✅ Supports BOTH:
-      A) Flat array episodes: [{title, artist, mode, tracks:[{title,url}]}]
-      B) Folder/tree JSON: { sections:[{title, subtitle?, items:[episode|section]}] }  OR  [{title, items:[...]}]
-   ✅ Defaults to /episodes_mobile.json (for phone folders)
-   ✅ Fallback to /episodes.json (kodi master list)
-   ✅ Fallback to episodes.js (window.EPISODES / window.episodes)
-   ✅ URL overrides:
-      ?data=mobile  (force mobile json)
-      ?data=kodi    (force kodi json)
-      ?data=url:https://your.site/file.json  (force custom)
-   ✅ Remembers choice in localStorage ("jac_data_pref")
+/* Joey’s Acoustic Corner — app.js (FOLDER + FLAT COMPAT BUILD)
+   ✅ Loads /episodes_mobile.json first, falls back to /episodes.json, then episodes.js
+   ✅ Supports BOTH data shapes:
+      A) Flat array of episodes: [{title, artist, mode, tracks:[{title,url}]}]
+      B) Folder/tree:
+         { sections:[{title, subtitle?, items:[episode|section]}] }
+         OR array of sections: [{title, subtitle?, items:[...]}]
+   ✅ Folder navigation (tap Artists / Tiny Desk / etc)
+   ✅ Play All works within current view (skips playlists to stay stable)
 */
 
 (function () {
-  const PAGE_SIZE = 12;
-  const PREF_KEY = "jac_data_pref";
+  const PAGE_SIZE = 24;
 
+  // If the JSON files live on the SAME Netlify site as the app, keep these relative.
+  // (That’s the best setup.)
   const SOURCES = {
     mobile: "/episodes_mobile.json",
     kodi: "/episodes.json"
@@ -32,14 +30,23 @@
     toggleBtn: $("#playerToggleBtn"),
     watchOnTvBtn: $("#watchOnTvBtn"),
     loadMoreBtn: $("#loadMoreBtn"),
-    playAllBtn: $("#playAllBtn")
+    playAllBtn: $("#playAllBtn"),
+
+    // Back button IDs vary by builds, so we try several:
+    backBtn:
+      $("#backToHomeBtn") ||
+      $("#backHomeBtn") ||
+      $("#backBtn") ||
+      document.querySelector('[data-action="back"]') ||
+      null
   };
 
-  // ===== State =====
-  let ALL = [];            // for flat mode
-  let shownCount = 0;      // for flat mode paging
-  let TREE = null;         // for tree mode
-  let NAV_STACK = [];      // tree navigation stack
+  // ===== STATE =====
+  let ROOT_VIEW = [];     // array of top-level sections
+  let VIEW_STACK = [];    // {title, list} stack for folder navigation
+  let CURRENT_LIST = [];  // items (sections or episodes) for current view
+  let CURRENT_TITLE = "Sessions";
+  let SHOWN = 0;          // pagination count
 
   // ===== Helpers =====
   function setStatus(msg) {
@@ -50,44 +57,43 @@
     return (v === undefined || v === null) ? "" : String(v);
   }
 
-  function getParam(name) {
-    try {
-      const u = new URL(window.location.href);
-      return u.searchParams.get(name);
-    } catch (_) {
-      return null;
+  function isEpisode(obj) {
+    return obj && Array.isArray(obj.tracks);
+  }
+
+  function isSection(obj) {
+    return obj && Array.isArray(obj.items);
+  }
+
+  function normalizeToRootList(data) {
+    // Case 1: { sections:[...] }
+    if (data && Array.isArray(data.sections)) return data.sections;
+
+    // Case 2: array
+    if (Array.isArray(data)) {
+      // If array looks like episodes -> wrap into one section (keeps compatibility)
+      if (data.length === 0) return [{ title: "Sessions", subtitle: "all", items: [] }];
+      if (isEpisode(data[0])) return [{ title: "Sessions", subtitle: "all", items: data }];
+      if (isSection(data[0])) return data;
+      // Unknown array -> still wrap
+      return [{ title: "Sessions", subtitle: "all", items: [] }];
     }
+
+    // Unknown -> empty
+    return [{ title: "Sessions", subtitle: "all", items: [] }];
   }
 
-  function setPref(val) {
-    try { localStorage.setItem(PREF_KEY, val); } catch (_) {}
-  }
-
-  function getPref() {
-    try { return localStorage.getItem(PREF_KEY); } catch (_) { return null; }
-  }
-
-  function cacheBust(url) {
+  function bust(url) {
     const join = url.includes("?") ? "&" : "?";
     return url + join + "v=" + Date.now();
   }
 
-  function normalizeYouTubeUrl(url) {
-    return safeText(url).trim();
-  }
-
+  // ===== YouTube parsing =====
   function getVideoId(url) {
-    url = normalizeYouTubeUrl(url);
-    if (!url) return "";
     try {
       const u = new URL(url);
-      if (u.hostname.includes("youtu.be")) {
-        const id = u.pathname.replace("/", "").trim();
-        return id || "";
-      }
-      const v = u.searchParams.get("v");
-      if (v) return v;
-
+      if (u.hostname.includes("youtu.be")) return u.pathname.replace("/", "").trim();
+      if (u.searchParams.get("v")) return u.searchParams.get("v");
       const parts = u.pathname.split("/").filter(Boolean);
       const embedIndex = parts.indexOf("embed");
       if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
@@ -98,8 +104,6 @@
   }
 
   function getPlaylistId(url) {
-    url = normalizeYouTubeUrl(url);
-    if (!url) return "";
     try {
       const u = new URL(url);
       return u.searchParams.get("list") || "";
@@ -108,7 +112,6 @@
     }
   }
 
-  // ✅ Single video embed
   function buildEmbedForSingle(videoUrl) {
     const id = getVideoId(videoUrl);
     if (!id) return "";
@@ -116,19 +119,16 @@
     return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
-  // ✅ No-skip-first-song queue embed
   function buildEmbedForQueue(videoUrls) {
-    const ids = (videoUrls || []).map(getVideoId).filter(Boolean);
+    const ids = videoUrls.map(getVideoId).filter(Boolean);
     if (!ids.length) return "";
-
     const first = ids[0];
     const origin = encodeURIComponent(window.location.origin);
     const playlistAll = encodeURIComponent(ids.join(","));
-
+    // index=0 prevents the "skip first song" nonsense
     return `https://www.youtube.com/embed/${first}?autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}&playlist=${playlistAll}&index=0`;
   }
 
-  // ✅ Playlist embed attempt
   function buildEmbedForPlaylist(playlistUrl) {
     const list = getPlaylistId(playlistUrl);
     if (!list) return "";
@@ -138,9 +138,8 @@
 
   function buildWatchUrl(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return "";
-
     const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = ep.tracks.map(t => t && t.url).filter(Boolean);
+    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
 
     if (mode === "playlist") {
       const list = getPlaylistId(trackUrls[0] || "");
@@ -155,12 +154,10 @@
 
   function setWatchOnTv(url, label) {
     if (!el.watchOnTvBtn) return;
-
     el.watchOnTvBtn.textContent = label || "Watch on YouTube";
     el.watchOnTvBtn.href = url || "#";
     el.watchOnTvBtn.style.opacity = url ? "1" : "0.6";
     el.watchOnTvBtn.style.pointerEvents = url ? "auto" : "none";
-
     if (!url) el.watchOnTvBtn.setAttribute("aria-disabled", "true");
     else el.watchOnTvBtn.removeAttribute("aria-disabled");
   }
@@ -175,145 +172,17 @@
 
   function highlightActive(key) {
     document.querySelectorAll(".ep").forEach(card => card.classList.remove("isActive"));
-    if (!key) return;
     const card = document.querySelector(`.ep[data-key="${CSS.escape(key)}"]`);
     if (card) card.classList.add("isActive");
   }
 
-  function isEpisode(obj) {
-    // Loose check: episode has tracks OR mode OR artist/title combo
-    if (!obj || typeof obj !== "object") return false;
-    if (Array.isArray(obj.tracks)) return true;
-    if (obj.mode) return true;
-    return false;
-  }
-
-  function isSection(obj) {
-    if (!obj || typeof obj !== "object") return false;
-    return Array.isArray(obj.items) || Array.isArray(obj.sections);
-  }
-
-  function normalizeTree(data) {
-    // Accept:
-    // 1) { sections:[...] }
-    // 2) [{title, items:[...]}]  (array of sections)
-    // 3) { title, items:[...] } (single section)
-    if (!data) return null;
-
-    if (Array.isArray(data)) {
-      // Could be flat episodes OR list of sections
-      const looksLikeEpisodes = data.every(isEpisode);
-      if (looksLikeEpisodes) return null; // not a tree
-      // treat as sections array
-      return { title: "Sessions", sections: data.map(sec => ({
-        title: safeText(sec.title || "Folder"),
-        subtitle: safeText(sec.subtitle || ""),
-        items: sec.items || sec.sections || []
-      })) };
-    }
-
-    if (Array.isArray(data.sections)) {
-      return {
-        title: safeText(data.title || "Sessions"),
-        sections: data.sections.map(sec => ({
-          title: safeText(sec.title || "Folder"),
-          subtitle: safeText(sec.subtitle || ""),
-          items: sec.items || sec.sections || []
-        }))
-      };
-    }
-
-    if (Array.isArray(data.items)) {
-      return {
-        title: safeText(data.title || "Sessions"),
-        sections: [{
-          title: safeText(data.title || "Folder"),
-          subtitle: safeText(data.subtitle || ""),
-          items: data.items
-        }]
-      };
-    }
-
-    return null;
-  }
-
-  // ===== MASTER LOAD =====
-  async function loadJson(url) {
-    const r = await fetch(cacheBust(url), { cache: "no-store" });
-    if (!r.ok) return null;
-    return await r.json();
-  }
-
-  async function loadEpisodesMaster() {
-    // 1) Forced custom URL?
-    const forced = getParam("data");
-    let choice = null;
-
-    if (forced && forced.startsWith("url:")) {
-      const raw = forced.slice(4).trim();
-      if (raw) {
-        setPref("url:" + raw);
-        try {
-          const data = await loadJson(raw);
-          return { data, source: raw };
-        } catch (_) {}
-      }
-    }
-
-    // 2) Forced mobile/kodi via querystring?
-    if (forced === "mobile" || forced === "kodi") {
-      setPref(forced);
-      choice = forced;
-    } else {
-      // 3) Stored preference?
-      const p = getPref();
-      if (p) choice = p;
-    }
-
-    // Default to mobile
-    if (!choice) choice = "mobile";
-
-    // If stored pref is custom url
-    if (choice && choice.startsWith("url:")) {
-      const raw = choice.slice(4);
-      try {
-        const data = await loadJson(raw);
-        return { data, source: raw };
-      } catch (_) {
-        // fall through to normal
-      }
-    }
-
-    // Try preferred first, then the other
-    const order = (choice === "kodi")
-      ? ["kodi", "mobile"]
-      : ["mobile", "kodi"];
-
-    for (const key of order) {
-      const url = SOURCES[key];
-      try {
-        const data = await loadJson(url);
-        if (data) return { data, source: url, key };
-      } catch (_) {}
-    }
-
-    // Last resort: episodes.js
-    const fallback = window.EPISODES || window.episodes;
-    if (Array.isArray(fallback) || (fallback && typeof fallback === "object")) {
-      return { data: fallback, source: "episodes.js fallback" };
-    }
-
-    return null;
-  }
-
-  // ===== Core play =====
-  function playEpisode(ep, key) {
+  // ===== Play =====
+  function playEpisode(ep, keyForHighlight) {
     if (!ep || !ep.tracks || !ep.tracks.length) return;
 
     const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = ep.tracks.map(t => t && t.url).filter(Boolean);
+    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
 
-    // UI
     if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
     if (el.nowLine) {
       const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
@@ -321,13 +190,11 @@
     }
 
     ensurePlayerVisible();
-    highlightActive(key || "");
+    if (keyForHighlight) highlightActive(keyForHighlight);
 
-    // Set watch button
     const watchUrl = buildWatchUrl(ep);
     setWatchOnTv(watchUrl, mode === "playlist" ? "Open Playlist" : "Watch on YouTube");
 
-    // iframe permissions
     if (el.playerFrame) {
       el.playerFrame.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
       el.playerFrame.setAttribute("allowfullscreen", "true");
@@ -348,22 +215,56 @@
     if (el.playerFrame) el.playerFrame.src = src;
 
     if (mode === "playlist") {
-      setStatus(`Playlist loaded 🎟️ If it won’t play here, tap "Open Playlist" (YouTube blocks some embeds).`);
+      setStatus(`Playlist loaded 🎟️ If it won’t play in-app, tap “Open Playlist”.`);
+    } else {
+      setStatus(`${CURRENT_TITLE} • Showing ${Math.min(SHOWN, CURRENT_LIST.length)} of ${CURRENT_LIST.length}`);
     }
   }
 
   // ===== Cards =====
-  function buildEpisodeCard(ep, key, smallOverride) {
+  function buildSectionCard(section, idx) {
     const div = document.createElement("div");
     div.className = "ep";
     div.tabIndex = 0;
+
+    const key = `sec-${idx}-${(section.title || "").slice(0, 24)}`;
+    div.dataset.key = key;
+
+    const subtitle = safeText(section.subtitle);
+    const count = Array.isArray(section.items) ? section.items.length : 0;
+
+    div.innerHTML = `
+      <div class="epHead">
+        <div style="min-width:0">
+          <div class="epTitle">${safeText(section.title)}</div>
+          <div class="epMeta">${subtitle ? subtitle : ""}</div>
+          <div class="epSmall">${count} items</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+    `;
+
+    const open = () => pushView(section.title || "Folder", section.items || []);
+    div.addEventListener("click", open);
+    div.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+    });
+
+    return div;
+  }
+
+  function buildEpisodeCard(ep, idx) {
+    const div = document.createElement("div");
+    div.className = "ep";
+    div.tabIndex = 0;
+
+    const key = `ep-${idx}-${(ep.title || "").slice(0, 24)}`;
     div.dataset.key = key;
 
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
     const m = safeText(ep.mode).toLowerCase();
 
     const small =
-      smallOverride ||
       (m === "queue")
         ? `${(ep.tracks || []).length} tracks • stitched queue`
         : (m === "playlist")
@@ -384,229 +285,111 @@
     const activate = () => playEpisode(ep, key);
     div.addEventListener("click", activate);
     div.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        activate();
-      }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
     });
 
     return div;
   }
 
-  function buildFolderCard(section, key, subtitle) {
-    const div = document.createElement("div");
-    div.className = "ep";
-    div.tabIndex = 0;
-    div.dataset.key = key;
-
-    div.innerHTML = `
-      <div class="epHead">
-        <div style="min-width:0">
-          <div class="epTitle">${safeText(section.title || "Folder")}</div>
-          <div class="epMeta">${safeText(subtitle || section.subtitle || "")}</div>
-          <div class="epSmall">tap to open</div>
-        </div>
-        <div class="chev">›</div>
-      </div>
-    `;
-
-    const activate = () => openSection(section);
-    div.addEventListener("click", activate);
-    div.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        activate();
-      }
-    });
-
-    return div;
+  // ===== View Rendering =====
+  function updateBackButton() {
+    if (!el.backBtn) return;
+    const atRoot = VIEW_STACK.length === 0;
+    el.backBtn.style.display = atRoot ? "none" : "inline-flex";
   }
 
-  // ===== Play All (flat only) =====
-  function flattenPlayAll(list) {
-    const urls = [];
-    list.forEach(ep => {
-      const mode = safeText(ep.mode).toLowerCase();
-      if (mode === "playlist") return;
-      (ep.tracks || []).forEach(t => { if (t && t.url) urls.push(t.url); });
-    });
-    return urls;
-  }
-
-  function wirePlayAllButtonFlat(episodes) {
-    if (!el.playAllBtn) return;
-
-    el.playAllBtn.onclick = () => {
-      const urls = flattenPlayAll(episodes).filter(Boolean);
-      const src = buildEmbedForQueue(urls);
-      if (!src) {
-        setStatus("No playable items for Play All");
-        return;
-      }
-
-      if (el.nowTitle) el.nowTitle.textContent = "Play All";
-      if (el.nowLine) el.nowLine.textContent = "Playing all sessions (playlists skipped).";
-
-      const firstId = getVideoId(urls[0] || "");
-      setWatchOnTv(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "", "Watch on YouTube");
-
-      ensurePlayerVisible();
-      if (el.playerFrame) el.playerFrame.src = src;
-    };
-  }
-
-  // ===== Load More (flat only) =====
   function updateLoadMoreUI() {
     if (!el.loadMoreBtn) return;
-    const done = shownCount >= ALL.length;
-    el.loadMoreBtn.style.display = (ALL.length > PAGE_SIZE) ? "block" : "none";
+    const done = SHOWN >= CURRENT_LIST.length;
+    el.loadMoreBtn.style.display = (CURRENT_LIST.length > PAGE_SIZE) ? "block" : "none";
     el.loadMoreBtn.disabled = done;
     el.loadMoreBtn.textContent = done ? "All loaded" : "Load more";
   }
 
-  function renderNextBatchFlat() {
+  function renderNextBatch() {
     if (!el.episodes) return;
 
-    const next = ALL.slice(shownCount, shownCount + PAGE_SIZE);
-    next.forEach((ep, i) => {
-      const trueIndex = shownCount + i;
-      const key = `ep-${trueIndex}-${(ep.title || "").slice(0, 24)}`;
-      el.episodes.appendChild(buildEpisodeCard(ep, key));
+    const next = CURRENT_LIST.slice(SHOWN, SHOWN + PAGE_SIZE);
+
+    next.forEach((item, i) => {
+      const trueIndex = SHOWN + i;
+      if (isSection(item)) el.episodes.appendChild(buildSectionCard(item, trueIndex));
+      else if (isEpisode(item)) el.episodes.appendChild(buildEpisodeCard(item, trueIndex));
     });
 
-    shownCount += next.length;
+    SHOWN += next.length;
     updateLoadMoreUI();
-    setStatus(`Showing ${Math.min(shownCount, ALL.length)} of ${ALL.length}`);
+    setStatus(`${CURRENT_TITLE} • Showing ${Math.min(SHOWN, CURRENT_LIST.length)} of ${CURRENT_LIST.length}`);
   }
 
-  // ===== Tree Navigation =====
-  function currentNode() {
-    if (!NAV_STACK.length) return TREE;
-    return NAV_STACK[NAV_STACK.length - 1];
+  function renderView(title, list) {
+    CURRENT_TITLE = title || "Sessions";
+    CURRENT_LIST = Array.isArray(list) ? list : [];
+    SHOWN = 0;
+
+    if (el.episodes) el.episodes.innerHTML = "";
+    updateBackButton();
+
+    renderNextBatch();
+    setWatchOnTv("");
   }
 
-  function renderTreeNode(node) {
-    if (!el.episodes) return;
-    el.episodes.innerHTML = "";
+  function pushView(title, list) {
+    VIEW_STACK.push({ title: CURRENT_TITLE, list: CURRENT_LIST });
+    renderView(title, list);
+  }
 
-    // Hide load more in tree mode
-    if (el.loadMoreBtn) el.loadMoreBtn.style.display = "none";
-
-    // Play All in tree mode (optional): keep stable by hiding
-    if (el.playAllBtn) el.playAllBtn.style.display = "none";
-
-    const title = node && node.title ? node.title : "Sessions";
-    setStatus(title);
-
-    // Back item if deeper than root
-    if (NAV_STACK.length > 0) {
-      const back = document.createElement("div");
-      back.className = "ep";
-      back.tabIndex = 0;
-      back.innerHTML = `
-        <div class="epHead">
-          <div style="min-width:0">
-            <div class="epTitle">⬅ Back</div>
-            <div class="epMeta">${safeText(TREE.title || "Sessions")}</div>
-            <div class="epSmall">go up one level</div>
-          </div>
-          <div class="chev">›</div>
-        </div>
-      `;
-      const goBack = () => { NAV_STACK.pop(); renderTreeNode(currentNode()); };
-      back.addEventListener("click", goBack);
-      back.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); goBack(); }
-      });
-      el.episodes.appendChild(back);
-    }
-
-    // Node may have sections OR items
-    const sections = Array.isArray(node.sections) ? node.sections : null;
-    const items = Array.isArray(node.items) ? node.items : null;
-
-    if (sections) {
-      sections.forEach((sec, i) => {
-        const key = `sec-${NAV_STACK.length}-${i}-${(sec.title || "").slice(0, 18)}`;
-        el.episodes.appendChild(buildFolderCard(sec, key, sec.subtitle || ""));
-      });
+  function popView() {
+    const prev = VIEW_STACK.pop();
+    if (!prev) {
+      renderView("Sessions", ROOT_VIEW);
       return;
     }
+    renderView(prev.title, prev.list);
+  }
 
-    const list = items || [];
-    list.forEach((it, i) => {
-      const key = `node-${NAV_STACK.length}-${i}-${safeText(it.title || "item").slice(0, 18)}`;
-
-      if (isSection(it)) {
-        const sec = {
-          title: safeText(it.title || "Folder"),
-          subtitle: safeText(it.subtitle || ""),
-          items: it.items || it.sections || []
-        };
-        el.episodes.appendChild(buildFolderCard(sec, key, sec.subtitle));
-        return;
-      }
-
-      if (isEpisode(it)) {
-        el.episodes.appendChild(buildEpisodeCard(it, key));
-        return;
-      }
+  // ===== Play All (current view only) =====
+  function flattenPlayAll(list) {
+    const urls = [];
+    (list || []).forEach(item => {
+      if (!isEpisode(item)) return;
+      const mode = safeText(item.mode).toLowerCase();
+      if (mode === "playlist") return; // keep stable
+      (item.tracks || []).forEach(t => { if (t && t.url) urls.push(t.url); });
     });
+    return urls;
   }
 
-  function openSection(section) {
-    NAV_STACK.push(section);
-    renderTreeNode(section);
-  }
+  function wireButtons() {
+    if (el.loadMoreBtn) el.loadMoreBtn.addEventListener("click", renderNextBatch);
 
-  // ===== Init =====
-  async function init() {
-    try {
-      const loaded = await loadEpisodesMaster();
-      if (!loaded || !loaded.data) {
-        setStatus("No episode list found (JSON + fallback failed)");
-        return;
-      }
+    if (el.backBtn) el.backBtn.addEventListener("click", popView);
 
-      // Try tree first
-      const tree = normalizeTree(loaded.data);
-      if (tree) {
-        TREE = tree;
-        NAV_STACK = [];
-        setStatus(`Loaded ✅ (tree) from ${loaded.source}`);
-        if (el.playAllBtn) el.playAllBtn.style.display = "none";
-        renderTreeNode(TREE);
-        setWatchOnTv("");
-        return;
-      }
+    if (el.playAllBtn) {
+      el.playAllBtn.addEventListener("click", () => {
+        const urls = flattenPlayAll(CURRENT_LIST).filter(Boolean);
+        const src = buildEmbedForQueue(urls);
 
-      // Flat mode
-      if (!Array.isArray(loaded.data)) {
-        setStatus("Loaded data but format is unknown.");
-        return;
-      }
+        if (!src) {
+          setStatus("Nothing playable in this view for Play All");
+          return;
+        }
 
-      ALL = loaded.data;
-      shownCount = 0;
+        if (el.nowTitle) el.nowTitle.textContent = "Play All";
+        if (el.nowLine) el.nowLine.textContent = `Playing all in: ${CURRENT_TITLE}`;
 
-      if (el.episodes) el.episodes.innerHTML = "";
+        const firstId = getVideoId(urls[0] || "");
+        setWatchOnTv(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "", "Watch on YouTube");
 
-      if (el.playAllBtn) el.playAllBtn.style.display = "block";
-      wirePlayAllButtonFlat(ALL);
+        ensurePlayerVisible();
+        if (el.playerFrame) el.playerFrame.src = src;
 
-      if (el.loadMoreBtn) {
-        el.loadMoreBtn.onclick = renderNextBatchFlat;
-      }
-
-      setStatus(`Loaded ✅ (flat) from ${loaded.source} • ${ALL.length} items`);
-      renderNextBatchFlat();
-      setWatchOnTv("");
-    } catch (err) {
-      setStatus("App crashed");
-      console.error(err);
+        setStatus(`${CURRENT_TITLE} • Playing all`);
+      });
     }
   }
 
+  // ===== Player toggle =====
   function initPlayerToggle() {
     if (!el.toggleBtn) return;
 
@@ -623,6 +406,69 @@
     });
   }
 
+  // ===== Data Load =====
+  async function fetchJson(url) {
+    const r = await fetch(bust(url), { cache: "no-store" });
+    if (!r.ok) return null;
+    return await r.json();
+  }
+
+  async function loadData() {
+    // Overrides:
+    // ?data=mobile  or  ?data=kodi  or  ?data=url:https://site/file.json
+    const params = new URLSearchParams(window.location.search);
+    const pref = (params.get("data") || "").trim();
+
+    try {
+      if (pref.startsWith("url:")) {
+        const custom = pref.replace(/^url:/, "");
+        const j = await fetchJson(custom);
+        if (j) return { data: j, source: custom };
+      }
+
+      if (pref === "kodi") {
+        const j = await fetchJson(SOURCES.kodi);
+        if (j) return { data: j, source: SOURCES.kodi };
+      }
+
+      // default: mobile first
+      const mobile = await fetchJson(SOURCES.mobile);
+      if (mobile) return { data: mobile, source: SOURCES.mobile };
+
+      const kodi = await fetchJson(SOURCES.kodi);
+      if (kodi) return { data: kodi, source: SOURCES.kodi };
+    } catch (_) {}
+
+    // Final fallback: episodes.js
+    const fallback = window.EPISODES || window.episodes;
+    if (Array.isArray(fallback) || (fallback && Array.isArray(fallback.sections))) {
+      return { data: fallback, source: "episodes.js fallback" };
+    }
+
+    return null;
+  }
+
+  async function init() {
+    setStatus("Loading…");
+
+    const loaded = await loadData();
+    if (!loaded) {
+      setStatus("No data found (mobile + kodi + fallback failed)");
+      return;
+    }
+
+    ROOT_VIEW = normalizeToRootList(loaded.data);
+    VIEW_STACK = [];
+
+    wireButtons();
+
+    // Keep the top-level tiles (Artists / MTV / Tiny Desk / etc)
+    renderView("Sessions", ROOT_VIEW);
+
+    setStatus(`Loaded ✅ (${loaded.source})`);
+  }
+
+  // ===== Boot =====
   document.addEventListener("DOMContentLoaded", () => {
     initPlayerToggle();
     init();
