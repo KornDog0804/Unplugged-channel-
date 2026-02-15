@@ -1,5 +1,10 @@
-/* Joey’s Acoustic Corner — styles.css (FINAL)
-   Deep blacks + warm vinyl gold. Clean. Premium. No two-tone nonsense.
+/* Joey’s Acoustic Corner — styles.css (UPDATED + CLICK-SAFE)
+   Deep blacks + warm vinyl gold. Premium. Mobile-friendly.
+   FIXES:
+   - Removes Encore/blackout/overlay tap blockers
+   - Removes aggressive global pointer-events rules
+   - Matches your current HTML structure (playerShell / playerFrameWrap / #playerFrame)
+   - Keeps your slide styles but won't block clicks
 */
 
 :root{
@@ -13,8 +18,8 @@
   --muted: #B5B5B5;
   --muted2:#8A8A8A;
 
-  --gold: #C9A24D;       /* vinyl gold */
-  --gold2:#9E8742;       /* aged brass */
+  --gold: #C9A24D;
+  --gold2:#9E8742;
   --live: #C94A3A;
 
   --radius-lg: 24px;
@@ -35,6 +40,7 @@ body{
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden; /* helps slide transitions */
 }
 
 /* Links */
@@ -66,9 +72,7 @@ a:hover{ opacity:.95; }
 .brandMark{
   width:44px; height:44px;
   border-radius:14px;
-  background:
-    radial-gradient(12px 12px at 30% 30%, rgba(255,255,255,.18), transparent 60%),
-    linear-gradient(135deg, rgba(201,162,77,.95), rgba(158,135,66,.85));
+  background: url("./icon-192.png") center/cover no-repeat;
   box-shadow: 0 10px 26px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08) inset;
   flex:0 0 auto;
 }
@@ -125,7 +129,7 @@ a:hover{ opacity:.95; }
 }
 
 /* =========================
-   WRAP
+   WRAP (shared)
    ========================= */
 .wrap{
   max-width: var(--max);
@@ -138,6 +142,7 @@ a:hover{ opacity:.95; }
 /* =========================
    BUTTONS (shared)
    ========================= */
+.btn,
 .landingBtn{
   display:inline-flex;
   align-items:center;
@@ -150,300 +155,41 @@ a:hover{ opacity:.95; }
   background: rgba(255,255,255,.06);
   color: var(--text);
   cursor:pointer;
+  user-select:none;
+  -webkit-tap-highlight-color: transparent;
 }
 
+.btn:hover,
 .landingBtn:hover{
   border-color: rgba(201,162,77,.35);
   background: rgba(255,255,255,.075);
 }
 
+.btn.primary,
 .landingBtn.primary{
   border-color: rgba(201,162,77,.45);
   background: linear-gradient(90deg, rgba(201,162,77,.92), rgba(158,135,66,.88));
   color: #0B0B0D;
 }
 
+.btn.primary:hover,
 .landingBtn.primary:hover{
   filter: brightness(1.02);
 }
 
-/* =========================
-   PLAYER (sessions)
-   ========================= */
-.player-wrap{
-  border-radius: var(--radius-lg);
-  background: var(--panel);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: var(--shadow);
-  overflow:hidden;
+.btn.ghost{
+  background: rgba(0,0,0,.40);
+  border-color: rgba(255,255,255,.14);
 }
 
-.now-playing-title{
-  padding: 14px 14px 10px;
-  font-weight: 900;
-  font-size: 16px;
-  letter-spacing: .02em;
-}
-
-/* Player frame container */
-.tvFrame{
-  border-radius: var(--radius-lg);
-  overflow:hidden;
-  background: #000; /* important: keeps it premium + no bleed */
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-
-.tvTopBar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap: 12px;
-  padding: 10px 12px;
-  background: rgba(0,0,0,.92);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.tvLabel{
-  font-weight: 900;
-  letter-spacing:.08em;
-  text-transform: uppercase;
-  font-size: 12px;
-  color: rgba(255,255,255,.82);
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-
-.tvActions{
-  display:flex;
-  align-items:center;
-  gap: 10px;
-  flex-wrap:wrap;
-}
-
-/* Watch on TV button */
-.watchTvBtn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  letter-spacing:.2px;
-  border: 1px solid rgba(201,162,77,.35);
-  background: rgba(201,162,77,.12);
-  color: rgba(255,255,255,.92);
-}
-.watchTvBtn:hover{
-  background: rgba(201,162,77,.18);
-}
-
-/* Collapse/Expand button uses the same pill style */
-.sessionOverlayClose{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 10px 12px;
-  border-radius: 999px;
-  font-weight: 900;
-  letter-spacing:.2px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
-  cursor:pointer;
-}
-.sessionOverlayClose:hover{
-  border-color: rgba(201,162,77,.28);
-}
-
-/* Make player fill the black box properly */
-.playerFrameWrap{
-  position: relative;
-  width: 100%;
-  background: #000;
-  padding: 0;
-}
-
-/* make iframe ALWAYS fill */
-#playerFrame,
-.player-frame{
-  width: 100% !important;
-  height: 56.25vw;          /* 16:9 based on width */
-  max-height: 560px;        /* keeps it sane on big screens */
-  min-height: 220px;        /* keeps it usable on phones */
-  display:block;
-  border: 0;
-  background:#000;
-}
-
-/* footer line under player */
-.nowPlayingLine{
-  padding: 10px 14px 12px;
-  margin: 0;
-  font-size: 13px;
-  font-weight: 750;
-  color: rgba(255,255,255,.70);
-  background: rgba(0,0,0,.92);
-  border-top: 1px solid rgba(255,255,255,.08);
-}
-
-/* =========================
-   COLLAPSE PLAYER (app.js toggles body.playerCollapsed)
-   ========================= */
-body.playerCollapsed #playerFrameWrap{
-  display:none;
-}
-body.playerCollapsed #playerFrame{
-  display:none;
-}
-body.playerCollapsed .nowPlayingLine{
-  display:none;
-}
-body.playerCollapsed .now-playing-title{
-  opacity:.92;
-}
-
-/* =========================
-   SESSIONS LIST
-   ========================= */
-#sessionsList{
-  border-radius: var(--radius-lg);
-  background: var(--panel);
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: var(--shadow2);
-  overflow:hidden;
-}
-
-.sessionsHead{
-  display:flex;
-  align-items:flex-end;
-  justify-content:space-between;
-  gap:12px;
-  padding: 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-}
-
-.sessionsTitle{
-  font-size: 22px;
-  font-weight: 1000;
-  letter-spacing: -.01em;
-}
-
-.sessionsSub{
-  margin-top:4px;
-  color: var(--muted);
-  font-size: 13px;
-  max-width: 62ch;
-}
-
-#status{
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.55);
-  color: rgba(255,255,255,.84);
-  font-weight: 900;
-  font-size: 12px;
-  white-space:nowrap;
-}
-
-.playAllWrap{
-  padding: 0 12px 12px;
-}
-.playAllBtn{
+.btn.wide{
   width:100%;
-  border-radius: 16px;
-}
-
-/* Episode list */
-#episodes{
-  padding: 12px;
-  display:grid;
-  gap: 10px;
-}
-
-.ep{
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  padding: 12px 12px;
-  cursor:pointer;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
-  outline:none;
-}
-
-.ep:active{ transform: scale(.99); }
-
-.ep:hover{
-  border-color: rgba(201,162,77,.35);
-  background: rgba(255,255,255,.07);
-  box-shadow: 0 16px 46px rgba(0,0,0,.55);
-}
-
-.ep:focus{
-  border-color: rgba(201,162,77,.55);
-  box-shadow: 0 0 0 4px rgba(201,162,77,.14), 0 18px 50px rgba(0,0,0,.55);
-}
-
-.epHead{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.epTitle{
-  font-weight: 1000;
-  letter-spacing: -.01em;
-  font-size: 16px;
-  line-height: 1.2;
-}
-
-.epMeta{
-  margin-top:6px;
-  color: rgba(255,255,255,.72);
-  font-weight: 800;
-}
-
-.epSmall{
-  margin-top:6px;
-  font-size: 12px;
-  color: rgba(255,255,255,.55);
-  font-weight: 800;
-}
-
-.chev{
-  width: 34px;
-  height: 34px;
-  border-radius: 12px;
-  display:grid;
-  place-items:center;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.35);
-  color: rgba(255,255,255,.85);
-  font-size: 20px;
-  flex: 0 0 auto;
-}
-
-/* Active (playing) */
-.ep.isActive{
-  border-color: rgba(201,162,77,.55);
-  background:
-    radial-gradient(600px 220px at 25% 0%, rgba(201,162,77,.14), transparent 65%),
-    rgba(255,255,255,.05);
-  box-shadow: 0 0 0 3px rgba(201,162,77,.12), 0 18px 50px rgba(0,0,0,.55);
-}
-
-.epFeatured{
-  border-color: rgba(201,162,77,.30);
 }
 
 /* =========================
    LANDING PAGE (index)
    ========================= */
-body.landing{
-  background: var(--bg);
-}
+body.landing{ background: var(--bg); }
 
 .landingWrap{
   max-width: var(--max);
@@ -546,103 +292,233 @@ body.landing{
   .landingMini{ grid-template-columns: 1fr; }
 }
 
-/* =========================
-   Back button in sessions
-   ========================= */
-.focusToggleBtn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap: 10px;
-  padding: 12px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
-  font-weight: 900;
-  width: fit-content;
-  margin: 0 auto;
-  box-shadow: 0 14px 40px rgba(0,0,0,.35);
-}
-.focusToggleBtn:hover{
-  border-color: rgba(201,162,77,.28);
-}
-
-/* Mobile touch smoothing */
-@media (max-width: 420px){
-  .title{ font-size: 14px; }
-  .sessionsTitle{ font-size: 20px; }
-  .epTitle{ font-size: 15px; }
-  #playerFrame{ min-height: 210px; }
-}
-.installBtn {
+/* Install button (fixed, but safe) */
+.installBtn{
   position: fixed;
   bottom: 18px;
   right: 18px;
-  z-index: 9999;
-
+  z-index: 200;
   padding: 12px 18px;
   border-radius: 999px;
-
   background: linear-gradient(135deg, #7cffb2, #4ddc7c);
   color: #0b0f0c;
-  font-weight: 700;
+  font-weight: 900;
   font-size: 14px;
-
   border: none;
   box-shadow: 0 10px 30px rgba(0,0,0,.35);
   cursor: pointer;
 }
+.installBtn:hover{ transform: translateY(-1px); }
 
-.installBtn:hover {
-  transform: translateY(-1px);
+/* =========================
+   SESSIONS PAGE
+   ========================= */
+
+/* Player shell */
+.playerShell{
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 14px;
+  display:grid;
+  gap: 12px;
 }
-.brandMark {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: url("./icon-192.png") center/cover no-repeat;
-  box-shadow: 0 10px 30px rgba(0,0,0,.45);
+
+.playerTop{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap: 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,.10);
+  background: var(--panel);
+  box-shadow: var(--shadow2);
+  padding: 12px 12px;
 }
-.encoreBlackout{
-  position: fixed;
-  inset: 0;
+
+.npBlock{ min-width: 0; }
+.npTitle{
+  font-weight: 1000;
+  letter-spacing: .02em;
+  font-size: 14px;
+  color: rgba(255,255,255,.86);
+}
+.npLine{
+  margin-top: 6px;
+  font-weight: 800;
+  color: rgba(255,255,255,.72);
+  font-size: 13px;
+}
+
+.npBtns{
+  display:flex;
+  gap: 10px;
+  align-items:center;
+  flex-wrap:wrap;
+  flex: 0 0 auto;
+}
+
+/* Player frame wrap */
+.playerFrameWrap{
+  border-radius: var(--radius-lg);
+  overflow:hidden;
   background: #000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 700ms ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: var(--shadow2);
 }
 
-.encoreBlackout.on{
-  opacity: 1;
-  pointer-events: all;
+/* iframe fills */
+#playerFrame{
+  width: 100%;
+  height: 56.25vw;   /* 16:9 */
+  max-height: 560px;
+  min-height: 220px;
+  display:block;
+  border:0;
+  background:#000;
 }
 
-.encoreText{
+/* status line */
+.statusLine{
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.55);
+  color: rgba(255,255,255,.84);
+  font-weight: 900;
+  font-size: 12px;
+  white-space:nowrap;
+}
+
+/* Collapse behavior (matches your real markup) */
+body.playerCollapsed .playerFrameWrap{ display:none; }
+body.playerCollapsed #playerFrame{ display:none; }
+
+/* List header */
+.listHead{
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,.10);
+  background: var(--panel);
+  box-shadow: var(--shadow2);
+  padding: 14px;
+}
+
+.listTitle{
   font-size: 22px;
-  letter-spacing: 1px;
-  text-align: center;
-  padding: 14px 18px;
-  border-radius: 14px;
-  background: rgba(0,0,0,0.35);
+  font-weight: 1000;
+  letter-spacing: -.01em;
 }
-/* ===== Slide Navigation (Mobile App Feel) ===== */
 
+.listSub{
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 62ch;
+}
+
+/* Episodes list container */
+#episodes{
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255,255,255,.10);
+  background: var(--panel);
+  box-shadow: var(--shadow2);
+  padding: 12px;
+  display:grid;
+  gap: 10px;
+}
+
+/* Episode card */
+.ep{
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  padding: 12px 12px;
+  cursor:pointer;
+  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
+  outline:none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ep:active{ transform: scale(.99); }
+.ep:hover{
+  border-color: rgba(201,162,77,.35);
+  background: rgba(255,255,255,.07);
+  box-shadow: 0 16px 46px rgba(0,0,0,.55);
+}
+.ep:focus{
+  border-color: rgba(201,162,77,.55);
+  box-shadow: 0 0 0 4px rgba(201,162,77,.14), 0 18px 50px rgba(0,0,0,.55);
+}
+
+.epHead{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:12px;
+}
+
+.epTitle{
+  font-weight: 1000;
+  letter-spacing: -.01em;
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.epMeta{
+  margin-top:6px;
+  color: rgba(255,255,255,.72);
+  font-weight: 800;
+}
+
+.epSmall{
+  margin-top:6px;
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+  font-weight: 800;
+}
+
+.chev{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.35);
+  color: rgba(255,255,255,.85);
+  font-size: 20px;
+  flex: 0 0 auto;
+}
+
+/* Active (playing) */
+.ep.isActive{
+  border-color: rgba(201,162,77,.55);
+  background:
+    radial-gradient(600px 220px at 25% 0%, rgba(201,162,77,.14), transparent 65%),
+    rgba(255,255,255,.05);
+  box-shadow: 0 0 0 3px rgba(201,162,77,.12), 0 18px 50px rgba(0,0,0,.55);
+}
+.epFeatured{ border-color: rgba(201,162,77,.30); }
+
+/* back row */
+.backRow{
+  display:flex;
+  justify-content:flex-start;
+}
+
+/* =========================
+   Slide Navigation (Mobile App Feel)
+   (kept, but SAFE)
+   ========================= */
 #viewWrap {
   position: relative;
   overflow: hidden;
 }
 
-/* This is the element that holds ONE "page" at a time */
 #view {
   will-change: transform;
 }
 
-/* We create a temporary incoming page and slide it */
+/* Incoming page */
 .slidePage {
   position: absolute;
   inset: 0;
@@ -651,19 +527,10 @@ body.landing{
   will-change: transform;
 }
 
-/* Animations */
-.slide-in-left {
-  animation: slideInLeft 220ms ease-out forwards;
-}
-.slide-out-left {
-  animation: slideOutLeft 220ms ease-out forwards;
-}
-.slide-in-right {
-  animation: slideInRight 220ms ease-out forwards;
-}
-.slide-out-right {
-  animation: slideOutRight 220ms ease-out forwards;
-}
+.slide-in-left { animation: slideInLeft 220ms ease-out forwards; }
+.slide-out-left { animation: slideOutLeft 220ms ease-out forwards; }
+.slide-in-right { animation: slideInRight 220ms ease-out forwards; }
+.slide-out-right { animation: slideOutRight 220ms ease-out forwards; }
 
 @keyframes slideInLeft {
   from { transform: translateX(100%); }
@@ -671,7 +538,7 @@ body.landing{
 }
 @keyframes slideOutLeft {
   from { transform: translateX(0%); }
-  to   { transform: translateX(-25%); } /* slight parallax vibe */
+  to   { transform: translateX(-25%); }
 }
 @keyframes slideInRight {
   from { transform: translateX(-25%); }
@@ -681,56 +548,19 @@ body.landing{
   from { transform: translateX(0%); }
   to   { transform: translateX(100%); }
 }
-/* make sure nothing invisible blocks taps */
-.playerFrameWrap,
-.playerShell,
-.top {
-  pointer-events: auto;
+
+/* =========================
+   Mobile tuning
+   ========================= */
+@media (max-width: 420px){
+  .title{ font-size: 14px; }
+  .listTitle{ font-size: 20px; }
+  .epTitle{ font-size: 15px; }
+  #playerFrame{ min-height: 210px; }
 }
 
-#episodes, .episodes, .ep {
-  pointer-events: auto;
-}
-
-.playerFrameWrap iframe {
-  pointer-events: auto;
-}
-
-/* common culprit: some overlay/div with position fixed */
-.backdrop,
-.overlay,
-.landing,
-.heroGlow {
-  pointer-events: none;
-}
-/* --- CLICK FIX: stop invisible overlays from blocking taps --- */
-
-/* If you use any fullscreen overlay layers, they must not capture taps */
-body::before,
-body::after,
-.landing::before,
-.landing::after,
-.sessions::before,
-.sessions::after,
-.overlay,
-.bg,
-.backdrop,
-.heroBg,
-.noise,
-.grain,
-.glowLayer {
-  pointer-events: none !important;
-}
-
-/* Make sure real UI can receive taps */
-a, button, .btn, .landingBtn, .epCard {
-  pointer-events: auto !important;
-  position: relative;
-  z-index: 50;
-}
-
-/* If your header/hero has decorative layers, keep them behind content */
-.top, .landingWrap, .wrap, main, .landingHero, .playerShell {
-  position: relative;
-  z-index: 10;
-}
+/* =========================
+   IMPORTANT:
+   DO NOT use global pointer-events:none on body::before etc.
+   That is what breaks clicking. Keep this file clean.
+   ========================= */
