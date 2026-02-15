@@ -3,129 +3,96 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Joey’s Acoustic Corner — Sessions</title>
+  <title>Sessions • Joey’s Acoustic Corner</title>
 
-  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="./styles.css" />
 
   <!-- PWA -->
-  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#07070a">
-  <meta name="description" content="Stripped & unplugged sessions — handpicked only. Queues stitch tracks together automatically.">
+  <meta name="description" content="Stripped & unplugged sessions — handpicked only.">
 
   <!-- iOS add-to-home -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
   <!-- Favicons -->
-  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
-  <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 </head>
 
 <body class="sessions">
 
-<header class="top">
-  <div class="brand">
-    <div class="brandMark"></div>
-    <div class="brandText">
-      <div class="titleRow">
-        <div class="title">JOEY’S ACOUSTIC CORNER</div>
-        <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
-      </div>
-      <div class="sub">
-        <span class="subStrong">Stripped & unplugged sessions</span>
-        <span class="subSep">—</span>
-        <span>handpicked only.</span>
+  <header class="top">
+    <div class="brand">
+      <div class="brandMark"></div>
+      <div class="brandText">
+        <div class="titleRow">
+          <div class="title">JOEY’S ACOUSTIC CORNER</div>
+          <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
+        </div>
+        <div class="sub">
+          <span class="subStrong">Stripped &amp; unplugged sessions</span>
+          <span class="subSep">—</span>
+          <span>handpicked only.</span>
+        </div>
       </div>
     </div>
-  </div>
-</header>
+  </header>
 
-<main class="wrap">
+  <main class="appWrap">
 
-  <a href="/index.html" class="focusToggleBtn" style="justify-content:center;">
-    ← Back to home
-  </a>
+    <!-- Player -->
+    <section class="playerShell">
+      <div class="playerTop">
+        <div class="playerLeft">
+          <div class="playerTitle" id="nowPlayingTitle">Now Playing</div>
+          <div class="playerLine" id="nowPlayingLine"></div>
+        </div>
 
-  <!-- PLAYER -->
-  <section id="playerWrap" class="player-wrap player-wrap--collapsible">
-    <div class="now-playing-title" id="nowPlayingTitle">Now Playing</div>
-
-    <div class="tvFrame">
-      <div class="tvTopBar">
-        <div class="tvLabel">JOEY’S ACOUSTIC CORNER</div>
-
-        <div class="tvActions">
-          <a id="watchOnTvBtn" class="watchTvBtn" href="#" target="_blank" rel="noopener">
-            Watch on TV
-          </a>
-
-          <button
-            id="playerToggleBtn"
-            class="sessionOverlayClose"
-            type="button"
-            aria-expanded="false"
-          >
-            Show player
-          </button>
+        <div class="playerRight">
+          <a id="watchOnTvBtn" class="watchBtn" href="#" target="_blank" rel="noopener">Watch on TV</a>
+          <button id="playerToggleBtn" class="toggleBtn" type="button">Show player</button>
         </div>
       </div>
 
-      <div class="playerFrameWrap" id="playerFrameWrap">
+      <div class="playerFrameWrap">
         <iframe
           id="playerFrame"
-          class="player-frame"
-          src=""
           title="Player"
+          frameborder="0"
+          referrerpolicy="strict-origin-when-cross-origin"
           allow="autoplay; encrypted-media; picture-in-picture"
-          allowfullscreen>
-        </iframe>
+          allowfullscreen
+        ></iframe>
       </div>
 
-      <div id="nowPlayingLine" class="nowPlayingLine">
-        Playing now.
+      <div class="statusRow">
+        <div id="status" class="status"></div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- LIST -->
-  <section id="sessionsList">
-    <div class="sessionsHead">
-      <div>
-        <div class="sessionsTitle">Sessions</div>
-        <div class="sessionsSub">
-          Pick a set. If it’s a queue, it stitches tracks together for you.
-        </div>
+    <!-- Slides container required by the new app.js -->
+    <section class="listShell">
+      <div id="viewWrap">
+        <div id="view"></div>
       </div>
-      <div id="status">Loading…</div>
-    </div>
+    </section>
 
-    <div class="playAllWrap">
-      <button id="playAllBtn" class="landingBtn playAllBtn" type="button">
-        Play All
-      </button>
-    </div>
+  </main>
 
-    <div id="episodes"></div>
+  <script>
+    // SW (safe if missing)
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      });
+    }
+  </script>
 
-    <div class="playAllWrap" style="padding-top:6px;">
-      <button id="loadMoreBtn" class="landingBtn playAllBtn" type="button">
-        Load more
-      </button>
-    </div>
-  </section>
-
-</main>
-
-<!-- DATA FIRST -->
-<script src="/data/episodes.js"></script>
-
-<!-- ✅ REQUIRED for Brad-only Encore logic -->
-<script src="https://www.youtube.com/iframe_api"></script>
-
-<!-- APP LAST -->
-<script src="/app.js"></script>
-
+  <!-- Your new app.js goes here -->
+  <script src="./app.js"></script>
 </body>
 </html>
