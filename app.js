@@ -1,4 +1,4 @@
-/* Joey’s Acoustic Corner — app.js (mobile-first + track drill-down + playlist fix)
+/* Joey’s Acoustic Corner — app.js (defensive + mobile-first)
    Expects: sessions.html has these IDs:
    #episodes, #playAllBtn, #loadMoreBtn, #status,
    #playerFrame, #playerToggleBtn,
@@ -11,6 +11,10 @@
   // ==== CONFIG ====
   const DATA_CANDIDATES = ["./episodes_mobile.json", "./episodes.json", "./episodes_mobile.json"];
   const PAGE_SIZE = 24;
+
+  // Playlist embeds are flaky across mobile + iOS + some WebViews.
+  // Force playlists to OPEN externally instead of embedding.
+  const PLAYLISTS_OPEN_EXTERNALLY = true;
 
   // ==== DOM ====
   const $episodes = document.getElementById("episodes");
@@ -28,15 +32,9 @@
 
   // ==== STATE ====
   let ROOT = null;
-  let viewStack = [];           // navigation nodes (folders)
+  let viewStack = [];
   let renderLimit = PAGE_SIZE;
-
-  // Track drill-down state
-  let trackView = null;         // { parentNode, tracks:[{title,url}], title, subtitle }
-  let trackRenderLimit = PAGE_SIZE;
-
-  // Player
-  let currentQueue = [];        // [{title,url}]
+  let currentQueue = [];        // array of {title,url,kind}
   let currentQueueIndex = 0;
   let playerVisible = false;
   let currentWatchUrl = "";
@@ -60,13 +58,12 @@
       .replaceAll("'", "&#039;");
   }
 
-  // ==== YOUTUBE PARSING (defensive) ====
+  // ==== YOUTUBE PARSING ====
   function parseYouTube(url) {
-    // Returns: { kind: "video"|"playlist"|"unknown", id, list, watchUrl, embedUrl }
     try {
       const u = new URL(url);
 
-      // youtube.com/playlist?list=...
+      // Playlist
       if (u.pathname.includes("/playlist") && u.searchParams.get("list")) {
         const list = u.searchParams.get("list");
         return {
@@ -75,31 +72,6 @@
           watchUrl: `https://www.youtube.com/playlist?list=${list}`,
           embedUrl: `https://www.youtube.com/embed/videoseries?list=${list}`
         };
-      }
-
-      // youtube.com/watch?v=... (&list= optional)
-      if (u.pathname.includes("/watch")) {
-        const id = u.searchParams.get("v");
-        const list = u.searchParams.get("list");
-
-        // If someone pasted a watch URL that is really meant to be playlist-only
-        if (!id && list) {
-          return {
-            kind: "playlist",
-            list,
-            watchUrl: `https://www.youtube.com/playlist?list=${list}`,
-            embedUrl: `https://www.youtube.com/embed/videoseries?list=${list}`
-          };
-        }
-
-        if (id) {
-          return {
-            kind: "video",
-            id,
-            watchUrl: `https://www.youtube.com/watch?v=${id}${list ? `&list=${list}` : ""}`,
-            embedUrl: `https://www.youtube.com/embed/${id}`
-          };
-        }
       }
 
       // youtu.be/<id>
@@ -115,26 +87,27 @@
         }
       }
 
-      // Already-embed playlist (videoseries)
-      if (u.pathname.includes("/embed/videoseries") && u.searchParams.get("list")) {
+      // youtube.com/watch?v=<id>
+      if (u.pathname.includes("/watch") && u.searchParams.get("v")) {
+        const id = u.searchParams.get("v");
         const list = u.searchParams.get("list");
         return {
-          kind: "playlist",
-          list,
-          watchUrl: `https://www.youtube.com/playlist?list=${list}`,
-          embedUrl: `https://www.youtube.com/embed/videoseries?list=${list}`
+          kind: "video",
+          id,
+          watchUrl: `https://www.youtube.com/watch?v=${id}${list ? `&list=${list}` : ""}`,
+          embedUrl: `https://www.youtube.com/embed/${id}`
         };
       }
 
-      // /embed/<id>, /live/<id>, etc.
+      // fallback: /live/<id> /embed/<id> etc.
       const parts = u.pathname.split("/").filter(Boolean);
-      const last = parts[parts.length - 1];
-      if (last && last.length >= 8) {
+      const possibleId = parts[parts.length - 1];
+      if (possibleId && possibleId.length >= 8) {
         return {
           kind: "video",
-          id: last,
-          watchUrl: `https://www.youtube.com/watch?v=${last}`,
-          embedUrl: `https://www.youtube.com/embed/${last}`
+          id: possibleId,
+          watchUrl: `https://www.youtube.com/watch?v=${possibleId}`,
+          embedUrl: `https://www.youtube.com/embed/${possibleId}`
         };
       }
     } catch (_) {}
@@ -160,11 +133,18 @@
       if (Array.isArray(raw.items)) return raw;
       if (Array.isArray(raw.data)) return { title: "Sessions", mode: "folder", items: raw.data };
     }
-    throw new Error("JSON root must be an array or object with .items array.");
+    throw new Error("JSON root must be an array or an object with an .items array.");
   }
 
   function isFolder(node) {
     return node && (node.mode === "folder" || Array.isArray(node.items));
+  }
+
+  function isPlayableNode(node) {
+    if (!node || typeof node !== "object") return false;
+    if (node.mode === "queue" || node.mode === "fullshow" || node.mode === "playlist") return true;
+    if (Array.isArray(node.tracks) && node.tracks.some(t => t && t.url)) return true;
+    return false;
   }
 
   function getNodeItems(folderNode) {
@@ -178,22 +158,12 @@
     return node?.title || node?.artist || "Untitled";
   }
 
-  function isPlayableNode(node) {
-    if (!node || typeof node !== "object") return false;
-    if (node.mode === "queue" || node.mode === "fullshow" || node.mode === "playlist") return true;
-    if (Array.isArray(node.tracks) && node.tracks.some(t => t && t.url)) return true;
-    if (node.url) return true;
-    return false;
-  }
-
   // ==== NAV / HISTORY ====
   function currentNode() {
     return viewStack[viewStack.length - 1] || ROOT;
   }
 
   function pushView(node) {
-    trackView = null;                 // leaving track view
-    trackRenderLimit = PAGE_SIZE;
     viewStack.push(node);
     renderLimit = PAGE_SIZE;
     render();
@@ -201,13 +171,6 @@
   }
 
   function popView() {
-    if (trackView) {
-      // If we are in track drill-down, back goes to the folder list
-      trackView = null;
-      trackRenderLimit = PAGE_SIZE;
-      render();
-      return;
-    }
     if (viewStack.length > 1) {
       viewStack.pop();
       renderLimit = PAGE_SIZE;
@@ -222,18 +185,7 @@
     if (location.hash !== hash) history.replaceState(null, "", `${location.pathname}${hash}`);
   }
 
-  // ==== PLAYABLE COLLECTION ====
-  function getPlaylistUrlFromNode(node) {
-    // playlist URL can live in: node.url OR node.tracks[0].url
-    if (!node) return "";
-    if (node.url) return node.url;
-    if (Array.isArray(node.tracks)) {
-      const first = node.tracks.find(t => t?.url);
-      if (first?.url) return first.url;
-    }
-    return "";
-  }
-
+  // ==== QUEUE BUILDING ====
   function collectPlayableFromNode(node) {
     if (!node) return [];
 
@@ -245,26 +197,30 @@
 
     const tracks = Array.isArray(node.tracks) ? node.tracks : [];
 
+    // ✅ playlist: use FIRST track URL (your JSON stores it there)
     if (node.mode === "playlist") {
-      const url = getPlaylistUrlFromNode(node);
-      return url ? [{ title: safeTitle(node), url }] : [];
+      const first = tracks.find(t => t?.url);
+      if (first?.url) return [{ title: first.title || safeTitle(node), url: first.url, kind: "playlist" }];
+      if (node.url) return [{ title: safeTitle(node), url: node.url, kind: "playlist" }];
+      return [];
     }
 
     if (node.mode === "fullshow") {
       const first = tracks.find(t => t?.url);
-      return first ? [{ title: safeTitle(node), url: first.url }] : [];
+      return first ? [{ title: safeTitle(node), url: first.url, kind: "video" }] : [];
     }
 
     if (node.mode === "queue") {
-      return tracks.filter(t => t?.url).map(t => ({ title: t.title || safeTitle(node), url: t.url }));
+      return tracks
+        .filter(t => t && t.url)
+        .map(t => ({ title: t.title || safeTitle(node), url: t.url, kind: "video" }));
     }
 
-    // generic
     if (tracks.length) {
-      return tracks.filter(t => t?.url).map(t => ({ title: t.title || safeTitle(node), url: t.url }));
+      return tracks
+        .filter(t => t && t.url)
+        .map(t => ({ title: t.title || safeTitle(node), url: t.url, kind: "video" }));
     }
-
-    if (node.url) return [{ title: safeTitle(node), url: node.url }];
 
     return [];
   }
@@ -273,35 +229,11 @@
     const node = currentNode();
     const items = getNodeItems(node);
     const out = [];
-    for (const it of items) out.push(...collectPlayableFromNode(it));
+    for (const it of items) {
+      if (isFolder(it)) out.push(...collectPlayableFromNode(it));
+      else if (isPlayableNode(it)) out.push(...collectPlayableFromNode(it));
+    }
     return out;
-  }
-
-  // ==== TRACK DRILL-DOWN ====
-  function openTrackView(node) {
-    const tracks = collectPlayableFromNode(node);
-
-    if (!tracks.length) {
-      setStatus("No playable tracks found in that item.");
-      return;
-    }
-
-    // If it’s a playlist or fullshow (single item), just play it immediately
-    if (node.mode === "playlist" || node.mode === "fullshow" || tracks.length === 1) {
-      currentQueue = tracks;
-      playTrackAt(0, true);
-      return;
-    }
-
-    // For queues (multi-track), show track list
-    trackView = {
-      parentNode: node,
-      title: safeTitle(node),
-      subtitle: node.artist ? node.artist : (node.year ? String(node.year) : ""),
-      tracks
-    };
-    trackRenderLimit = PAGE_SIZE;
-    render();
   }
 
   // ==== PLAYER CONTROL ====
@@ -311,7 +243,22 @@
     document.body.classList.toggle("playerOpen", playerVisible);
 
     if (!playerVisible && $playerFrame) $playerFrame.src = "";
-    if (playerVisible && currentQueue.length) playTrackAt(currentQueueIndex, false);
+    else if (playerVisible && currentQueue.length) playTrackAt(currentQueueIndex, false);
+  }
+
+  function showOpenExternallyMessage(title, watchUrl) {
+    // Don’t fight the platform. Tell it like it is.
+    if ($playerFrame) {
+      $playerFrame.src = "about:blank";
+    }
+    setNowPlaying("Open in YouTube / SmartTube", title);
+    setStatus("This playlist opens externally (more reliable than embeds).");
+    if ($watchOnTvBtn) {
+      $watchOnTvBtn.href = watchUrl;
+      $watchOnTvBtn.style.display = "inline-flex";
+      $watchOnTvBtn.textContent = "Open Playlist";
+    }
+    if (!playerVisible) showPlayer(true);
   }
 
   function playTrackAt(index, autoplay = true) {
@@ -327,6 +274,13 @@
     if ($watchOnTvBtn) {
       $watchOnTvBtn.href = currentWatchUrl;
       $watchOnTvBtn.style.display = "inline-flex";
+      $watchOnTvBtn.textContent = "Watch on TV";
+    }
+
+    // ✅ If playlist: open externally (prevents “This video is unavailable” embeds)
+    if ((track.kind === "playlist" || info.kind === "playlist") && PLAYLISTS_OPEN_EXTERNALLY) {
+      showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl);
+      return;
     }
 
     const embed = buildEmbed(track.url, autoplay);
@@ -344,13 +298,6 @@
 
   // ==== RENDERING ====
   function render() {
-    // TRACK VIEW (drill-down)
-    if (trackView) {
-      renderTrackList();
-      return;
-    }
-
-    // FOLDER VIEW
     const node = currentNode();
     const items = getNodeItems(node);
 
@@ -358,6 +305,7 @@
 
     const visible = items.slice(0, renderLimit);
     const html = visible.map(renderCard).join("");
+
     $episodes.innerHTML = html || `<div class="empty">Nothing here yet.</div>`;
 
     if ($loadMoreBtn) {
@@ -371,83 +319,17 @@
     setStatus(path.length ? `In: ${path.join(" / ")}` : `Showing ${Math.min(items.length, renderLimit)} of ${items.length}`);
   }
 
-  function renderTrackList() {
-    const tv = trackView;
-    const tracks = tv.tracks || [];
-    const visible = tracks.slice(0, trackRenderLimit);
-
-    setNowPlaying("Now Playing", `Tracks: ${tv.title}`);
-
-    const header = `
-      <div class="trackHeader">
-        <button class="trackBackBtn" type="button">← Back</button>
-        <div class="trackHeaderText">
-          <div class="trackHeaderTitle">${escapeHtml(tv.title)}</div>
-          ${tv.subtitle ? `<div class="trackHeaderSub">${escapeHtml(tv.subtitle)}</div>` : ""}
-          <div class="trackHeaderSmall">${tracks.length} tracks • tap one to play</div>
-        </div>
-      </div>
-    `;
-
-    const rows = visible.map((t, i) => `
-      <div class="trackRow" data-track-idx="${i}">
-        <div class="trackRowTitle">${escapeHtml(t.title || `Track ${i + 1}`)}</div>
-        <div class="trackRowChevron">▶</div>
-      </div>
-    `).join("");
-
-    const footer = `
-      <div class="trackFooter">
-        <button class="trackPlayAllBtn" type="button">Play All</button>
-        ${tracks.length > trackRenderLimit ? `<button class="trackMoreBtn" type="button">Load more</button>` : ""}
-      </div>
-    `;
-
-    $episodes.innerHTML = header + rows + footer;
-
-    // Hide the main Load More button while in track view
-    if ($loadMoreBtn) $loadMoreBtn.style.display = "none";
-
-    // Wire actions
-    const backBtn = document.querySelector(".trackBackBtn");
-    backBtn?.addEventListener("click", () => popView());
-
-    document.querySelectorAll(".trackRow").forEach(row => {
-      row.addEventListener("click", () => {
-        const idx = Number(row.getAttribute("data-track-idx"));
-        const picked = tracks[idx];
-        if (!picked) return;
-
-        currentQueue = tracks;     // keep whole queue available
-        playTrackAt(idx, true);    // start at selected track
-      }, { passive: true });
-    });
-
-    const playAll = document.querySelector(".trackPlayAllBtn");
-    playAll?.addEventListener("click", () => {
-      if (!tracks.length) return;
-      currentQueue = tracks;
-      playTrackAt(0, true);
-    });
-
-    const more = document.querySelector(".trackMoreBtn");
-    more?.addEventListener("click", () => {
-      trackRenderLimit += PAGE_SIZE;
-      render();
-    });
-
-    setStatus(`In tracks: ${tv.title}`);
-  }
-
   function renderCard(node, idx) {
     const title = escapeHtml(safeTitle(node));
     const subtitleBits = [];
+
     if (node.artist) subtitleBits.push(escapeHtml(node.artist));
     if (node.year) subtitleBits.push(escapeHtml(node.year));
+
     const subtitle = subtitleBits.join(" • ");
 
     const small =
-      node.mode === "playlist" ? "playlist • opens as series" :
+      node.mode === "playlist" ? "playlist • opens externally" :
       node.mode === "queue" ? `${(node.tracks?.length ?? 0)} tracks • tap to choose` :
       node.mode === "fullshow" ? "full show" :
       node.mode === "folder" ? `${(node.items?.length ?? 0)} items` :
@@ -455,7 +337,7 @@
 
     const icon = escapeHtml(node.icon || "");
     return `
-      <div class="epCard" data-idx="${String(idx)}">
+      <div class="epCard" data-idx="${String(idx)}" role="button" tabindex="0">
         <div class="epMain">
           <div class="epTitle">${icon ? icon + " " : ""}${title}</div>
           ${subtitle ? `<div class="epMeta">${subtitle}</div>` : ""}
@@ -471,7 +353,7 @@
     const items = getNodeItems(node);
 
     document.querySelectorAll(".epCard").forEach(card => {
-      card.addEventListener("click", () => {
+      const handler = () => {
         const i = Number(card.getAttribute("data-idx"));
         const chosen = items[i];
         if (!chosen) return;
@@ -482,13 +364,23 @@
         }
 
         if (isPlayableNode(chosen)) {
-          // IMPORTANT: queue should open tracks view, not force autoplay
-          openTrackView(chosen);
+          const q = collectPlayableFromNode(chosen);
+          if (!q.length) {
+            setStatus("No playable tracks found in that item.");
+            return;
+          }
+          currentQueue = q;
+          playTrackAt(0, true);
           return;
         }
 
         setStatus("That item isn’t playable (missing mode/tracks).");
-      }, { passive: true });
+      };
+
+      card.addEventListener("click", handler, { passive: true });
+      card.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") handler();
+      });
     });
   }
 
@@ -505,9 +397,9 @@
     for (const url of DATA_CANDIDATES) {
       try {
         const raw = await fetchJson(url);
-        ROOT = normalizeRoot(raw);
+        const norm = normalizeRoot(raw);
+        ROOT = norm;
         viewStack = [ROOT];
-        trackView = null;
         setStatus(`Loaded: ${url}`);
         render();
         return;
@@ -539,13 +431,19 @@
   }
 
   if ($playerToggleBtn) {
-    $playerToggleBtn.addEventListener("click", () => showPlayer(!playerVisible));
+    $playerToggleBtn.addEventListener("click", () => {
+      showPlayer(!playerVisible);
+    });
   }
 
-  if ($watchOnTvBtn) $watchOnTvBtn.style.display = "none";
+  if ($watchOnTvBtn) {
+    $watchOnTvBtn.style.display = "none";
+  }
 
   // ==== SWIPE BACK (mobile) ====
-  let touchStartX = 0, touchStartY = 0, touchActive = false;
+  let touchStartX = 0;
+  let touchStartY = 0;
+  let touchActive = false;
 
   window.addEventListener("touchstart", (e) => {
     if (!e.touches || !e.touches[0]) return;
@@ -567,7 +465,7 @@
     if (Math.abs(dx) < 60) return;
     if (Math.abs(dy) > 70) return;
 
-    if (dx > 0) popView(); // swipe right = back
+    if (dx > 0) popView();
   }, { passive: true });
 
   // ==== INIT ====
