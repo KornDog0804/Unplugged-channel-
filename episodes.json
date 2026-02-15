@@ -80,6 +80,7 @@
       { "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }
     ]
   },
+
   {
     "title": "Wage War — Acoustic Queue (6 Songs)",
     "artist": "Wage War",
@@ -94,6 +95,7 @@
       { "title": "Johnny Cash (Acoustic)", "url": "https://youtu.be/7WVGNUVsDFw" }
     ]
   },
+
   {
     "title": "The Home Team — Acoustic Session",
     "artist": "The Home Team",
@@ -152,6 +154,7 @@
       { "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }
     ]
   },
+
   {
     "title": "Shinedown — Acoustic Queue (8 Songs)",
     "artist": "Shinedown",
@@ -168,6 +171,7 @@
       { "title": "Monster", "url": "https://youtu.be/2vRHIILUp48" }
     ]
   },
+
   {
     "title": "Dayseeker — Stripped Queue (5 Songs)",
     "artist": "Dayseeker",
@@ -181,6 +185,7 @@
       { "title": "Pale Moonlight", "url": "https://youtu.be/rGKZ2X1WxJ4" }
     ]
   },
+
   {
     "title": "Bad Omens — Acoustic Queue (6 Songs)",
     "artist": "Bad Omens",
@@ -195,6 +200,7 @@
       { "title": "If I'm There", "url": "https://youtu.be/7vkBQFjrorU" }
     ]
   },
+
   {
     "title": "I Prevail — Acoustic Queue (5 Songs)",
     "artist": "I Prevail",
@@ -208,6 +214,7 @@
       { "title": "My Heart I Surrender", "url": "https://youtu.be/CqOgxKsIA88" }
     ]
   },
+
   {
     "title": "Scarface — Tiny Desk (Home) Concert",
     "artist": "Scarface",
@@ -226,6 +233,7 @@
       { "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }
     ]
   },
+
   {
     "title": "3 Doors Down — Live for Brad (Tribute)",
     "artist": "3 Doors Down",
@@ -240,6 +248,7 @@
       { "title": "04. Ticket to Heaven (Live)", "url": "https://youtu.be/mdV9iLyrPv8" }
     ]
   },
+
   {
     "title": "Monster Jam — Full Episodes (Playlist)",
     "artist": "Monster Jam",
@@ -249,6 +258,19 @@
       {
         "title": "Monster Jam - Full Episodes",
         "url": "https://www.youtube.com/playlist?list=PLaSx_lF7AsqyraPQ6exjOY5C7e-aye_AW"
+      }
+    ]
+  },
+
+  {
+    "title": "Drag Racing — Full Videos (Playlist)",
+    "artist": "Drag Racing",
+    "year": "Playlist",
+    "mode": "playlist",
+    "tracks": [
+      {
+        "title": "Drag Racing Playlist",
+        "url": "https://www.youtube.com/playlist?list=PL2CE0jAO4lqQuVrJivvvNz7p7JZTQ7JT5"
       }
     ]
   }
