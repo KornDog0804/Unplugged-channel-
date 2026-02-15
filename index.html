@@ -18,7 +18,7 @@
   <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
-  <!-- Favicons (root level) -->
+  <!-- Favicons -->
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 </head>
@@ -43,7 +43,6 @@
   </header>
 
   <main class="landingWrap">
-
     <section class="landingHero">
       <div class="landingHeroTop">
         <div style="min-width:0">
@@ -55,8 +54,6 @@
       </div>
 
       <div class="landingHeroBody">
-
-        <!-- UPDATED COPY (JOEY-FIED) -->
         <p>
           You hear music every day.<br>
           But as <strong>Sidney Deane</strong> once said —
@@ -74,7 +71,7 @@
 
         <div class="landingBtns">
           <a class="landingBtn primary" href="./sessions.html">Enter Sessions</a>
-          <a class="landingBtn" href="./sessions.html#sessionsList">Browse Sets</a>
+          <a class="landingBtn" href="./sessions.html?open=1">Browse Sets</a>
         </div>
 
         <!-- Install (Android/desktop). iOS uses Share → Add to Home Screen -->
@@ -97,14 +94,11 @@
       </div>
     </section>
 
-    <!-- FOOTER LINE (LOCKED) -->
     <section style="opacity:.85; font-weight:800; font-size:12px; text-align:center; color:rgba(255,255,255,.70);">
       This music will give you goosebumps.
     </section>
-
   </main>
 
-  <!-- PWA install + SW -->
   <script>
     // Register service worker (safe if missing)
     if ("serviceWorker" in navigator) {
@@ -133,7 +127,6 @@
       });
     }
 
-    // If already installed, hide the button
     window.addEventListener("appinstalled", () => {
       if (installBtn) installBtn.style.display = "none";
     });
