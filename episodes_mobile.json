@@ -1,0 +1,230 @@
+[
+  {
+    "title": "🎸 Artists",
+    "mode": "folder",
+    "items": [
+
+      {
+        "title": "3 Doors Down",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live For Brad (Tribute Set)",
+            "artist": "3 Doors Down",
+            "mode": "queue",
+            "tracks": [
+              { "title": "Here Without You (Live)", "url": "https://youtu.be/xocNHKBHsSg" },
+              { "title": "When I'm Gone (Live)", "url": "https://youtu.be/5XpuvhHhx_s" },
+              { "title": "Kryptonite (Live)", "url": "https://youtu.be/m3lSLLklu7Q" },
+              { "title": "Ticket To Heaven (Live)", "url": "https://youtu.be/mdV9iLyrPv8" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "title": "Nirvana",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Nirvana",
+            "mode": "fullshow",
+            "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/pOTkCgkxqyg" }]
+          }
+        ]
+      },
+
+      {
+        "title": "Alice In Chains",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Alice In Chains",
+            "mode": "fullshow",
+            "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/Jprla2NvHY0" }]
+          }
+        ]
+      },
+
+      {
+        "title": "Pearl Jam",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Pearl Jam",
+            "mode": "fullshow",
+            "tracks": [{ "title": "Unplugged Full Session", "url": "https://youtu.be/P9fPF204icg" }]
+          }
+        ]
+      },
+
+      {
+        "title": "Stone Temple Pilots",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Stone Temple Pilots",
+            "mode": "fullshow",
+            "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/Apok0654Qnc" }]
+          }
+        ]
+      },
+
+      {
+        "title": "Korn",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Korn",
+            "mode": "fullshow",
+            "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/El8-JgiqcUI" }]
+          }
+        ]
+      },
+
+      {
+        "title": "JAY-Z",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged / Live",
+            "artist": "JAY-Z",
+            "mode": "fullshow",
+            "tracks": [{ "title": "Full Session Stream", "url": "https://youtu.be/r2I_pGlvtAY" }]
+          }
+        ]
+      },
+
+      {
+        "title": "Wage War",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Queue",
+            "artist": "Wage War",
+            "mode": "queue",
+            "tracks": [
+              { "title": "Magnetic", "url": "https://youtu.be/zxvZO7MzYzU" },
+              { "title": "Circle The Drain", "url": "https://youtu.be/HasZm8N83cE" },
+              { "title": "Savin Me (Nickelback cover)", "url": "https://youtu.be/2lcJUfE2LsQ" },
+              { "title": "Me Against Myself", "url": "https://youtu.be/fT9SJV8KCE8" },
+              { "title": "Will We Ever Learn", "url": "https://youtu.be/laiLOhKO9yU" },
+              { "title": "Johnny Cash (Acoustic)", "url": "https://youtu.be/7WVGNUVsDFw" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "title": "Smile Empty Soul",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Queue",
+            "artist": "Smile Empty Soul",
+            "mode": "queue",
+            "tracks": [
+              { "title": "With This Knife", "url": "https://youtu.be/Hl_qZX32LiY" },
+              { "title": "Silhouettes", "url": "https://youtu.be/mk78hkKzXMA" },
+              { "title": "Bottom Of A Bottle", "url": "https://youtu.be/cxIoBp8xHwQ" },
+              { "title": "Wonderwall", "url": "https://youtu.be/C08X2DbSPfs" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "title": "Wind Walkers",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Queue",
+            "artist": "Wind Walkers",
+            "mode": "queue",
+            "tracks": [
+              { "title": "Body Bag", "url": "https://youtu.be/jkY3QORBHeE" },
+              { "title": "Hangfire", "url": "https://youtu.be/pqWTvbLTV0Q" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "title": "Dayseeker",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Stripped Queue",
+            "artist": "Dayseeker",
+            "mode": "queue",
+            "tracks": [
+              { "title": "My Immortal", "url": "https://youtu.be/rnJEV8tVSJc" },
+              { "title": "Neon Grave", "url": "https://youtu.be/dYf3psotQMQ" },
+              { "title": "Sleep Talk (Stripped)", "url": "https://youtu.be/2OEmJel7g5I" },
+              { "title": "Burial Plot", "url": "https://youtu.be/X1LW7ROGTLE" },
+              { "title": "Pale Moonlight", "url": "https://youtu.be/rGKZ2X1WxJ4" }
+            ]
+          }
+        ]
+      },
+
+      {
+        "title": "I Prevail",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Queue",
+            "artist": "I Prevail",
+            "mode": "queue",
+            "tracks": [
+              { "title": "Deep End", "url": "https://youtu.be/wFXJapoQRBw" },
+              { "title": "Everytime You Leave", "url": "https://youtu.be/rABqYJAiFTA" },
+              { "title": "Stuck In Your Head", "url": "https://youtu.be/NUcvAirmEm4" },
+              { "title": "Scars", "url": "https://youtu.be/vadGCs66ing" },
+              { "title": "My Heart I Surrender", "url": "https://youtu.be/CqOgxKsIA88" }
+            ]
+          }
+        ]
+      }
+
+    ]
+  },
+
+  {
+    "title": "🎙 Tiny Desk",
+    "mode": "folder",
+    "items": [
+      {
+        "title": "Scarface — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }]
+      },
+      {
+        "title": "Billy Strings — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }]
+      }
+    ]
+  },
+
+  {
+    "title": "🚚 Monster Jam",
+    "mode": "playlist",
+    "tracks": [
+      { "title": "Monster Jam Playlist", "url": "https://www.youtube.com/playlist?list=PLaSx_lF7AsqyraPQ6exjOY5C7e-aye_AW" }
+    ]
+  },
+
+  {
+    "title": "🏁 Drag Racing",
+    "mode": "playlist",
+    "tracks": [
+      { "title": "Drag Racing Playlist", "url": "https://www.youtube.com/playlist?list=PL2CE0jAO4lqQuVrJivvvNz7p7JZTQ7JT5" }
+    ]
+  }
+]
