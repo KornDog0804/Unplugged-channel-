@@ -1,44 +1,60 @@
-/* Joey’s Acoustic Corner — app.js (MOBILE + KODI COMPAT, FUTURE-PROOF)
+/* Joey’s Acoustic Corner — app.js (MOBILE FOLDERS + SLIDE NAV BUILD)
    ✅ Supports BOTH:
       A) Flat array episodes: [{title, artist, mode, tracks:[{title,url}]}]
-      B) Folder/tree JSON:
-         - { sections:[{title, items:[episode|section]}] }
-         - OR [{title, items:[...]}]
+      B) Folder/tree JSON:   [{title, mode:"folder", items:[episode|folder]}]
    ✅ Defaults to /episodes_mobile.json (phone folders)
-   ✅ Falls back to /episodes.json (kodi)
+   ✅ Falls back to /episodes.json (kodi master list)
    ✅ Falls back to episodes.js (window.EPISODES / window.episodes)
-   ✅ Lets you browse folders → shows → tracks (queue picker)
+   ✅ URL overrides:
+      ?data=mobile
+      ?data=kodi
+      ?data=url:https://site/file.json
+   ✅ Remembers choice in localStorage ("jac_data_pref")
+   ✅ Folder nav:
+      - back goes to previous page (NOT home)
+      - slide animation forward/back
+   ✅ Queue view:
+      - Play All
+      - pick individual track
+   ✅ Playlist:
+      - attempts embed
+      - ALWAYS provides Open Playlist fallback
 */
 
 (function () {
-  const PAGE_SIZE = 30; // bigger for folders
+  const PAGE_SIZE = 12;
+  const PREF_KEY = "jac_data_pref";
+
+  // Default sources (same origin)
   const SOURCES = {
     mobile: "/episodes_mobile.json",
-    kodi: "/episodes.json",
+    kodi: "/episodes.json"
   };
 
   const $ = (sel) => document.querySelector(sel);
 
+  // ---- DOM hooks (safe) ----
   const el = {
     status: $("#status"),
-    episodes: $("#episodes"),
     playerFrame: $("#playerFrame"),
     nowTitle: $("#nowPlayingTitle"),
     nowLine: $("#nowPlayingLine"),
     toggleBtn: $("#playerToggleBtn"),
     watchOnTvBtn: $("#watchOnTvBtn"),
-    loadMoreBtn: $("#loadMoreBtn"),
     playAllBtn: $("#playAllBtn"),
+    viewWrap: $("#viewWrap"),
+    view: $("#view")
   };
 
-  // Navigation stack for folder browsing
-  const NAV = []; // each = { title, items, mode:'folder'|'list' }
-
-  let ROOT_ITEMS = [];
-  let FLAT_CACHE = []; // flattened episodes (for Play All)
+  // ---- State ----
+  let DATA = null;               // raw loaded JSON
+  let NAV_STACK = [];            // stack of {title, node, kind}
+  let CURRENT_LIST = [];         // currently shown list of items (episodes or folders)
   let shownCount = 0;
 
-  // ===== Helpers =====
+  // ==========================
+  // Helpers
+  // ==========================
   function setStatus(msg) {
     if (el.status) el.status.textContent = msg || "";
   }
@@ -47,12 +63,17 @@
     return (v === undefined || v === null) ? "" : String(v);
   }
 
-  function fetchJson(url) {
-    const bust = `?v=${Date.now()}`;
-    return fetch(url + bust, { cache: "no-store" }).then(r => {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.json();
-    });
+  function isFolder(node) {
+    return node && String(node.mode || "").toLowerCase() === "folder" && Array.isArray(node.items);
+  }
+
+  function isEpisode(node) {
+    return node && !isFolder(node) && Array.isArray(node.tracks);
+  }
+
+  function bust(url) {
+    const sep = url.includes("?") ? "&" : "?";
+    return url + sep + "v=" + Date.now();
   }
 
   function getVideoId(url) {
@@ -64,18 +85,14 @@
       const embedIndex = parts.indexOf("embed");
       if (embedIndex >= 0 && parts[embedIndex + 1]) return parts[embedIndex + 1];
       return "";
-    } catch (_) {
-      return "";
-    }
+    } catch (_) { return ""; }
   }
 
   function getPlaylistId(url) {
     try {
       const u = new URL(url);
       return u.searchParams.get("list") || "";
-    } catch (_) {
-      return "";
-    }
+    } catch (_) { return ""; }
   }
 
   function buildEmbedForSingle(videoUrl) {
@@ -101,26 +118,31 @@
     return `https://www.youtube.com/embed/videoseries?list=${encodeURIComponent(list)}&autoplay=1&rel=0&playsinline=1&modestbranding=1&origin=${origin}`;
   }
 
-  function buildWatchUrlFromEpisode(ep) {
+  function buildWatchUrl(ep) {
     if (!ep || !ep.tracks || !ep.tracks.length) return "";
+
     const mode = safeText(ep.mode).toLowerCase();
-    const firstUrl = (ep.tracks[0] || {}).url || "";
+    const urls = ep.tracks.map(t => t.url).filter(Boolean);
 
     if (mode === "playlist") {
-      const list = getPlaylistId(firstUrl);
-      return list ? `https://www.youtube.com/playlist?list=${encodeURIComponent(list)}` : "";
+      const list = getPlaylistId(urls[0] || "");
+      if (!list) return "";
+      return `https://www.youtube.com/playlist?list=${encodeURIComponent(list)}`;
     }
 
-    const firstId = getVideoId(firstUrl);
-    return firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "";
+    const firstId = getVideoId(urls[0] || "");
+    if (!firstId) return "";
+    return `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}`;
   }
 
-  function setWatchOnTv(url, label) {
+  function setWatchButton(url, label) {
     if (!el.watchOnTvBtn) return;
+
     el.watchOnTvBtn.textContent = label || "Watch on YouTube";
     el.watchOnTvBtn.href = url || "#";
     el.watchOnTvBtn.style.opacity = url ? "1" : "0.6";
     el.watchOnTvBtn.style.pointerEvents = url ? "auto" : "none";
+
     if (!url) el.watchOnTvBtn.setAttribute("aria-disabled", "true");
     else el.watchOnTvBtn.removeAttribute("aria-disabled");
   }
@@ -133,174 +155,187 @@
     }
   }
 
-  function isFolder(node) {
-    return node && typeof node === "object" && Array.isArray(node.items);
+  function resetPlayer() {
+    if (el.playerFrame) el.playerFrame.src = "";
+    if (el.nowTitle) el.nowTitle.textContent = "Now Playing";
+    if (el.nowLine) el.nowLine.textContent = "";
+    setWatchButton("");
   }
 
-  function isEpisode(node) {
-    return node && typeof node === "object" && Array.isArray(node.tracks);
-  }
+  // ==========================
+  // Slide navigation
+  // ==========================
+  function slideTo(renderFn, dir /* "forward" | "back" */) {
+    const wrap = el.viewWrap;
+    const current = el.view;
 
-  // ===== JSON NORMALIZATION =====
-  function normalizeToRootItems(data) {
-    // Accept:
-    // 1) {sections:[...]}
-    // 2) [...]
-    // 3) flat episodes array
-    if (!data) return [];
-
-    if (Array.isArray(data)) return data;
-
-    if (data.sections && Array.isArray(data.sections)) return data.sections;
-
-    // if someone wraps in {items:[...]}
-    if (Array.isArray(data.items)) return data.items;
-
-    return [];
-  }
-
-  function flattenEpisodes(items, out = []) {
-    (items || []).forEach(n => {
-      if (isEpisode(n)) out.push(n);
-      else if (isFolder(n)) flattenEpisodes(n.items, out);
-      else if (n && Array.isArray(n.sections)) flattenEpisodes(n.sections, out);
-    });
-    return out;
-  }
-
-  // ===== LOAD =====
-  async function loadData() {
-    // Try mobile first
-    try {
-      const mobile = await fetchJson(SOURCES.mobile);
-      const root = normalizeToRootItems(mobile);
-      if (root.length) {
-        setStatus(`Loaded MOBILE ✅ (${root.length} root sections)`);
-        return { rootItems: root, source: "mobile" };
-      }
-    } catch (_) {}
-
-    // Fall back to kodi
-    try {
-      const kodi = await fetchJson(SOURCES.kodi);
-      const root = normalizeToRootItems(kodi);
-      if (root.length) {
-        setStatus(`Loaded KODI ✅ (${root.length} items)`);
-        return { rootItems: root, source: "kodi" };
-      }
-    } catch (_) {}
-
-    // Fall back to embedded episodes.js
-    const fallback = window.EPISODES || window.episodes;
-    if (Array.isArray(fallback) && fallback.length) {
-      setStatus(`Loaded fallback ⚠️ (${fallback.length} items)`);
-      return { rootItems: fallback, source: "fallback" };
-    }
-
-    return { rootItems: [], source: "none" };
-  }
-
-  // ===== PLAY =====
-  function playEpisode(ep) {
-    if (!isEpisode(ep) || !ep.tracks.length) return;
-
-    const mode = safeText(ep.mode).toLowerCase();
-    const trackUrls = ep.tracks.map(t => t.url).filter(Boolean);
-
-    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
-    if (el.nowLine) {
-      const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
-      el.nowLine.textContent = meta ? `Playing now: ${meta}` : "Playing now";
-    }
-
-    ensurePlayerVisible();
-
-    const watchUrl = buildWatchUrlFromEpisode(ep);
-    setWatchOnTv(watchUrl, mode === "playlist" ? "Open Playlist" : "Watch on YouTube");
-
-    if (el.playerFrame) {
-      el.playerFrame.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
-      el.playerFrame.setAttribute("allowfullscreen", "true");
-      el.playerFrame.style.opacity = "1";
-      el.playerFrame.style.pointerEvents = "auto";
-    }
-
-    let src = "";
-    if (mode === "queue") src = buildEmbedForQueue(trackUrls);
-    else if (mode === "playlist") src = buildEmbedForPlaylist(trackUrls[0]);
-    else src = buildEmbedForSingle(trackUrls[0]);
-
-    if (!src) {
-      setStatus("Bad link in this session");
+    if (!wrap || !current) {
+      renderFn(current);
       return;
     }
 
-    if (el.playerFrame) el.playerFrame.src = src;
+    const incoming = document.createElement("div");
+    incoming.className = "slidePage";
+    wrap.appendChild(incoming);
 
-    if (mode === "playlist") {
-      setStatus(`Playlist loaded 🎟️ If it won’t play, tap "Open Playlist".`);
+    renderFn(incoming);
+
+    if (dir === "back") {
+      current.classList.add("slide-out-right");
+      incoming.classList.add("slide-in-right");
+      incoming.style.transform = "translateX(-25%)";
+    } else {
+      current.classList.add("slide-out-left");
+      incoming.classList.add("slide-in-left");
     }
+
+    setTimeout(() => {
+      current.innerHTML = incoming.innerHTML;
+      current.classList.remove("slide-out-left", "slide-out-right");
+      wrap.removeChild(incoming);
+
+      // after swap, rebind events inside the current view
+      bindViewEvents();
+    }, 240);
   }
 
-  function playSingleTrack(track) {
-    if (!track || !track.url) return;
-    const src = buildEmbedForSingle(track.url);
-    if (!src) return;
+  // ==========================
+  // Data source selection
+  // ==========================
+  function parseDataOverride() {
+    const qs = new URLSearchParams(window.location.search);
+    const data = qs.get("data");
+    if (!data) return null;
 
-    ensurePlayerVisible();
-    if (el.playerFrame) el.playerFrame.src = src;
+    if (data === "mobile") return { kind: "mobile", url: SOURCES.mobile };
+    if (data === "kodi") return { kind: "kodi", url: SOURCES.kodi };
 
-    const vid = getVideoId(track.url);
-    setWatchOnTv(vid ? `https://www.youtube.com/watch?v=${encodeURIComponent(vid)}` : "", "Watch on YouTube");
+    if (data.startsWith("url:")) {
+      return { kind: "custom", url: data.replace(/^url:/, "") };
+    }
 
-    if (el.nowTitle) el.nowTitle.textContent = track.title || "Track";
-    if (el.nowLine) el.nowLine.textContent = "Playing single track";
+    return null;
   }
 
-  // ===== UI BUILDERS =====
-  function clearList() {
-    if (el.episodes) el.episodes.innerHTML = "";
-    shownCount = 0;
+  function getPreferredSource() {
+    const override = parseDataOverride();
+    if (override) {
+      localStorage.setItem(PREF_KEY, JSON.stringify(override));
+      return override;
+    }
+
+    try {
+      const saved = localStorage.getItem(PREF_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch (_) {}
+
+    // default mobile
+    return { kind: "mobile", url: SOURCES.mobile };
   }
 
-  function updateLoadMoreUI(itemsLength) {
-    if (!el.loadMoreBtn) return;
-    const done = shownCount >= itemsLength;
-    el.loadMoreBtn.style.display = (itemsLength > PAGE_SIZE) ? "block" : "none";
-    el.loadMoreBtn.disabled = done;
-    el.loadMoreBtn.textContent = done ? "All loaded" : "Load more";
+  async function fetchJson(url) {
+    const r = await fetch(bust(url), { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
   }
 
-  function countEpisodesIn(node) {
-    if (isEpisode(node)) return 1;
-    if (isFolder(node)) return flattenEpisodes(node.items, []).length;
-    return 0;
+  async function loadData() {
+    const pref = getPreferredSource();
+
+    // 1) try preferred
+    try {
+      const data = await fetchJson(pref.url);
+      setStatus(`Loaded ✅ (${pref.kind})`);
+      return data;
+    } catch (e) {
+      // continue
+    }
+
+    // 2) fallback chain
+    try {
+      const data = await fetchJson(SOURCES.mobile);
+      setStatus("Loaded ✅ (mobile fallback)");
+      return data;
+    } catch (_) {}
+
+    try {
+      const data = await fetchJson(SOURCES.kodi);
+      setStatus("Loaded ✅ (kodi fallback)");
+      return data;
+    } catch (_) {}
+
+    // 3) final fallback to episodes.js globals
+    const fallback = window.EPISODES || window.episodes;
+    if (Array.isArray(fallback)) {
+      setStatus("Loaded ⚠️ (episodes.js fallback)");
+      return fallback;
+    }
+
+    setStatus("No data found ❌");
+    return null;
   }
 
-  function buildFolderCard(folder) {
+  // ==========================
+  // Normalization: flat -> folder tree
+  // ==========================
+  function toFolderTree(data) {
+    // If it already looks like folders, keep it
+    if (Array.isArray(data) && data.some(isFolder)) return data;
+
+    // If it’s a flat episodes list, wrap it in a single folder
+    if (Array.isArray(data)) {
+      return [{
+        title: "Sessions",
+        mode: "folder",
+        items: data
+      }];
+    }
+
+    // unknown
+    return [{
+      title: "Sessions",
+      mode: "folder",
+      items: []
+    }];
+  }
+
+  // ==========================
+  // Rendering
+  // ==========================
+  function cardHtml(title, meta, small, isFolderCard) {
+    return `
+      <div class="epHead">
+        <div style="min-width:0">
+          <div class="epTitle">${safeText(title)}</div>
+          ${meta ? `<div class="epMeta">${safeText(meta)}</div>` : ``}
+          ${small ? `<div class="epSmall">${safeText(small)}</div>` : ``}
+        </div>
+        <div class="chev">${isFolderCard ? "›" : "›"}</div>
+      </div>
+    `;
+  }
+
+  function buildFolderCard(folderNode) {
     const div = document.createElement("div");
     div.className = "ep";
     div.tabIndex = 0;
+    div.dataset.kind = "folder";
+    div.dataset.title = safeText(folderNode.title);
 
-    const title = safeText(folder.title) || "Folder";
-    const count = countEpisodesIn(folder);
-    const subtitle = folder.subtitle ? safeText(folder.subtitle) : `${count} items`;
+    const count = Array.isArray(folderNode.items) ? folderNode.items.length : 0;
+    div.innerHTML = cardHtml(
+      folderNode.title || "Folder",
+      "",
+      `${count} items`,
+      true
+    );
 
-    div.innerHTML = `
-      <div class="epHead">
-        <div style="min-width:0">
-          <div class="epTitle">${title}</div>
-          <div class="epMeta">${subtitle}</div>
-          <div class="epSmall">folder</div>
-        </div>
-        <div class="chev">›</div>
-      </div>
-    `;
-
-    const open = () => openFolder(title, folder.items || []);
-    div.addEventListener("click", open);
+    div.addEventListener("click", () => openFolder(folderNode));
     div.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        openFolder(folderNode);
+      }
     });
 
     return div;
@@ -310,196 +345,323 @@
     const div = document.createElement("div");
     div.className = "ep";
     div.tabIndex = 0;
+    div.dataset.kind = "episode";
 
+    const mode = safeText(ep.mode).toLowerCase();
     const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
-    const m = safeText(ep.mode).toLowerCase();
 
     const small =
-      (m === "queue")
+      mode === "queue"
         ? `${(ep.tracks || []).length} tracks • tap to choose`
-        : (m === "playlist")
+        : mode === "playlist"
           ? `playlist • opens as series`
           : `full show`;
 
-    div.innerHTML = `
-      <div class="epHead">
-        <div style="min-width:0">
-          <div class="epTitle">${safeText(ep.title)}</div>
-          <div class="epMeta">${meta}</div>
-          <div class="epSmall">${small}</div>
-        </div>
-        <div class="chev">›</div>
-      </div>
-    `;
+    div.innerHTML = cardHtml(ep.title || "Untitled", meta, small, false);
 
-    const open = () => {
-      // ✅ If queue, open track picker instead of auto-playing
-      if (safeText(ep.mode).toLowerCase() === "queue") {
-        openQueueTracks(ep);
-      } else {
-        playEpisode(ep);
+    div.addEventListener("click", () => {
+      if (mode === "queue") openQueue(ep);
+      else playEpisode(ep);
+    });
+
+    div.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        if (mode === "queue") openQueue(ep);
+        else playEpisode(ep);
       }
-    };
-
-    div.addEventListener("click", open);
-    div.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); }
     });
 
     return div;
   }
 
-  function buildTrackCard(track, idx) {
-    const div = document.createElement("div");
-    div.className = "ep";
-    div.tabIndex = 0;
+  function renderListInto(targetNode, title, subtitle, items) {
+    targetNode.innerHTML = "";
 
-    div.innerHTML = `
-      <div class="epHead">
-        <div style="min-width:0">
-          <div class="epTitle">${idx + 1}. ${safeText(track.title) || "Track"}</div>
-          <div class="epMeta">single track</div>
-          <div class="epSmall">tap to play</div>
-        </div>
-        <div class="chev">›</div>
+    // Header row (Back button + title)
+    const header = document.createElement("div");
+    header.className = "pageHeader";
+    header.innerHTML = `
+      <button id="backBtn" class="backBtn" ${NAV_STACK.length <= 1 ? "style='display:none;'" : ""}>← Back</button>
+      <div class="pageTitleWrap">
+        <div class="pageTitle">${safeText(title || "Sessions")}</div>
+        ${subtitle ? `<div class="pageSub">${safeText(subtitle)}</div>` : ``}
       </div>
     `;
+    targetNode.appendChild(header);
 
-    const play = () => playSingleTrack(track);
-    div.addEventListener("click", play);
-    div.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); play(); }
-    });
+    // Play All (only for episode lists)
+    const onlyEpisodes = (items || []).filter(isEpisode);
+    if (onlyEpisodes.length) {
+      const playAllWrap = document.createElement("div");
+      playAllWrap.className = "playAllWrap";
+      playAllWrap.innerHTML = `<button id="pagePlayAllBtn" class="playAllBig">Play All</button>`;
+      targetNode.appendChild(playAllWrap);
+    }
 
-    return div;
-  }
+    // Cards container
+    const list = document.createElement("div");
+    list.id = "list";
+    targetNode.appendChild(list);
 
-  // ===== NAVIGATION =====
-  function openFolder(title, items) {
-    NAV.push({ title, items, type: "folder" });
-    renderCurrent();
-  }
+    // Pagination reset
+    CURRENT_LIST = items || [];
+    shownCount = 0;
 
-  function goBack() {
-    NAV.pop();
-    renderCurrent();
-  }
+    // Render first page
+    renderNextPage(targetNode);
 
-  function openQueueTracks(ep) {
-    const title = safeText(ep.title) || "Queue";
-    NAV.push({ title, items: ep.tracks || [], type: "tracks", episode: ep });
-    renderCurrent();
-  }
-
-  // ===== RENDER =====
-  function renderHeaderContext() {
-    // If your HTML already has a "Back to home" button, this will wire it.
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) {
-      backBtn.style.display = NAV.length ? "inline-flex" : "none";
-      backBtn.onclick = NAV.length ? goBack : null;
+    // Footer load more
+    if (CURRENT_LIST.length > PAGE_SIZE) {
+      const more = document.createElement("button");
+      more.id = "pageLoadMoreBtn";
+      more.className = "loadMoreBtn";
+      more.textContent = "Load more";
+      targetNode.appendChild(more);
     }
   }
 
-  function renderBatch(items) {
-    if (!el.episodes) return;
+  function renderNextPage(rootNode) {
+    const list = rootNode.querySelector("#list");
+    if (!list) return;
 
-    const next = items.slice(shownCount, shownCount + PAGE_SIZE);
-    next.forEach(n => {
-      if (isFolder(n)) el.episodes.appendChild(buildFolderCard(n));
-      else if (isEpisode(n)) el.episodes.appendChild(buildEpisodeCard(n));
-      // tracks view is handled separately
+    const next = CURRENT_LIST.slice(shownCount, shownCount + PAGE_SIZE);
+    next.forEach((node) => {
+      if (isFolder(node)) list.appendChild(buildFolderCard(node));
+      else if (isEpisode(node)) list.appendChild(buildEpisodeCard(node));
     });
 
     shownCount += next.length;
-    updateLoadMoreUI(items.length);
-    setStatus(`Showing ${Math.min(shownCount, items.length)} of ${items.length}`);
-  }
 
-  function renderTracks(tracks, epTitle) {
-    clearList();
-
-    // top action row: Play All (stitched)
-    if (el.playAllBtn) {
-      el.playAllBtn.textContent = "Play All";
-      el.playAllBtn.onclick = () => {
-        const urls = (tracks || []).map(t => t.url).filter(Boolean);
-        const src = buildEmbedForQueue(urls);
-        if (!src) return;
-
-        if (el.nowTitle) el.nowTitle.textContent = epTitle || "Queue";
-        if (el.nowLine) el.nowLine.textContent = "Playing full queue (stitched).";
-
-        ensurePlayerVisible();
-        if (el.playerFrame) el.playerFrame.src = src;
-
-        const firstId = getVideoId(urls[0] || "");
-        setWatchOnTv(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "", "Watch on YouTube");
-      };
+    // Update load more
+    const btn = rootNode.querySelector("#pageLoadMoreBtn");
+    if (btn) {
+      const done = shownCount >= CURRENT_LIST.length;
+      btn.disabled = done;
+      btn.textContent = done ? "All loaded" : "Load more";
     }
 
-    // list tracks
-    (tracks || []).forEach((t, i) => {
-      el.episodes.appendChild(buildTrackCard(t, i));
+    setStatus(`Showing ${Math.min(shownCount, CURRENT_LIST.length)} of ${CURRENT_LIST.length}`);
+  }
+
+  // ==========================
+  // Navigation (folder stack)
+  // ==========================
+  function renderRootInto(targetNode) {
+    const rootTitle = "Joey’s Acoustic Corner";
+    const rootSubtitle = "Stripped & unplugged sessions — handpicked only.";
+
+    const rootItems = toFolderTree(DATA);
+    renderListInto(targetNode, rootTitle, rootSubtitle, rootItems);
+  }
+
+  function openFolder(folderNode) {
+    NAV_STACK.push({ kind: "folder", node: folderNode, title: folderNode.title || "Folder" });
+
+    slideTo((node) => {
+      renderListInto(node, folderNode.title || "Folder", "", folderNode.items || []);
+    }, "forward");
+  }
+
+  function goBack() {
+    if (NAV_STACK.length <= 1) return;
+    NAV_STACK.pop();
+    const prev = NAV_STACK[NAV_STACK.length - 1];
+
+    slideTo((node) => {
+      if (!prev) return renderRootInto(node);
+      if (prev.kind === "root") return renderRootInto(node);
+      if (prev.kind === "folder") return renderListInto(node, prev.title, "", (prev.node.items || []));
+      if (prev.kind === "queue") return renderQueueInto(node, prev.ep);
+      renderRootInto(node);
+    }, "back");
+  }
+
+  // ==========================
+  // Queue view (track picker)
+  // ==========================
+  function openQueue(ep) {
+    NAV_STACK.push({ kind: "queue", ep, title: ep.title || "Queue" });
+
+    slideTo((node) => {
+      renderQueueInto(node, ep);
+    }, "forward");
+  }
+
+  function renderQueueInto(targetNode, ep) {
+    const tracks = (ep.tracks || []).filter(t => t && t.url);
+    targetNode.innerHTML = "";
+
+    const header = document.createElement("div");
+    header.className = "pageHeader";
+    header.innerHTML = `
+      <button id="backBtn" class="backBtn">← Back</button>
+      <div class="pageTitleWrap">
+        <div class="pageTitle">${safeText(ep.title || "Queue")}</div>
+        <div class="pageSub">${tracks.length} tracks • pick one or hit Play All</div>
+      </div>
+    `;
+    targetNode.appendChild(header);
+
+    const playAllWrap = document.createElement("div");
+    playAllWrap.className = "playAllWrap";
+    playAllWrap.innerHTML = `<button id="queuePlayAllBtn" class="playAllBig">Play All</button>`;
+    targetNode.appendChild(playAllWrap);
+
+    const list = document.createElement("div");
+    list.id = "list";
+    targetNode.appendChild(list);
+
+    tracks.forEach((t, i) => {
+      const div = document.createElement("div");
+      div.className = "ep";
+      div.tabIndex = 0;
+
+      div.innerHTML = cardHtml(
+        `${i + 1}. ${safeText(t.title || "Track")}`,
+        "single track",
+        "tap to play",
+        false
+      );
+
+      div.addEventListener("click", () => playSingleTrack(ep, t.url, t.title));
+      div.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          playSingleTrack(ep, t.url, t.title);
+        }
+      });
+
+      list.appendChild(div);
     });
-
-    if (el.loadMoreBtn) el.loadMoreBtn.style.display = "none";
-    setStatus(`${tracks.length} tracks • pick one or hit Play All`);
   }
 
-  function currentItems() {
-    if (!NAV.length) return { type: "root", title: "Home", items: ROOT_ITEMS };
-    return NAV[NAV.length - 1];
-  }
+  // ==========================
+  // Playback
+  // ==========================
+  function playEpisode(ep) {
+    if (!ep || !ep.tracks || !ep.tracks.length) return;
 
-  function renderCurrent() {
-    renderHeaderContext();
-    clearList();
+    const mode = safeText(ep.mode).toLowerCase();
+    const urls = ep.tracks.map(t => t.url).filter(Boolean);
 
-    const cur = currentItems();
+    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Now Playing";
+    if (el.nowLine) {
+      const meta = `${safeText(ep.artist)}${ep.year ? " • " + safeText(ep.year) : ""}`.trim();
+      el.nowLine.textContent = meta ? `Playing now: ${meta}` : "Playing now";
+    }
 
-    // Back button label updates (optional)
-    const homeLabel = document.getElementById("homeLabel");
-    if (homeLabel) homeLabel.textContent = cur.title || "Joey’s Acoustic Corner";
+    ensurePlayerVisible();
 
-    // Tracks view
-    if (cur.type === "tracks") {
-      renderTracks(cur.items || [], cur.title);
+    const watchUrl = buildWatchUrl(ep);
+    setWatchButton(watchUrl, mode === "playlist" ? "Open Playlist" : "Watch on YouTube");
+
+    if (el.playerFrame) {
+      el.playerFrame.setAttribute("allow", "autoplay; encrypted-media; picture-in-picture");
+      el.playerFrame.setAttribute("allowfullscreen", "true");
+      el.playerFrame.style.opacity = "1";
+      el.playerFrame.style.pointerEvents = "auto";
+    }
+
+    let src = "";
+    if (mode === "queue") src = buildEmbedForQueue(urls);
+    else if (mode === "playlist") src = buildEmbedForPlaylist(urls[0]);
+    else src = buildEmbedForSingle(urls[0]);
+
+    if (!src) {
+      setStatus("Bad link in this session");
       return;
     }
 
-    // Folder/root view
-    const items = cur.items || [];
-    if (el.playAllBtn) {
-      // Play All from flattened episodes in THIS folder/root
-      el.playAllBtn.textContent = "Play All";
-      el.playAllBtn.onclick = () => {
-        const eps = flattenEpisodes(items, []);
+    if (el.playerFrame) el.playerFrame.src = src;
+
+    if (mode === "playlist") {
+      setStatus(`Playlist loaded 🎟️ If it won’t play here, tap "Open Playlist" (YouTube blocks some embeds).`);
+    }
+  }
+
+  function playQueueAll(ep) {
+    const urls = (ep.tracks || []).map(t => t.url).filter(Boolean);
+    const src = buildEmbedForQueue(urls);
+    if (!src) {
+      setStatus("No playable tracks in this queue");
+      return;
+    }
+
+    if (el.nowTitle) el.nowTitle.textContent = ep.title || "Play All";
+    if (el.nowLine) el.nowLine.textContent = "Playing full queue (stitched).";
+
+    setWatchButton(buildWatchUrl(ep), "Watch on YouTube");
+    ensurePlayerVisible();
+    if (el.playerFrame) el.playerFrame.src = src;
+  }
+
+  function playSingleTrack(ep, url, trackTitle) {
+    const src = buildEmbedForSingle(url);
+    if (!src) {
+      setStatus("Bad track link");
+      return;
+    }
+
+    if (el.nowTitle) el.nowTitle.textContent = trackTitle || ep.title || "Now Playing";
+    if (el.nowLine) el.nowLine.textContent = safeText(ep.artist) ? `Playing now: ${safeText(ep.artist)}` : "Playing now";
+
+    setWatchButton(`https://www.youtube.com/watch?v=${encodeURIComponent(getVideoId(url))}`, "Watch on YouTube");
+    ensurePlayerVisible();
+    if (el.playerFrame) el.playerFrame.src = src;
+  }
+
+  // ==========================
+  // Binding (because slide swaps innerHTML)
+  // ==========================
+  function bindViewEvents() {
+    const backBtn = el.view.querySelector("#backBtn");
+    if (backBtn) backBtn.addEventListener("click", goBack);
+
+    const loadMore = el.view.querySelector("#pageLoadMoreBtn");
+    if (loadMore) loadMore.addEventListener("click", () => renderNextPage(el.view));
+
+    const pagePlayAll = el.view.querySelector("#pagePlayAllBtn");
+    if (pagePlayAll) {
+      pagePlayAll.addEventListener("click", () => {
+        // Play all episodes shown in CURRENT_LIST (skip playlists for stability)
+        const episodes = CURRENT_LIST.filter(isEpisode);
         const urls = [];
-        eps.forEach(ep => {
-          const m = safeText(ep.mode).toLowerCase();
-          if (m === "playlist") return;
+        episodes.forEach(ep => {
+          const mode = safeText(ep.mode).toLowerCase();
+          if (mode === "playlist") return;
           (ep.tracks || []).forEach(t => { if (t && t.url) urls.push(t.url); });
         });
 
         const src = buildEmbedForQueue(urls);
-        if (!src) { setStatus("Nothing playable for Play All"); return; }
+        if (!src) {
+          setStatus("No playable items for Play All");
+          return;
+        }
 
         if (el.nowTitle) el.nowTitle.textContent = "Play All";
-        if (el.nowLine) el.nowLine.textContent = `Playing all in: ${cur.title || "Home"}`;
+        if (el.nowLine) el.nowLine.textContent = "Playing all sessions (queues stitched where possible).";
+
+        const firstId = getVideoId(urls[0] || "");
+        setWatchButton(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "", "Watch on YouTube");
 
         ensurePlayerVisible();
         if (el.playerFrame) el.playerFrame.src = src;
-
-        const firstId = getVideoId(urls[0] || "");
-        setWatchOnTv(firstId ? `https://www.youtube.com/watch?v=${encodeURIComponent(firstId)}` : "", "Watch on YouTube");
-      };
+      });
     }
 
-    renderBatch(items);
+    const queuePlayAll = el.view.querySelector("#queuePlayAllBtn");
+    if (queuePlayAll) {
+      const top = NAV_STACK[NAV_STACK.length - 1];
+      if (top && top.kind === "queue") {
+        queuePlayAll.addEventListener("click", () => playQueueAll(top.ep));
+      }
+    }
   }
 
-  // ===== INIT =====
+  // ==========================
+  // Player toggle
+  // ==========================
   function initPlayerToggle() {
     if (!el.toggleBtn) return;
 
@@ -516,36 +678,26 @@
     });
   }
 
+  // ==========================
+  // Init
+  // ==========================
   async function init() {
-    setStatus("Loading…");
+    try {
+      DATA = await loadData();
+      if (!DATA) return;
 
-    const { rootItems, source } = await loadData();
+      NAV_STACK = [{ kind: "root", title: "Home" }];
 
-    if (!rootItems.length) {
-      setStatus("No data found (mobile + kodi + fallback all failed)");
-      return;
+      slideTo((node) => {
+        renderRootInto(node);
+      }, "forward");
+
+      resetPlayer();
+      setWatchButton("");
+    } catch (err) {
+      console.error(err);
+      setStatus("App crashed");
     }
-
-    ROOT_ITEMS = rootItems;
-    FLAT_CACHE = flattenEpisodes(rootItems, []);
-
-    // Load more button
-    if (el.loadMoreBtn) {
-      el.loadMoreBtn.onclick = () => renderBatch(currentItems().items || []);
-    }
-
-    // If your HTML has a "Back to home" button, wire it.
-    const backBtn = document.getElementById("backBtn");
-    if (backBtn) backBtn.onclick = goBack;
-
-    // Start at root
-    NAV.length = 0;
-    renderCurrent();
-
-    // FYI debug
-    console.log("[JAC] Source:", source);
-    console.log("[JAC] Root items:", ROOT_ITEMS.length);
-    console.log("[JAC] Flattened episodes:", FLAT_CACHE.length);
   }
 
   document.addEventListener("DOMContentLoaded", () => {
