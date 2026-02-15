@@ -26,6 +26,9 @@ FALLBACK_EPISODES = [
     ("Alice In Chains — MTV Unplugged (Full Session)", "https://youtu.be/Jprla2NvHY0"),
 ]
 
+# ✅ SmartTube package name (stable)
+SMARTTUBE_PKG = "org.smarttube.stable"
+
 def log(msg):
     xbmc.log(f"[JAC] {msg}", xbmc.LOGINFO)
 
@@ -33,7 +36,6 @@ def notify(msg):
     xbmcgui.Dialog().notification("Joey’s Acoustic Corner", msg, xbmcgui.NOTIFICATION_INFO, 4000)
 
 def http_get_json(url):
-    # Extra cache-killers (Kodi/Android can be stubborn)
     headers = {
         "User-Agent": UA,
         "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -65,20 +67,48 @@ def playlist_id_from_url(url):
     m = re.search(r"[?&]list=([A-Za-z0-9_\-]+)", url)
     return m.group(1) if m else None
 
-def youtube_play_video(video_id):
-    return f"plugin://plugin.video.youtube/play/?video_id={video_id}"
+def to_youtube_watch_url(url):
+    """
+    Ensure we pass SmartTube a normal YouTube URL it can handle.
+    - video: https://www.youtube.com/watch?v=VIDEO_ID
+    - playlist: https://www.youtube.com/playlist?list=PLAYLIST_ID
+    """
+    if not url:
+        return None
 
-def youtube_play_playlist(playlist_id):
-    return f"plugin://plugin.video.youtube/play/?playlist_id={playlist_id}"
+    pid = playlist_id_from_url(url)
+    if pid and "playlist" in url:
+        return f"https://www.youtube.com/playlist?list={pid}"
 
-# ✅ Browse (shows playlist items inside YouTube addon)
-def youtube_browse_playlist(playlist_id):
-    return f"plugin://plugin.video.youtube/playlist/?playlist_id={playlist_id}"
+    vid = yt_id_from_url(url)
+    if vid:
+        return f"https://www.youtube.com/watch?v={vid}"
 
-def add_item(label, action=None, params=None, is_folder=False, playable=False):
+    # If it's already some valid YouTube link, just pass it through.
+    if "youtube.com" in url or "youtu.be" in url:
+        return url
+
+    return None
+
+def open_in_smarttube(youtube_url):
+    if not youtube_url:
+        notify("Bad/empty YouTube URL.")
+        return
+
+    # Kodi builtin: StartAndroidActivity(package, intent, dataType, dataURI)
+    cmd = f'StartAndroidActivity({SMARTTUBE_PKG},android.intent.action.VIEW,,{youtube_url})'
+    log("Launching SmartTube: " + youtube_url)
+    xbmc.executebuiltin(cmd)
+
+def add_item(label, action=None, params=None, is_folder=False, info=None):
     li = xbmcgui.ListItem(label=label)
-    if playable:
-        li.setProperty("IsPlayable", "true")
+
+    # Add metadata so skins can show Artist properly
+    if info:
+        try:
+            li.setInfo("video", info)
+        except Exception:
+            pass
 
     url = sys.argv[0]
     if action:
@@ -88,12 +118,6 @@ def add_item(label, action=None, params=None, is_folder=False, playable=False):
         url = url + "?" + urllib.parse.urlencode(q)
 
     xbmcplugin.addDirectoryItem(HANDLE, url, li, isFolder=is_folder)
-
-def add_external(label, path, is_folder=False, playable=False):
-    li = xbmcgui.ListItem(label=label)
-    if playable:
-        li.setProperty("IsPlayable", "true")
-    xbmcplugin.addDirectoryItem(HANDLE, path, li, isFolder=is_folder)
 
 def end_dir():
     xbmcplugin.endOfDirectory(HANDLE, cacheToDisc=False)
@@ -121,25 +145,27 @@ def has_encore(ep):
     except Exception:
         return False
 
-def get_track_video_ids(ep):
+def get_track_urls(ep):
     tracks = ep.get("tracks", []) or []
-    ids = []
-    for t in tracks:
-        url = (t or {}).get("url", "")
-        vid = yt_id_from_url(url)
-        if vid:
-            ids.append(vid)
+    urls = []
 
+    for t in tracks:
+        u = (t or {}).get("url", "")
+        nice = to_youtube_watch_url(u)
+        if nice:
+            urls.append(nice)
+
+    # Encore insertion (if used later)
     if has_encore(ep):
         after_idx = ep.get("encoreAfterTrackIndex")
         encore_url = (ep.get("encore") or {}).get("url")
-        encore_id = yt_id_from_url(encore_url)
-        if encore_id:
-            insert_at = max(0, min(len(ids), after_idx + 1))
-            ids.insert(insert_at, encore_id)
-    return ids
+        nice_encore = to_youtube_watch_url(encore_url)
+        if nice_encore:
+            insert_at = max(0, min(len(urls), after_idx + 1))
+            urls.insert(insert_at, nice_encore)
 
-# ✅ Smart mode: if first track is a playlist link, treat as playlist no matter what mode says
+    return urls
+
 def is_playlist_episode(ep):
     tracks = ep.get("tracks", []) or []
     if not tracks:
@@ -150,31 +176,38 @@ def is_playlist_episode(ep):
 def root_menu(eps):
     for idx, ep in enumerate(eps):
         title = ep.get("title", "Untitled")
+        artist = ep.get("artist", "") or ""
         mode = str(ep.get("mode", "")).lower()
 
         if has_encore(ep):
             title = title + "  🕯️"
 
-        # ✅ Force playlist detection from the URL
+        # If title doesn't already include artist, prefix it
+        display_title = title
+        if artist and (artist.lower() not in title.lower()):
+            display_title = f"{artist} — {title}"
+
+        info = {
+            "title": title,
+            "artist": artist,
+        }
+
+        # ✅ Playlists: offer Play + Browse
         if is_playlist_episode(ep):
-            tracks = ep.get("tracks", []) or []
-            pid = playlist_id_from_url((tracks[0] or {}).get("url", ""))
-
-            if not pid:
-                continue
-
-            add_item(f"{title} (▶ Play)", action="play_playlist", params={"idx": str(idx)}, playable=True, is_folder=False)
-            add_external(f"{title} (📂 Browse videos)", youtube_browse_playlist(pid), is_folder=True, playable=False)
+            add_item(f"{display_title} (▶ Play Playlist)", action="open_playlist", params={"idx": str(idx)}, is_folder=False, info=info)
+            add_item(f"{display_title} (📂 Browse Videos)", action="browse_playlist", params={"idx": str(idx)}, is_folder=True, info=info)
             continue
 
+        # ✅ Fullshow: open SmartTube (no Kodi playback)
         if mode == "fullshow":
-            add_item(title, action="play_fullshow", params={"idx": str(idx)}, playable=True, is_folder=False)
+            add_item(f"{display_title} (▶ Play)", action="open_fullshow", params={"idx": str(idx)}, is_folder=False, info=info)
 
+        # ✅ Queue: browse tracks
         elif mode == "queue":
-            add_item(title, action="browse_queue", params={"idx": str(idx)}, playable=False, is_folder=True)
+            add_item(display_title, action="browse_queue", params={"idx": str(idx)}, is_folder=True, info=info)
 
         else:
-            add_item(title, action="play_fullshow", params={"idx": str(idx)}, playable=True, is_folder=False)
+            add_item(f"{display_title} (▶ Play)", action="open_fullshow", params={"idx": str(idx)}, is_folder=False, info=info)
 
     end_dir()
 
@@ -187,29 +220,63 @@ def browse_queue(eps, idx):
         end_dir()
         return
 
-    add_item("▶ Play All (Queue)", action="play_queue_all", params={"idx": str(idx)}, playable=True, is_folder=False)
+    title = ep.get("title", "Untitled")
+    artist = ep.get("artist", "") or ""
+
+    # NOTE: SmartTube can't accept a whole Kodi playlist cleanly.
+    # We'll still provide a "Play First Track" shortcut.
+    add_item("▶ Play First Track (SmartTube)", action="open_queue_first", params={"idx": str(idx)}, is_folder=False)
 
     tracks = ep.get("tracks", []) or []
-    ids = get_track_video_ids(ep)
+    urls = get_track_urls(ep)
 
-    for i, vid in enumerate(ids):
+    for i, u in enumerate(urls):
+        tname = "Track"
         if i < len(tracks):
-            label = f"{i+1}. {(tracks[i] or {}).get('title', 'Track')}"
+            tname = (tracks[i] or {}).get("title", "Track")
         else:
             encore_title = ((ep.get("encore") or {}).get("title")) or "Encore"
-            label = f"{i+1}. {encore_title} 🕯️"
+            tname = encore_title + " 🕯️"
 
-        add_item(label, action="play_video", params={"video_id": vid}, playable=True, is_folder=False)
+        # ✅ Add artist prefix so you SEE the artist in the list too
+        label = f"{i+1}. {tname}"
+        if artist:
+            label = f"{i+1}. {artist} — {tname}"
+
+        info = {"title": tname, "artist": artist}
+        add_item(label, action="open_url", params={"url": u}, is_folder=False, info=info)
 
     end_dir()
 
-def play_video(video_id):
-    if not video_id:
-        notify("Missing video id.")
+def browse_playlist(eps, idx):
+    try:
+        idx = int(idx)
+        ep = eps[idx]
+    except Exception:
+        notify("Bad item.")
+        end_dir()
         return
-    xbmc.Player().play(youtube_play_video(video_id))
 
-def play_fullshow(eps, idx):
+    tracks = ep.get("tracks", []) or []
+    if not tracks:
+        notify("No playlist link.")
+        end_dir()
+        return
+
+    raw = (tracks[0] or {}).get("url", "")
+    pid = playlist_id_from_url(raw)
+    if not pid:
+        notify("Bad playlist link.")
+        end_dir()
+        return
+
+    # We can't list playlist items without API (and you said NO API drama ✅),
+    # so browse just becomes "open playlist in SmartTube".
+    playlist_url = f"https://www.youtube.com/playlist?list={pid}"
+    add_item("▶ Open Playlist in SmartTube", action="open_url", params={"url": playlist_url}, is_folder=False)
+    end_dir()
+
+def open_fullshow(eps, idx):
     try:
         idx = int(idx)
         ep = eps[idx]
@@ -222,19 +289,15 @@ def play_fullshow(eps, idx):
         notify("No tracks.")
         return
 
-    url = (tracks[0] or {}).get("url", "")
-    vid = yt_id_from_url(url)
-    if not vid:
-        pid = playlist_id_from_url(url)
-        if pid:
-            xbmc.Player().play(youtube_play_playlist(pid))
-            return
+    raw = (tracks[0] or {}).get("url", "")
+    nice = to_youtube_watch_url(raw)
+    if not nice:
         notify("Bad YouTube link.")
         return
 
-    xbmc.Player().play(youtube_play_video(vid))
+    open_in_smarttube(nice)
 
-def play_playlist(eps, idx):
+def open_playlist(eps, idx):
     try:
         idx = int(idx)
         ep = eps[idx]
@@ -246,13 +309,17 @@ def play_playlist(eps, idx):
     if not tracks:
         notify("No playlist link.")
         return
-    pid = playlist_id_from_url((tracks[0] or {}).get("url", ""))
+
+    raw = (tracks[0] or {}).get("url", "")
+    pid = playlist_id_from_url(raw)
     if not pid:
         notify("Bad playlist link.")
         return
-    xbmc.Player().play(youtube_play_playlist(pid))
 
-def play_queue_all(eps, idx):
+    playlist_url = f"https://www.youtube.com/playlist?list={pid}"
+    open_in_smarttube(playlist_url)
+
+def open_queue_first(eps, idx):
     try:
         idx = int(idx)
         ep = eps[idx]
@@ -260,27 +327,23 @@ def play_queue_all(eps, idx):
         notify("Bad queue.")
         return
 
-    ids = get_track_video_ids(ep)
-    if not ids:
+    urls = get_track_urls(ep)
+    if not urls:
         notify("No playable tracks in this queue.")
         return
 
-    pl = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
-    pl.clear()
+    open_in_smarttube(urls[0])
+    notify("Tip: pick any track from the list to play it in SmartTube.")
 
-    for vid in ids:
-        pl.add(youtube_play_video(vid))
-
-    xbmc.Player().play(pl)
+def open_url(url):
+    open_in_smarttube(url)
 
 def render_fallback():
     notify("Using fallback list (JSON not reachable).")
     for title, url in FALLBACK_EPISODES:
-        vid = yt_id_from_url(url)
-        if vid:
-            li = xbmcgui.ListItem(label=title)
-            li.setProperty("IsPlayable", "true")
-            xbmcplugin.addDirectoryItem(HANDLE, youtube_play_video(vid), li, isFolder=False)
+        nice = to_youtube_watch_url(url)
+        if nice:
+            add_item(title + " (▶ Play)", action="open_url", params={"url": nice}, is_folder=False)
     end_dir()
 
 def router():
@@ -299,20 +362,24 @@ def router():
         browse_queue(eps, params.get("idx"))
         return
 
-    if action == "play_video":
-        play_video(params.get("video_id"))
+    if action == "open_url":
+        open_url(params.get("url"))
         return
 
-    if action == "play_fullshow":
-        play_fullshow(eps, params.get("idx"))
+    if action == "open_fullshow":
+        open_fullshow(eps, params.get("idx"))
         return
 
-    if action == "play_playlist":
-        play_playlist(eps, params.get("idx"))
+    if action == "open_playlist":
+        open_playlist(eps, params.get("idx"))
         return
 
-    if action == "play_queue_all":
-        play_queue_all(eps, params.get("idx"))
+    if action == "browse_playlist":
+        browse_playlist(eps, params.get("idx"))
+        return
+
+    if action == "open_queue_first":
+        open_queue_first(eps, params.get("idx"))
         return
 
     root_menu(eps)
