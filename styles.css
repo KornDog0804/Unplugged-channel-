@@ -703,3 +703,34 @@ body.landing{
 .heroGlow {
   pointer-events: none;
 }
+/* --- CLICK FIX: stop invisible overlays from blocking taps --- */
+
+/* If you use any fullscreen overlay layers, they must not capture taps */
+body::before,
+body::after,
+.landing::before,
+.landing::after,
+.sessions::before,
+.sessions::after,
+.overlay,
+.bg,
+.backdrop,
+.heroBg,
+.noise,
+.grain,
+.glowLayer {
+  pointer-events: none !important;
+}
+
+/* Make sure real UI can receive taps */
+a, button, .btn, .landingBtn, .epCard {
+  pointer-events: auto !important;
+  position: relative;
+  z-index: 50;
+}
+
+/* If your header/hero has decorative layers, keep them behind content */
+.top, .landingWrap, .wrap, main, .landingHero, .playerShell {
+  position: relative;
+  z-index: 10;
+}
