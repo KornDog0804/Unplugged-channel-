@@ -167,6 +167,7 @@
           }
         ]
       },
+      
       {
         "title": "Bad Omens",
         "mode": "folder",
@@ -185,7 +186,7 @@
             ]
           }
         ]
-      }
+      },
 
       {
         "title": "Dayseeker",
