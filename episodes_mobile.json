@@ -20,7 +20,6 @@
           }
         ]
       },
-
       {
         "title": "Nirvana",
         "mode": "folder",
@@ -33,7 +32,6 @@
           }
         ]
       },
-
       {
         "title": "Alice In Chains",
         "mode": "folder",
@@ -46,7 +44,6 @@
           }
         ]
       },
-
       {
         "title": "Pearl Jam",
         "mode": "folder",
@@ -59,7 +56,6 @@
           }
         ]
       },
-
       {
         "title": "Stone Temple Pilots",
         "mode": "folder",
@@ -72,7 +68,6 @@
           }
         ]
       },
-
       {
         "title": "Korn",
         "mode": "folder",
@@ -85,7 +80,6 @@
           }
         ]
       },
-
       {
         "title": "JAY-Z",
         "mode": "folder",
@@ -98,7 +92,6 @@
           }
         ]
       },
-
       {
         "title": "Flyleaf",
         "mode": "folder",
@@ -113,7 +106,6 @@
           }
         ]
       },
-
       {
         "title": "Wage War",
         "mode": "folder",
@@ -133,7 +125,6 @@
           }
         ]
       },
-
       {
         "title": "Smile Empty Soul",
         "mode": "folder",
@@ -151,7 +142,6 @@
           }
         ]
       },
-
       {
         "title": "Wind Walkers",
         "mode": "folder",
@@ -167,7 +157,6 @@
           }
         ]
       },
-      
       {
         "title": "Bad Omens",
         "mode": "folder",
@@ -187,7 +176,6 @@
           }
         ]
       },
-
       {
         "title": "Dayseeker",
         "mode": "folder",
@@ -206,7 +194,6 @@
           }
         ]
       },
-
       {
         "title": "I Prevail",
         "mode": "folder",
@@ -232,16 +219,13 @@
     "title": "🎙 Tiny Desk",
     "mode": "folder",
     "items": [
-      {
-        "title": "Scarface — Tiny Desk",
-        "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }]
-      },
-      {
-        "title": "Billy Strings — Tiny Desk",
-        "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }]
-      }
+      { "title": "Scarface — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }] },
+      { "title": "Billy Strings — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }] },
+      { "title": "Cypress Hill — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/tUApO77uUUk" }] },
+      { "title": "Paramore — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/_t-nRXwAL1k" }] },
+      { "title": "Alicia Keys — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/uwUt1fVLb3E" }] },
+      { "title": "Living Colour — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/bzAI4F_ks5s" }] },
+      { "title": "311 — Tiny Desk", "mode": "fullshow", "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/MgTDLlDY_yY" }] }
     ]
   },
 
