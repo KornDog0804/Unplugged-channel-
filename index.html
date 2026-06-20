@@ -118,8 +118,7 @@
       if (installBtn) installBtn.style.display = "none";
     });
 
-    // ===== FEATURED STRIP =====
-    // Single source of truth: episodes.json (matches app.js).
+    // ===== FEATURED STRIP (capped at 3 cards) =====
     (async function loadFeatured() {
       const $section = document.getElementById("featuredSection");
       const $scroll = document.getElementById("featuredScroll");
@@ -204,7 +203,7 @@
       if (!root) return;
 
       const featured = [];
-      collectFeatured(root, 10, featured);
+      collectFeatured(root, 3, featured); // capped at 3
       if (!featured.length) return;
 
       $scroll.innerHTML = featured.map(item => {
