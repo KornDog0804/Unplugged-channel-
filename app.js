@@ -3,10 +3,7 @@
    #episodes, #playAllBtn, #loadMoreBtn, #status,
    #playerFrame, #playerToggleBtn,
    #watchOnTvBtn, #nowPlayingTitle, #nowPlayingLine,
-   #npArtWrap, #npArt
-
-   Single source of truth: episodes.json. (episodes_mobile.json is no
-   longer read — keeping one file means no more syncing two datasets.)
+   #npArtWrap, #npArt, #backNavBtn
 */
 
 (() => {
@@ -32,6 +29,8 @@
 
   const $npArtWrap = document.getElementById("npArtWrap");
   const $npArt = document.getElementById("npArt");
+
+  const $backNavBtn = document.getElementById("backNavBtn");
 
   if (!$episodes) return;
 
@@ -95,6 +94,13 @@
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
+  }
+
+  // Updates the bottom back button: "Back to Sessions" (pops one level)
+  // while inside a folder, "Back to home" (leaves the app) at the root.
+  function updateBackNav() {
+    if (!$backNavBtn) return;
+    $backNavBtn.textContent = viewStack.length > 1 ? "← Back to Sessions" : "← Back to home";
   }
 
   // ==== YOUTUBE PARSING ====
@@ -372,6 +378,7 @@
 
     setNowPlaying("Now Playing", "Pick a session below 👇");
     setNowPlayingArt({});
+    updateBackNav();
 
     const visible = items.slice(0, renderLimit);
     const html = visible.map(renderCard).join("");
@@ -519,6 +526,16 @@
 
   if ($watchOnTvBtn) {
     $watchOnTvBtn.style.display = "none";
+  }
+
+  if ($backNavBtn) {
+    $backNavBtn.addEventListener("click", () => {
+      if (viewStack.length > 1) {
+        popView();
+      } else {
+        window.location.href = "./index.html";
+      }
+    });
   }
 
   // ==== SWIPE BACK (mobile) ====
