@@ -5,17 +5,15 @@
    #watchOnTvBtn, #nowPlayingTitle, #nowPlayingLine,
    #npArtWrap, #npArt
 
-   Album art: any node in your JSON can carry an optional "thumb" field
-   (a direct image URL) to override the auto-pulled YouTube thumbnail.
-   Useful for playlist-mode items (Monster Jam, Drag Racing, etc.) where
-   there's no single video to pull a thumbnail from automatically.
+   Single source of truth: episodes.json. (episodes_mobile.json is no
+   longer read — keeping one file means no more syncing two datasets.)
 */
 
 (() => {
   "use strict";
 
   // ==== CONFIG ====
-  const DATA_CANDIDATES = ["./episodes_mobile.json", "./episodes.json", "./episodes_mobile.json"];
+  const DATA_CANDIDATES = ["./episodes.json"];
   const PAGE_SIZE = 24;
 
   const PLAYLISTS_OPEN_EXTERNALLY = true;
@@ -46,8 +44,6 @@
   let playerVisible = false;
   let currentWatchUrl = "";
 
-  // node -> art src (string url) or null. Caches both "thumb" overrides
-  // and auto-derived YouTube thumbnails so we don't re-walk trees on render.
   const artCache = new WeakMap();
 
   // ==== UI HELPERS ====
@@ -60,8 +56,6 @@
     if ($nowPlayingLine) $nowPlayingLine.textContent = line || "";
   }
 
-  // src: direct override URL (from "thumb"), videoId: fallback for
-  // building/retrying official YouTube thumbnail sizes.
   function setNowPlayingArt({ src, videoId } = {}) {
     if (!$npArtWrap || !$npArt) return;
 
@@ -79,7 +73,6 @@
     $npArt.alt = "";
     $npArt.onerror = function () {
       if (!src && videoId) {
-        // retry a lower-res official thumbnail before giving up
         this.onerror = function () {
           this.onerror = null;
           this.closest(".npArtWrap")?.classList.add("npArtFallback");
@@ -201,9 +194,6 @@
   }
 
   // ==== ALBUM ART ====
-  // Returns a direct image URL for a node, or null.
-  // Priority: explicit "thumb" override > first playable video's
-  // YouTube thumbnail (recursing into folders).
   function getNodeArt(node) {
     if (!node || typeof node !== "object") return null;
     if (artCache.has(node)) return artCache.get(node);
@@ -231,7 +221,7 @@
     return result;
   }
 
-  // ==== NAV / HISTORY (back button steps through folders) ====
+  // ==== NAV / HISTORY ====
   function currentNode() {
     return viewStack[viewStack.length - 1] || ROOT;
   }
