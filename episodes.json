@@ -18,6 +18,22 @@
           }
         ]
       },
+      
+      {
+  "title": "Alanis Morissette",
+  "mode": "folder",
+  "items": [
+    {
+      "title": "MTV Unplugged (Full Session)",
+      "artist": "Alanis Morissette",
+      "mode": "fullshow",
+      "tracks": [
+        {
+          "title": "MTV Unplugged",
+          "url": "https://youtu.be/irJK3I1m8zY"
+        }
+      ]
+    },
 
       {
         "title": "Bad Omens",
