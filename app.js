@@ -4,6 +4,11 @@
    #playerFrame, #playerToggleBtn,
    #watchOnTvBtn, #nowPlayingTitle, #nowPlayingLine,
    #npArtWrap, #npArt
+
+   Album art: any node in your JSON can carry an optional "thumb" field
+   (a direct image URL) to override the auto-pulled YouTube thumbnail.
+   Useful for playlist-mode items (Monster Jam, Drag Racing, etc.) where
+   there's no single video to pull a thumbnail from automatically.
 */
 
 (() => {
@@ -13,8 +18,6 @@
   const DATA_CANDIDATES = ["./episodes_mobile.json", "./episodes.json", "./episodes_mobile.json"];
   const PAGE_SIZE = 24;
 
-  // Playlist embeds are flaky across mobile + iOS + some WebViews.
-  // Force playlists to OPEN externally instead of embedding.
   const PLAYLISTS_OPEN_EXTERNALLY = true;
 
   // ==== DOM ====
@@ -29,7 +32,6 @@
   const $nowPlayingTitle = document.getElementById("nowPlayingTitle");
   const $nowPlayingLine = document.getElementById("nowPlayingLine");
 
-  // Album art
   const $npArtWrap = document.getElementById("npArtWrap");
   const $npArt = document.getElementById("npArt");
 
@@ -39,13 +41,14 @@
   let ROOT = null;
   let viewStack = [];
   let renderLimit = PAGE_SIZE;
-  let currentQueue = [];        // array of {title,url,kind}
+  let currentQueue = [];
   let currentQueueIndex = 0;
   let playerVisible = false;
   let currentWatchUrl = "";
 
-  // Cache of node -> videoId so we don't re-walk folder trees on every render
-  const videoIdCache = new WeakMap();
+  // node -> art src (string url) or null. Caches both "thumb" overrides
+  // and auto-derived YouTube thumbnails so we don't re-walk trees on render.
+  const artCache = new WeakMap();
 
   // ==== UI HELPERS ====
   function setStatus(msg = "") {
@@ -57,23 +60,39 @@
     if ($nowPlayingLine) $nowPlayingLine.textContent = line || "";
   }
 
-  function setNowPlayingArt(videoId) {
+  // src: direct override URL (from "thumb"), videoId: fallback for
+  // building/retrying official YouTube thumbnail sizes.
+  function setNowPlayingArt({ src, videoId } = {}) {
     if (!$npArtWrap || !$npArt) return;
 
-    if (videoId) {
-      $npArtWrap.classList.remove("npArtFallback");
-      $npArt.style.display = "block";
-      $npArt.onerror = function () {
-        this.onerror = null;
-        this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
-      };
-      $npArt.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      $npArt.alt = "";
-    } else {
+    const initial = src || (videoId ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg` : null);
+
+    if (!initial) {
       $npArtWrap.classList.add("npArtFallback");
       $npArt.style.display = "none";
       $npArt.removeAttribute("src");
+      return;
     }
+
+    $npArtWrap.classList.remove("npArtFallback");
+    $npArt.style.display = "block";
+    $npArt.alt = "";
+    $npArt.onerror = function () {
+      if (!src && videoId) {
+        // retry a lower-res official thumbnail before giving up
+        this.onerror = function () {
+          this.onerror = null;
+          this.closest(".npArtWrap")?.classList.add("npArtFallback");
+          this.style.display = "none";
+        };
+        this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      } else {
+        this.onerror = null;
+        this.closest(".npArtWrap")?.classList.add("npArtFallback");
+        this.style.display = "none";
+      }
+    };
+    $npArt.src = initial;
   }
 
   function escapeHtml(str) {
@@ -90,7 +109,6 @@
     try {
       const u = new URL(url);
 
-      // Playlist
       if (u.pathname.includes("/playlist") && u.searchParams.get("list")) {
         const list = u.searchParams.get("list");
         return {
@@ -101,7 +119,6 @@
         };
       }
 
-      // youtu.be/<id>
       if (u.hostname.includes("youtu.be")) {
         const id = u.pathname.replace("/", "").trim();
         if (id) {
@@ -114,7 +131,6 @@
         }
       }
 
-      // youtube.com/watch?v=<id>
       if (u.pathname.includes("/watch") && u.searchParams.get("v")) {
         const id = u.searchParams.get("v");
         const list = u.searchParams.get("list");
@@ -126,7 +142,6 @@
         };
       }
 
-      // fallback: /live/<id> /embed/<id> etc.
       const parts = u.pathname.split("/").filter(Boolean);
       const possibleId = parts[parts.length - 1];
       if (possibleId && possibleId.length >= 8) {
@@ -185,31 +200,38 @@
     return node?.title || node?.artist || "Untitled";
   }
 
-  // ==== ALBUM ART HELPERS ====
-  function findFirstVideoId(node) {
+  // ==== ALBUM ART ====
+  // Returns a direct image URL for a node, or null.
+  // Priority: explicit "thumb" override > first playable video's
+  // YouTube thumbnail (recursing into folders).
+  function getNodeArt(node) {
     if (!node || typeof node !== "object") return null;
-    if (videoIdCache.has(node)) return videoIdCache.get(node);
+    if (artCache.has(node)) return artCache.get(node);
 
     let result = null;
 
-    if (isFolder(node)) {
+    if (node.thumb) {
+      result = node.thumb;
+    } else if (isFolder(node)) {
       for (const child of getNodeItems(node)) {
-        result = findFirstVideoId(child);
+        result = getNodeArt(child);
         if (result) break;
       }
     } else {
       const playable = collectPlayableFromNode(node);
       if (playable.length) {
         const info = parseYouTube(playable[0].url);
-        if (info.kind === "video" && info.id) result = info.id;
+        if (info.kind === "video" && info.id) {
+          result = `https://img.youtube.com/vi/${info.id}/mqdefault.jpg`;
+        }
       }
     }
 
-    videoIdCache.set(node, result);
+    artCache.set(node, result);
     return result;
   }
 
-  // ==== NAV / HISTORY (FIXED: back button now steps through folders) ====
+  // ==== NAV / HISTORY (back button steps through folders) ====
   function currentNode() {
     return viewStack[viewStack.length - 1] || ROOT;
   }
@@ -220,9 +242,6 @@
     return `${location.pathname}${hash}`;
   }
 
-  // Entering a folder: push a REAL history entry so the back button
-  // and swipe-back both step out one level at a time, instead of
-  // jumping straight back to the home page.
   function pushView(node) {
     viewStack.push(node);
     renderLimit = PAGE_SIZE;
@@ -230,21 +249,12 @@
     render();
   }
 
-  // Called by swipe-back gesture and the "back" affordance.
-  // Routes through history.back() so the phone's back button and the
-  // in-app swipe gesture stay perfectly in sync.
   function popView() {
     if (viewStack.length > 1) {
       history.back();
     }
   }
 
-  // Fires when the user presses the phone/browser back button (or swipe
-  // triggers history.back() above). Pops exactly one folder level.
-  // Once viewStack is back down to the root, the NEXT back press has
-  // nothing left to pop in this document, so the browser naturally
-  // navigates away to whatever was open before sessions.html (home) —
-  // which is exactly the desired behavior.
   window.addEventListener("popstate", () => {
     if (viewStack.length > 1) {
       viewStack.pop();
@@ -264,30 +274,30 @@
     }
 
     const tracks = Array.isArray(node.tracks) ? node.tracks : [];
+    const nodeThumb = node.thumb || null;
 
-    // ✅ playlist: use FIRST track URL (your JSON stores it there)
     if (node.mode === "playlist") {
       const first = tracks.find(t => t?.url);
-      if (first?.url) return [{ title: first.title || safeTitle(node), url: first.url, kind: "playlist" }];
-      if (node.url) return [{ title: safeTitle(node), url: node.url, kind: "playlist" }];
+      if (first?.url) return [{ title: first.title || safeTitle(node), url: first.url, kind: "playlist", thumb: nodeThumb }];
+      if (node.url) return [{ title: safeTitle(node), url: node.url, kind: "playlist", thumb: nodeThumb }];
       return [];
     }
 
     if (node.mode === "fullshow") {
       const first = tracks.find(t => t?.url);
-      return first ? [{ title: safeTitle(node), url: first.url, kind: "video" }] : [];
+      return first ? [{ title: safeTitle(node), url: first.url, kind: "video", thumb: nodeThumb }] : [];
     }
 
     if (node.mode === "queue") {
       return tracks
         .filter(t => t && t.url)
-        .map(t => ({ title: t.title || safeTitle(node), url: t.url, kind: "video" }));
+        .map(t => ({ title: t.title || safeTitle(node), url: t.url, kind: "video", thumb: nodeThumb }));
     }
 
     if (tracks.length) {
       return tracks
         .filter(t => t && t.url)
-        .map(t => ({ title: t.title || safeTitle(node), url: t.url, kind: "video" }));
+        .map(t => ({ title: t.title || safeTitle(node), url: t.url, kind: "video", thumb: nodeThumb }));
     }
 
     return [];
@@ -314,12 +324,12 @@
     else if (playerVisible && currentQueue.length) playTrackAt(currentQueueIndex, false);
   }
 
-  function showOpenExternallyMessage(title, watchUrl, videoId) {
+  function showOpenExternallyMessage(title, watchUrl, videoId, thumb) {
     if ($playerFrame) {
       $playerFrame.src = "about:blank";
     }
     setNowPlaying("Open in YouTube / SmartTube", title);
-    setNowPlayingArt(videoId || null);
+    setNowPlayingArt({ src: thumb || null, videoId });
     setStatus("This playlist opens externally (more reliable than embeds).");
     if ($watchOnTvBtn) {
       $watchOnTvBtn.href = watchUrl;
@@ -347,7 +357,7 @@
     }
 
     if ((track.kind === "playlist" || info.kind === "playlist") && PLAYLISTS_OPEN_EXTERNALLY) {
-      showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl, videoId);
+      showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl, videoId, track.thumb);
       return;
     }
 
@@ -360,7 +370,7 @@
     if ($playerFrame) $playerFrame.src = embed;
 
     setNowPlaying("Now Playing", track.title || "Playing…");
-    setNowPlayingArt(videoId);
+    setNowPlayingArt({ src: track.thumb || null, videoId });
     setStatus(`Playing ${currentQueueIndex + 1} of ${currentQueue.length}`);
     if (!playerVisible) showPlayer(true);
   }
@@ -371,7 +381,7 @@
     const items = getNodeItems(node);
 
     setNowPlaying("Now Playing", "Pick a session below 👇");
-    setNowPlayingArt(null);
+    setNowPlayingArt({});
 
     const visible = items.slice(0, renderLimit);
     const html = visible.map(renderCard).join("");
@@ -407,11 +417,11 @@
 
     const icon = escapeHtml(node.icon || "");
 
-    const videoId = findFirstVideoId(node);
-    const safeId = videoId ? escapeHtml(videoId) : "";
-    const artHtml = safeId
+    const artSrc = getNodeArt(node);
+    const safeArtSrc = artSrc ? escapeHtml(artSrc) : "";
+    const artHtml = safeArtSrc
       ? `<div class="epArtWrap">
-           <img class="epArt" src="https://img.youtube.com/vi/${safeId}/mqdefault.jpg" alt="" loading="lazy"
+           <img class="epArt" src="${safeArtSrc}" alt="" loading="lazy"
                 onerror="this.closest('.epArtWrap').classList.add('epArtFallback'); this.remove();">
          </div>`
       : `<div class="epArtWrap epArtFallback"></div>`;
