@@ -308,18 +308,6 @@
         ]
       },
       {
-        "title": "Matchbox Twenty",
-        "artist": "Matchbox Twenty",
-        "year": "Unplugged",
-        "mode": "playlist",
-        "tracks": [
-          {
-            "title": "Matchbox Twenty Unplugged Playlist",
-            "url": "https://www.youtube.com/playlist?list=PLrCPeYRqnoZQ9Kjxezt-oIdWwxm4R8t-R"
-          }
-        ]
-      },
-      {
         "title": "Nirvana",
         "mode": "folder",
         "items": [
@@ -752,6 +740,313 @@
         "mode": "fullshow",
         "tracks": [
           { "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }
+        ]
+      }
+    ]
+  },
+
+  {
+    "title": "🎤 Live Concerts",
+    "mode": "folder",
+    "items": [
+      {
+        "title": "Pantera",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Resurrection Fest (2023, Pro-Shot 4K)",
+            "artist": "Pantera",
+            "year": 2023,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=WMnhw6H-Wfg" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Metallica",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Slane Castle, Ireland (2019)",
+            "artist": "Metallica",
+            "year": 2019,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=9wz2WWgv9Fs" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "System Of A Down",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Pinkpop Festival (2002, Pro-Shot)",
+            "artist": "System Of A Down",
+            "year": 2002,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=J23YAu9JvNQ" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Rage Against The Machine",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Finsbury Park, London (2010)",
+            "artist": "Rage Against The Machine",
+            "year": 2010,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=Sp_GfATanbM" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Tool",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Back To The Beginning, Birmingham (2025, Official Pro-Shot)",
+            "artist": "Tool",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=94-_TW2HelY" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Limp Bizkit",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Lollapalooza Chile (2024, Official Pro-Shot HD)",
+            "artist": "Limp Bizkit",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=LF9F1lZuXxY" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Mötley Crüe",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Carnival Of Sins (Official Full Concert)",
+            "artist": "Mötley Crüe",
+            "year": "DVD",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=ETqwsTYYdUM" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Body Count",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live In LA (Full Concert)",
+            "artist": "Body Count",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=mZxPB8xfM6c" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Dance Gavin Dance",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Set (Pro-Shot, CaliberTV)",
+            "artist": "Dance Gavin Dance",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=xC-k4FEYpJ8" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Architects",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "For Those That Wish To Exist At Abbey Road",
+            "artist": "Architects",
+            "year": 2022,
+            "mode": "playlist",
+            "tracks": [
+              { "title": "Full Album Stream", "url": "https://www.youtube.com/playlist?list=PLDoJvF54_l4wEHig5KdWK7CVHS_FXHLkq" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Starset",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Immersion: The Final Chapter (Live Demonstration, 2024)",
+            "artist": "Starset",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=EV8n2cU4wRw" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Linkin Park",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Pinkpop Festival (2012, Pro-Shot)",
+            "artist": "Linkin Park",
+            "year": 2012,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=vXsFpdYAV9c" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Korn (Live)",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Korn: Live — Hammerstein Theater, NYC",
+            "artist": "Korn",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=xqrO5-19N3c" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Sleep Token",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Red Rocks, Denver (2024, 4K Full Set)",
+            "artist": "Sleep Token",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=4w0HfOkBycI" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Jinjer",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Alive In Melbourne (Official Full Concert)",
+            "artist": "Jinjer",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=vHLouXKjTNQ" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Spiritbox",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Rock Am Ring (2025, Official Pro-Shot)",
+            "artist": "Spiritbox",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=TtmCX9y52ms" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Memphis May Fire",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Vans Warped Tour, Orlando (2025, Full Concert)",
+            "artist": "Memphis May Fire",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=6wGtxZf5R4w" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "The Amity Affliction",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Hellfest (2023, Pro-Shot Full Set)",
+            "artist": "The Amity Affliction",
+            "year": 2023,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=_kdPhOs5THA" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Fall Out Boy",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "KROQ Helpful Honda Sound Space (Full Performance)",
+            "artist": "Fall Out Boy",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=Jkau6qU7yG8" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Polaris",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Performance — KEXP",
+            "artist": "Polaris",
+            "year": 2015,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=2tKbQQNsUO8" }
+            ]
+          }
         ]
       }
     ]
