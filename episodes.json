@@ -4,6 +4,26 @@
     "mode": "folder",
     "items": [
       {
+        "title": "3 Doors Down",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live For Brad (Tribute Set)",
+            "artist": "3 Doors Down",
+            "year": "Live",
+            "mode": "queue",
+            "memorial": true,
+            "memorial_name": "Brad",
+            "tracks": [
+              { "title": "Here Without You (Live)", "url": "https://youtu.be/xocNHKBHsSg" },
+              { "title": "When I'm Gone (Live)", "url": "https://youtu.be/5XpuvhHhx_s" },
+              { "title": "Kryptonite (Live)", "url": "https://youtu.be/m3lSLLklu7Q" },
+              { "title": "Ticket To Heaven (Live)", "url": "https://youtu.be/mdV9iLyrPv8" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Alice In Chains",
         "mode": "folder",
         "items": [
@@ -18,26 +38,20 @@
           }
         ]
       },
-      
       {
-  "title": "Alanis Morissette",
-  "mode": "folder",
-  "items": [
-    {
-      "title": "MTV Unplugged (Full Session)",
-      "artist": "Alanis Morissette",
-      "mode": "fullshow",
-      "tracks": [
-        {
-          "title": "MTV Unplugged",
-          "url": "https://youtu.be/irJK3I1m8zY"
-        }
-      ]
-    }
-  ]
-},
-      
-
+        "title": "Alanis Morissette",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Alanis Morissette",
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "MTV Unplugged", "url": "https://youtu.be/irJK3I1m8zY" }
+            ]
+          }
+        ]
+      },
       {
         "title": "Bad Omens",
         "mode": "folder",
@@ -58,7 +72,6 @@
           }
         ]
       },
-
       {
         "title": "Billy Strings",
         "mode": "folder",
@@ -74,7 +87,6 @@
           }
         ]
       },
-
       {
         "title": "Chris Cornell",
         "mode": "folder",
@@ -90,7 +102,6 @@
           }
         ]
       },
-
       {
         "title": "Corey Taylor",
         "mode": "folder",
@@ -106,7 +117,6 @@
           }
         ]
       },
-
       {
         "title": "Dayseeker",
         "mode": "folder",
@@ -126,7 +136,6 @@
           }
         ]
       },
-
       {
         "title": "Flyleaf",
         "mode": "folder",
@@ -142,7 +151,6 @@
           }
         ]
       },
-
       {
         "title": "I Prevail",
         "mode": "folder",
@@ -162,7 +170,6 @@
           }
         ]
       },
-
       {
         "title": "JAY-Z",
         "mode": "folder",
@@ -178,7 +185,6 @@
           }
         ]
       },
-
       {
         "title": "Korn",
         "mode": "folder",
@@ -194,7 +200,6 @@
           }
         ]
       },
-
       {
         "title": "Nirvana",
         "mode": "folder",
@@ -210,7 +215,6 @@
           }
         ]
       },
-
       {
         "title": "Papa Roach",
         "mode": "folder",
@@ -226,7 +230,6 @@
           }
         ]
       },
-
       {
         "title": "Pearl Jam",
         "mode": "folder",
@@ -242,7 +245,6 @@
           }
         ]
       },
-
       {
         "title": "Scarface",
         "mode": "folder",
@@ -258,7 +260,6 @@
           }
         ]
       },
-
       {
         "title": "Sevendust",
         "mode": "folder",
@@ -274,7 +275,6 @@
           }
         ]
       },
-
       {
         "title": "Shinedown",
         "mode": "folder",
@@ -297,7 +297,6 @@
           }
         ]
       },
-
       {
         "title": "Smile Empty Soul",
         "mode": "folder",
@@ -316,7 +315,6 @@
           }
         ]
       },
-
       {
         "title": "Stevie Ray Vaughan • Joe Satriani",
         "mode": "folder",
@@ -332,7 +330,6 @@
           }
         ]
       },
-
       {
         "title": "Stone Temple Pilots",
         "mode": "folder",
@@ -348,7 +345,6 @@
           }
         ]
       },
-
       {
         "title": "The Home Team",
         "mode": "folder",
@@ -364,7 +360,6 @@
           }
         ]
       },
-
       {
         "title": "Wage War",
         "mode": "folder",
@@ -385,7 +380,6 @@
           }
         ]
       },
-
       {
         "title": "Wind Walkers",
         "mode": "folder",
@@ -471,22 +465,39 @@
     "mode": "folder",
     "items": [
       {
-        "title": "Scarface — Tiny Desk (Home) Concert",
-        "artist": "Scarface",
-        "year": 2023,
+        "title": "Scarface — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [
-          { "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }
-        ]
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }]
       },
       {
-        "title": "Billy Strings — Tiny Desk Concert",
-        "artist": "Billy Strings",
-        "year": 2019,
+        "title": "Billy Strings — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [
-          { "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }
-        ]
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }]
+      },
+      {
+        "title": "Cypress Hill — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/tUApO77uUUk" }]
+      },
+      {
+        "title": "Paramore — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/_t-nRXwAL1k" }]
+      },
+      {
+        "title": "Alicia Keys — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/uwUt1fVLb3E" }]
+      },
+      {
+        "title": "Living Colour — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/bzAI4F_ks5s" }]
+      },
+      {
+        "title": "311 — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/MgTDLlDY_yY" }]
       }
     ]
   },
@@ -557,21 +568,6 @@
         "tracks": [
           { "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }
         ]
-      },
-
-      {
-        "title": "3 Doors Down — Live for Brad (Tribute)",
-        "artist": "3 Doors Down",
-        "year": "Live",
-        "mode": "queue",
-        "memorial": true,
-        "memorial_name": "Brad",
-        "tracks": [
-          { "title": "01. Here Without You (Live)", "url": "https://youtu.be/xocNHKBHsSg" },
-          { "title": "02. When I'm Gone (Live)", "url": "https://youtu.be/5XpuvhHhx_s" },
-          { "title": "03. Kryptonite (Live)", "url": "https://youtu.be/m3lSLLklu7Q" },
-          { "title": "04. Ticket to Heaven (Live)", "url": "https://youtu.be/mdV9iLyrPv8" }
-        ]
       }
     ]
   },
@@ -581,6 +577,7 @@
     "artist": "Monster Jam",
     "year": "Playlist",
     "mode": "playlist",
+    "thumb": "./images/Logos.webp",
     "tracks": [
       {
         "title": "Monster Jam - Full Episodes",
@@ -594,6 +591,7 @@
     "artist": "Drag Racing",
     "year": "Playlist",
     "mode": "playlist",
+    "thumb": "./images/nhra-4-logo-svg-vector.svg",
     "tracks": [
       {
         "title": "Drag Racing Playlist",
