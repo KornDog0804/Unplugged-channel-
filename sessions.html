@@ -7,7 +7,6 @@
 
   <link rel="stylesheet" href="./styles.css" />
 
-  <!-- PWA -->
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#07070a">
   <meta name="description" content="Stripped & unplugged sessions — handpicked only.">
@@ -44,7 +43,6 @@
 
     <div class="playerTop">
 
-      <!-- ALBUM ART (new) -->
       <div class="npArtWrap" id="npArtWrap">
         <img id="npArt" class="npArt" alt="" />
       </div>
@@ -119,9 +117,14 @@
     </button>
 
     <div class="backRow">
-      <a class="btn ghost" href="./index.html">
+      <!--
+        Smart back button: inside any folder this reads "Back to Sessions"
+        and steps back one level. Only at the root list does it actually
+        leave to the home page. Label/behavior controlled by app.js.
+      -->
+      <button id="backNavBtn" class="btn ghost" type="button">
         ← Back to home
-      </a>
+      </button>
     </div>
 
   </main>
