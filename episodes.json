@@ -88,6 +88,23 @@
         ]
       },
       {
+        "title": "Breaking Benjamin",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Performances Queue (3 Songs)",
+            "artist": "Breaking Benjamin",
+            "year": "Acoustic",
+            "mode": "queue",
+            "tracks": [
+              { "title": "Time After Time (St. Jude Sessions)", "url": "https://www.youtube.com/watch?v=2ONqcNXKNxk" },
+              { "title": "So Cold (Y100 Acoustic Session)", "url": "https://www.youtube.com/watch?v=kmH_xnQfcbQ" },
+              { "title": "Breath (Acoustic)", "url": "https://www.youtube.com/watch?v=M4rmSZ_PPSA" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Chris Cornell",
         "mode": "folder",
         "items": [
@@ -118,6 +135,21 @@
         ]
       },
       {
+        "title": "Creed",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Reunited And Unplugged (SiriusXM, 2024)",
+            "artist": "Creed",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=P7DWcyB9ElQ" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Dayseeker",
         "mode": "folder",
         "items": [
@@ -137,6 +169,36 @@
         ]
       },
       {
+        "title": "Eric Clapton",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Eric Clapton",
+            "year": 1992,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=XIRnN7AZ0Uo" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Evanescence",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live Acoustic — AOL Sessions (2006)",
+            "artist": "Evanescence",
+            "year": 2006,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=8f2ZeHaAHvY" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Flyleaf",
         "mode": "folder",
         "items": [
@@ -147,6 +209,21 @@
             "mode": "fullshow",
             "tracks": [
               { "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Godsmack",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Session in London (2012)",
+            "artist": "Godsmack",
+            "year": 2012,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=TEuGb-4xbzI" }
             ]
           }
         ]
@@ -186,6 +263,21 @@
         ]
       },
       {
+        "title": "KISS",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session, 1995)",
+            "artist": "KISS",
+            "year": 1995,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Korn",
         "mode": "folder",
         "items": [
@@ -197,6 +289,33 @@
             "tracks": [
               { "title": "Full Session Stream", "url": "https://youtu.be/El8-JgiqcUI" }
             ]
+          }
+        ]
+      },
+      {
+        "title": "Lauryn Hill",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged No. 2.0 (Full Show, Remastered 4K)",
+            "artist": "Lauryn Hill",
+            "year": 2002,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=4SDCuFLAF78" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Matchbox Twenty",
+        "artist": "Matchbox Twenty",
+        "year": "Unplugged",
+        "mode": "playlist",
+        "tracks": [
+          {
+            "title": "Matchbox Twenty Unplugged Playlist",
+            "url": "https://www.youtube.com/playlist?list=PLrCPeYRqnoZQ9Kjxezt-oIdWwxm4R8t-R"
           }
         ]
       },
@@ -316,6 +435,21 @@
         ]
       },
       {
+        "title": "Staind",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Staind",
+            "year": 2002,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=33MIi9bfmQo" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Stevie Ray Vaughan • Joe Satriani",
         "mode": "folder",
         "items": [
@@ -356,6 +490,21 @@
             "mode": "fullshow",
             "tracks": [
               { "title": "Full Session Stream", "url": "https://youtu.be/EGB3xoa7Cus" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Three Days Grace",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Acoustic Session & Chat (2012)",
+            "artist": "Three Days Grace",
+            "year": 2012,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=-4q714VDAXk" }
             ]
           }
         ]
@@ -455,6 +604,42 @@
         "mode": "fullshow",
         "tracks": [
           { "title": "Full Session Stream", "url": "https://youtu.be/r2I_pGlvtAY" }
+        ]
+      },
+      {
+        "title": "Staind — MTV Unplugged (Full Session)",
+        "artist": "Staind",
+        "year": 2002,
+        "mode": "fullshow",
+        "tracks": [
+          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=33MIi9bfmQo" }
+        ]
+      },
+      {
+        "title": "Eric Clapton — Unplugged (Full Session)",
+        "artist": "Eric Clapton",
+        "year": 1992,
+        "mode": "fullshow",
+        "tracks": [
+          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=XIRnN7AZ0Uo" }
+        ]
+      },
+      {
+        "title": "KISS — MTV Unplugged (Full Session, 1995)",
+        "artist": "KISS",
+        "year": 1995,
+        "mode": "fullshow",
+        "tracks": [
+          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM" }
+        ]
+      },
+      {
+        "title": "Lauryn Hill — MTV Unplugged No. 2.0 (Full Show, Remastered 4K)",
+        "artist": "Lauryn Hill",
+        "year": 2002,
+        "mode": "fullshow",
+        "tracks": [
+          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=4SDCuFLAF78" }
         ]
       }
     ]
