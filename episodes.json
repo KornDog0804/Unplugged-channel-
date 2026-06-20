@@ -814,12 +814,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Back To The Beginning, Birmingham (2025, Official Pro-Shot)",
+            "title": "Live at Lollapalooza Argentina (2025, Camera Shots Authorized by Tool Management)",
             "artist": "Tool",
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=94-_TW2HelY" }
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=75kl9XHFzaI" }
             ]
           }
         ]
@@ -930,31 +930,16 @@
         ]
       },
       {
-        "title": "Korn (Live)",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Korn: Live — Hammerstein Theater, NYC",
-            "artist": "Korn",
-            "year": "Live",
-            "mode": "fullshow",
-            "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=xqrO5-19N3c" }
-            ]
-          }
-        ]
-      },
-      {
         "title": "Sleep Token",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Red Rocks, Denver (2024, 4K Full Set)",
+            "title": "Live at Download Festival 2025 (First-Ever Headline Set)",
             "artist": "Sleep Token",
-            "year": 2024,
+            "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=4w0HfOkBycI" }
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=T8jVvjSbJRI" }
             ]
           }
         ]
@@ -994,12 +979,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Vans Warped Tour, Orlando (2025, Full Concert)",
+            "title": "Full Set, Live at The District, Sioux Falls (2024, Opening Night)",
             "artist": "Memphis May Fire",
-            "year": 2025,
+            "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=6wGtxZf5R4w" }
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=QC0uFUhFAN4" }
             ]
           }
         ]
@@ -1045,6 +1030,321 @@
             "mode": "fullshow",
             "tracks": [
               { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=2tKbQQNsUO8" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Killswitch Engage",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Wacken Open Air (2023, Pro-Shot Full Show)",
+            "artist": "Killswitch Engage",
+            "year": 2023,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=SXtrJxa2nfA" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bullet For My Valentine",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live In Paris (2023, Full Concert)",
+            "artist": "Bullet For My Valentine",
+            "year": 2023,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=ihwdkxayL-Q" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Five Finger Death Punch",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Indianapolis (2024, Full 4K Concert)",
+            "artist": "Five Finger Death Punch",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=2Ai4U94sb5Q" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Asking Alexandria",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Graspop (2013, Pro-Shot Full Set)",
+            "artist": "Asking Alexandria",
+            "year": 2013,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=Y399t9PIhmw" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Falling In Reverse",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Rock Am Ring (2025, Official Pro-Shot)",
+            "artist": "Falling In Reverse",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=ChyLmu2HUPk" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Black Sabbath",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live... Gathered In Their Masses (2013, Official Concert Film)",
+            "artist": "Black Sabbath",
+            "year": 2013,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=9dNh_5JxVmE" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Led Zeppelin",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "The Song Remains The Same (1973, Madison Square Garden, Original Lineup)",
+            "artist": "Led Zeppelin",
+            "year": 1973,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert Film", "url": "https://www.youtube.com/watch?v=rPDA5pWUGIo" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Crown The Empire",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at The Van Buren, Phoenix (2024, Pro-Shot Full Set)",
+            "artist": "Crown The Empire",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=1j-KMPTAD00" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Caskets",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Seattle (2022, Full Set)",
+            "artist": "Caskets",
+            "year": 2022,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=nSJio_JUZao" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Stone Sour",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Pinkpop Festival (2007, Pro-Shot)",
+            "artist": "Stone Sour",
+            "year": 2007,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=jNAHf8Jab1k" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Greta Van Fleet",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at ACL Music Festival (2018, Red Bull TV Pro-Shot)",
+            "artist": "Greta Van Fleet",
+            "year": 2018,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=WgPVKIIGymQ" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Trivium",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Bloodstock (2025, Pro-Shot Full Set)",
+            "artist": "Trivium",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=3WA0RbO04GU" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Motionless In White",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Dublin (2026, Full 4K Concert)",
+            "artist": "Motionless In White",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=RcIHq4_fZDY" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "We Came As Romans",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at The Masquerade, Atlanta (2023, Full Set 4K)",
+            "artist": "We Came As Romans",
+            "year": 2023,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Bring Me The Horizon",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live At The Royal Albert Hall (2016, Official Live Album)",
+            "artist": "Bring Me The Horizon",
+            "year": 2016,
+            "mode": "playlist",
+            "tracks": [
+              { "title": "Full Album", "url": "https://www.youtube.com/playlist?list=PLdp3KzF76wW9rw5s-sbIjt7OjP-sGMvWS" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Of Mice & Men",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Wacken Open Air (2019, Full Show HD)",
+            "artist": "Of Mice & Men",
+            "year": 2019,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=d9dhS9B-8mc" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Soundgarden",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live At Download Festival (2012, Official Full Concert)",
+            "artist": "Soundgarden",
+            "year": 2012,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=hlBKPFTLSiY" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Guns N' Roses",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Melbourne (1988, Pro-Shot Full Concert)",
+            "artist": "Guns N' Roses",
+            "year": 1988,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=TvkRYIFE370" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Slipknot",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Resurrection Fest (2025, Pro-Shot 4K)",
+            "artist": "Slipknot",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=g5tXsoj-lx8" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Deftones",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Lollapalooza Chicago (2024, Official Pro-Shot HD)",
+            "artist": "Deftones",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=QzJytOdG2ss" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Sum 41",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Final Show Ever — Scotiabank Arena (2025, Official Full Set)",
+            "artist": "Sum 41",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=n5YIQWDVsOs" }
             ]
           }
         ]
