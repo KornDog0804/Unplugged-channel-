@@ -29,7 +29,7 @@
   const $nowPlayingTitle = document.getElementById("nowPlayingTitle");
   const $nowPlayingLine = document.getElementById("nowPlayingLine");
 
-  // Album art (new)
+  // Album art
   const $npArtWrap = document.getElementById("npArtWrap");
   const $npArt = document.getElementById("npArt");
 
@@ -185,9 +185,7 @@
     return node?.title || node?.artist || "Untitled";
   }
 
-  // ==== ALBUM ART HELPERS (new) ====
-  // Finds the first usable YouTube video id inside a node (recursing into folders),
-  // so cards for folders/queues/playlists can still show meaningful artwork.
+  // ==== ALBUM ART HELPERS ====
   function findFirstVideoId(node) {
     if (!node || typeof node !== "object") return null;
     if (videoIdCache.has(node)) return videoIdCache.get(node);
@@ -211,32 +209,49 @@
     return result;
   }
 
-  // ==== NAV / HISTORY ====
+  // ==== NAV / HISTORY (FIXED: back button now steps through folders) ====
   function currentNode() {
     return viewStack[viewStack.length - 1] || ROOT;
   }
 
+  function buildHashUrl() {
+    const pathTitles = viewStack.map(n => safeTitle(n)).slice(1);
+    const hash = pathTitles.length ? `#${encodeURIComponent(pathTitles.join(" / "))}` : "";
+    return `${location.pathname}${hash}`;
+  }
+
+  // Entering a folder: push a REAL history entry so the back button
+  // and swipe-back both step out one level at a time, instead of
+  // jumping straight back to the home page.
   function pushView(node) {
     viewStack.push(node);
     renderLimit = PAGE_SIZE;
+    history.pushState({ viewDepth: viewStack.length }, "", buildHashUrl());
     render();
-    updateHash();
   }
 
+  // Called by swipe-back gesture and the "back" affordance.
+  // Routes through history.back() so the phone's back button and the
+  // in-app swipe gesture stay perfectly in sync.
   function popView() {
+    if (viewStack.length > 1) {
+      history.back();
+    }
+  }
+
+  // Fires when the user presses the phone/browser back button (or swipe
+  // triggers history.back() above). Pops exactly one folder level.
+  // Once viewStack is back down to the root, the NEXT back press has
+  // nothing left to pop in this document, so the browser naturally
+  // navigates away to whatever was open before sessions.html (home) —
+  // which is exactly the desired behavior.
+  window.addEventListener("popstate", () => {
     if (viewStack.length > 1) {
       viewStack.pop();
       renderLimit = PAGE_SIZE;
       render();
-      updateHash();
     }
-  }
-
-  function updateHash() {
-    const pathTitles = viewStack.map(n => safeTitle(n)).slice(1);
-    const hash = pathTitles.length ? `#${encodeURIComponent(pathTitles.join(" / "))}` : "";
-    if (location.hash !== hash) history.replaceState(null, "", `${location.pathname}${hash}`);
-  }
+  });
 
   // ==== QUEUE BUILDING ====
   function collectPlayableFromNode(node) {
@@ -300,7 +315,6 @@
   }
 
   function showOpenExternallyMessage(title, watchUrl, videoId) {
-    // Don’t fight the platform. Tell it like it is.
     if ($playerFrame) {
       $playerFrame.src = "about:blank";
     }
@@ -332,7 +346,6 @@
       $watchOnTvBtn.textContent = "Watch on TV";
     }
 
-    // ✅ If playlist: open externally (prevents “This video is unavailable” embeds)
     if ((track.kind === "playlist" || info.kind === "playlist") && PLAYLISTS_OPEN_EXTERNALLY) {
       showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl, videoId);
       return;
@@ -394,7 +407,6 @@
 
     const icon = escapeHtml(node.icon || "");
 
-    // Album art (new)
     const videoId = findFirstVideoId(node);
     const safeId = videoId ? escapeHtml(videoId) : "";
     const artHtml = safeId
