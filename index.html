@@ -7,18 +7,15 @@
 
   <link rel="stylesheet" href="./styles.css" />
 
-  <!-- PWA -->
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#07070a">
   <meta name="description" content="Stripped & unplugged sessions — handpicked only. Queues stitch tracks together automatically.">
 
-  <!-- iOS add-to-home -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
-  <!-- Favicons -->
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
 </head>
@@ -63,7 +60,6 @@
           <a class="landingBtn" href="./sessions.html?open=1">Browse Sets</a>
         </div>
 
-        <!-- Install (Android/desktop). iOS uses Share → Add to Home Screen -->
         <div class="landingBtns" style="margin-top:12px;">
           <button id="installBtn" class="landingBtn" type="button" style="display:none;">
             Install App
@@ -72,7 +68,6 @@
       </div>
     </section>
 
-    <!-- FEATURED STRIP (new) — pulls real artwork from your session data -->
     <section class="featuredSection" id="featuredSection" style="display:none;">
       <div class="featuredHead">
         <div class="featuredTitle">Featured Sessions</div>
@@ -94,14 +89,12 @@
   </main>
 
   <script>
-    // Register service worker (safe if missing)
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       });
     }
 
-    // Install button (Chrome/Edge/Android)
     let deferredPrompt = null;
     const installBtn = document.getElementById("installBtn");
 
@@ -125,11 +118,8 @@
       if (installBtn) installBtn.style.display = "none";
     });
 
-    // ===== FEATURED STRIP (new) =====
-    // Lightweight, self-contained: loads the same data file sessions.html
-    // uses, walks it for the first ~10 playable items, and shows real
-    // YouTube thumbnails. Falls back silently (section stays hidden) if
-    // anything goes wrong.
+    // ===== FEATURED STRIP =====
+    // Single source of truth: episodes.json (matches app.js).
     (async function loadFeatured() {
       const $section = document.getElementById("featuredSection");
       const $scroll = document.getElementById("featuredScroll");
@@ -178,8 +168,6 @@
         return first?.url || node?.url || null;
       }
 
-      // Walk the tree, collecting up to `limit` leaf nodes that have a
-      // playable URL we can turn into a thumbnail.
       function collectFeatured(node, limit, out) {
         if (out.length >= limit) return;
         if (isFolder(node)) {
@@ -189,6 +177,10 @@
           }
           return;
         }
+        if (node?.thumb) {
+          out.push({ title: node.title || node.artist || "Untitled", thumb: node.thumb });
+          return;
+        }
         const url = firstUrl(node);
         const id = url ? parseVideoId(url) : null;
         if (id) {
@@ -196,7 +188,7 @@
         }
       }
 
-      const candidates = ["./episodes_mobile.json", "./episodes.json"];
+      const candidates = ["./episodes.json"];
       let root = null;
 
       for (const url of candidates) {
@@ -215,14 +207,20 @@
       collectFeatured(root, 10, featured);
       if (!featured.length) return;
 
-      $scroll.innerHTML = featured.map(item => `
+      $scroll.innerHTML = featured.map(item => {
+        const src = item.thumb
+          ? escapeHtml(item.thumb)
+          : `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`;
+        const fallback = item.id ? `https://img.youtube.com/vi/${item.id}/hqdefault.jpg` : "";
+        return `
         <a class="featuredCard" href="./sessions.html">
-          <img class="featuredArt" src="https://img.youtube.com/vi/${item.id}/mqdefault.jpg"
+          <img class="featuredArt" src="${src}"
                alt="" loading="lazy"
-               onerror="this.onerror=null;this.src='https://img.youtube.com/vi/${item.id}/hqdefault.jpg';">
+               ${fallback ? `onerror="this.onerror=null;this.src='${fallback}';"` : ""}>
           <div class="featuredCardTitle">${escapeHtml(item.title)}</div>
         </a>
-      `).join("");
+      `;
+      }).join("");
 
       $section.style.display = "block";
     })();
