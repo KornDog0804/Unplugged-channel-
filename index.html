@@ -54,19 +54,8 @@
       </div>
 
       <div class="landingHeroBody">
-        <p>
-          You hear music every day.<br>
-          But as <strong>Sidney Deane</strong> once said —
-          <em>you hear the music… but can you hear it?</em><br>
-          This room exists for the moments when you do.
-        </p>
-
-        <p>
-          This isn’t background noise. This is connection.<br>
-          Live performances. Stripped-down sessions. No studio shine, no fake polish —
-          just artists standing naked in the song and meaning every note.<br><br>
-          If you landed here, you’re not killing time.<br>
-          You’re chasing a feeling. Press play and let it hit you where it’s supposed to.
+        <p class="heroTagline">
+          No studio shine. No fake polish. Just artists, stripped down, meaning every note.
         </p>
 
         <div class="landingBtns">
@@ -80,22 +69,27 @@
             Install App
           </button>
         </div>
-
-        <div class="landingMini">
-          <div class="miniItem">
-            <div class="miniLabel">How it works</div>
-            <div class="miniValue">Queues stitch tracks together automatically.</div>
-          </div>
-          <div class="miniItem">
-            <div class="miniLabel">TV ready</div>
-            <div class="miniValue">Use “Watch on TV” inside the player.</div>
-          </div>
-        </div>
       </div>
     </section>
 
-    <section style="opacity:.85; font-weight:800; font-size:12px; text-align:center; color:rgba(255,255,255,.70);">
-      This music will give you goosebumps.
+    <!-- FEATURED STRIP (new) — pulls real artwork from your session data -->
+    <section class="featuredSection" id="featuredSection" style="display:none;">
+      <div class="featuredHead">
+        <div class="featuredTitle">Featured Sessions</div>
+        <div class="featuredSub">Tap to jump in</div>
+      </div>
+      <div class="featuredScroll" id="featuredScroll"></div>
+    </section>
+
+    <section class="landingMini">
+      <div class="miniItem">
+        <div class="miniLabel">How it works</div>
+        <div class="miniValue">Queues stitch tracks together automatically.</div>
+      </div>
+      <div class="miniItem">
+        <div class="miniLabel">TV ready</div>
+        <div class="miniValue">Use “Watch on TV” inside the player.</div>
+      </div>
     </section>
   </main>
 
@@ -130,6 +124,108 @@
     window.addEventListener("appinstalled", () => {
       if (installBtn) installBtn.style.display = "none";
     });
+
+    // ===== FEATURED STRIP (new) =====
+    // Lightweight, self-contained: loads the same data file sessions.html
+    // uses, walks it for the first ~10 playable items, and shows real
+    // YouTube thumbnails. Falls back silently (section stays hidden) if
+    // anything goes wrong.
+    (async function loadFeatured() {
+      const $section = document.getElementById("featuredSection");
+      const $scroll = document.getElementById("featuredScroll");
+      if (!$section || !$scroll) return;
+
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function parseVideoId(url) {
+        try {
+          const u = new URL(url);
+          if (u.hostname.includes("youtu.be")) {
+            const id = u.pathname.replace("/", "").trim();
+            return id || null;
+          }
+          if (u.pathname.includes("/watch") && u.searchParams.get("v")) {
+            return u.searchParams.get("v");
+          }
+          const parts = u.pathname.split("/").filter(Boolean);
+          const last = parts[parts.length - 1];
+          if (last && last.length >= 8 && !u.pathname.includes("/playlist")) return last;
+        } catch (_) {}
+        return null;
+      }
+
+      function isFolder(node) {
+        return node && (node.mode === "folder" || Array.isArray(node.items));
+      }
+
+      function getItems(node) {
+        if (!node) return [];
+        if (Array.isArray(node.items)) return node.items;
+        if (Array.isArray(node)) return node;
+        return [];
+      }
+
+      function firstUrl(node) {
+        const tracks = Array.isArray(node?.tracks) ? node.tracks : [];
+        const first = tracks.find(t => t && t.url);
+        return first?.url || node?.url || null;
+      }
+
+      // Walk the tree, collecting up to `limit` leaf nodes that have a
+      // playable URL we can turn into a thumbnail.
+      function collectFeatured(node, limit, out) {
+        if (out.length >= limit) return;
+        if (isFolder(node)) {
+          for (const child of getItems(node)) {
+            collectFeatured(child, limit, out);
+            if (out.length >= limit) return;
+          }
+          return;
+        }
+        const url = firstUrl(node);
+        const id = url ? parseVideoId(url) : null;
+        if (id) {
+          out.push({ title: node.title || node.artist || "Untitled", id });
+        }
+      }
+
+      const candidates = ["./episodes_mobile.json", "./episodes.json"];
+      let root = null;
+
+      for (const url of candidates) {
+        try {
+          const res = await fetch(url, { cache: "no-store" });
+          if (!res.ok) continue;
+          const raw = await res.json();
+          root = Array.isArray(raw) ? { items: raw } : raw;
+          break;
+        } catch (_) { /* try next candidate */ }
+      }
+
+      if (!root) return;
+
+      const featured = [];
+      collectFeatured(root, 10, featured);
+      if (!featured.length) return;
+
+      $scroll.innerHTML = featured.map(item => `
+        <a class="featuredCard" href="./sessions.html">
+          <img class="featuredArt" src="https://img.youtube.com/vi/${item.id}/mqdefault.jpg"
+               alt="" loading="lazy"
+               onerror="this.onerror=null;this.src='https://img.youtube.com/vi/${item.id}/hqdefault.jpg';">
+          <div class="featuredCardTitle">${escapeHtml(item.title)}</div>
+        </a>
+      `).join("");
+
+      $section.style.display = "block";
+    })();
   </script>
 </body>
 </html>
