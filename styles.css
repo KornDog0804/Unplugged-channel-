@@ -739,3 +739,250 @@ body.playerCollapsed #playerFrame{ display:none; }
    DO NOT use global pointer-events:none on body::before etc.
    That is what breaks clicking. Keep this file clean.
    ========================= */
+/* =========================================================
+   VINYL LISTENING ROOM — VISUAL UPGRADE PATCH
+   Paste at the very bottom of styles.css
+   Pure additive layer — does not touch existing rules above.
+   ========================================================= */
+
+:root{
+  --room-purple: #6a3fb5;
+  --room-purple-glow: rgba(122, 74, 201, .22);
+  --room-gold-glow: rgba(201, 162, 77, .20);
+  --oled: #000000;
+}
+
+/* ---------- OLED black stage + ambient glow ---------- */
+body{
+  background: var(--oled) !important;
+  position: relative;
+}
+
+body::before{
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none; /* never blocks taps */
+  background:
+    radial-gradient(900px 480px at 50% -10%, var(--room-purple-glow), transparent 60%),
+    radial-gradient(700px 420px at 90% 30%, var(--room-gold-glow), transparent 65%),
+    radial-gradient(800px 500px at 0% 90%, rgba(122,74,201,.12), transparent 60%);
+}
+
+/* keep real content above the glow layer */
+.top, .landingWrap, .playerShell, .wrap{
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Top bar: deeper, glassier ---------- */
+.top{
+  background: rgba(0,0,0,.92) !important;
+  border-bottom: 1px solid rgba(201,162,77,.14) !important;
+}
+
+.brandMark{
+  box-shadow:
+    0 10px 30px rgba(0,0,0,.65),
+    0 0 0 1px rgba(201,162,77,.18) inset,
+    0 0 22px rgba(122,74,201,.25) !important;
+}
+
+/* ---------- Hero: bigger, warmer, glowing edge ---------- */
+.landingHero{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)) !important;
+  border: 1px solid rgba(201,162,77,.18) !important;
+  box-shadow:
+    0 30px 90px rgba(0,0,0,.65),
+    0 0 60px rgba(122,74,201,.10) !important;
+}
+
+.landingHeroBig{
+  text-shadow: 0 0 40px rgba(201,162,77,.18);
+}
+
+/* ---------- Player: stage-like, spotlit ---------- */
+.playerTop{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    var(--panel) !important;
+  border: 1px solid rgba(201,162,77,.20) !important;
+  box-shadow:
+    0 18px 50px rgba(0,0,0,.55),
+    0 0 40px rgba(122,74,201,.08) !important;
+  padding: 16px !important;
+}
+
+.npTitle{
+  letter-spacing: .03em !important;
+  text-shadow: 0 0 18px rgba(201,162,77,.16);
+}
+
+.npLine{
+  color: rgba(255,255,255,.78) !important;
+}
+
+.playerFrameWrap{
+  position: relative;
+  border: 1px solid rgba(201,162,77,.22) !important;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,.6) inset,
+    0 26px 70px rgba(0,0,0,.7),
+    0 0 50px rgba(122,74,201,.12) !important;
+}
+
+/* subtle stage vignette around the player, no pointer interference */
+.playerFrameWrap::after{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 60px rgba(0,0,0,.55);
+}
+
+#playerFrame{
+  filter: saturate(1.03);
+}
+
+/* ---------- List header ---------- */
+.listHead{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
+    var(--panel) !important;
+  border: 1px solid rgba(201,162,77,.16) !important;
+}
+
+.listTitle{
+  text-shadow: 0 0 24px rgba(201,162,77,.14);
+}
+
+/* ---------- Episodes container: more breathing room ---------- */
+#episodes{
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 2px !important;
+  gap: 14px !important;
+}
+
+/* ---------- Episode / track cards (new + existing names) ---------- */
+.epCard,
+.ep{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+
+  border-radius: 22px !important;
+  border: 1px solid rgba(255,255,255,.09) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02)) !important;
+  box-shadow: 0 16px 44px rgba(0,0,0,.5) !important;
+  padding: 16px !important;
+
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+}
+
+.epCard:hover,
+.ep:hover{
+  border-color: rgba(201,162,77,.40) !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.03)) !important;
+  box-shadow:
+    0 20px 56px rgba(0,0,0,.6),
+    0 0 30px rgba(122,74,201,.10) !important;
+}
+
+.epCard:active,
+.ep:active{ transform: scale(.985); }
+
+.epMain{
+  min-width: 0;
+  flex: 1;
+}
+
+.epTitle{
+  font-size: 16px !important;
+  letter-spacing: -.01em !important;
+}
+
+.epMeta{
+  color: rgba(255,255,255,.70) !important;
+}
+
+.epSmall{
+  color: rgba(255,255,255,.50) !important;
+}
+
+.epChevron{
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(201,162,77,.30);
+  background: rgba(201,162,77,.10);
+  color: rgba(255,255,255,.90);
+  font-size: 17px;
+}
+
+/* active/playing card glow */
+.epCard.isActive,
+.ep.isActive{
+  border-color: rgba(201,162,77,.55) !important;
+  box-shadow:
+    0 0 0 1px rgba(201,162,77,.18) inset,
+    0 0 36px rgba(201,162,77,.14),
+    0 0 60px rgba(122,74,201,.10) !important;
+}
+
+/* ---------- Buttons: warmer gold, soft glow on primary ---------- */
+.btn.primary{
+  box-shadow: 0 10px 30px rgba(201,162,77,.18) !important;
+}
+
+.btn:hover{
+  box-shadow: 0 0 0 1px rgba(201,162,77,.18) inset;
+}
+
+/* ---------- Back row ---------- */
+.backRow .btn{
+  border-color: rgba(201,162,77,.20) !important;
+}
+
+/* ---------- Track drill-down view ---------- */
+.trackHeader{
+  background: rgba(0,0,0,.5) !important;
+  border-bottom: 1px solid rgba(201,162,77,.14) !important;
+}
+
+.trackRow{
+  border-radius: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)) !important;
+  box-shadow: 0 12px 34px rgba(0,0,0,.45) !important;
+}
+
+.trackRow:hover{
+  box-shadow:
+    0 16px 44px rgba(0,0,0,.55),
+    0 0 24px rgba(122,74,201,.08) !important;
+}
+
+.trackFooter{
+  background: rgba(0,0,0,.5) !important;
+}
+
+/* ---------- Mobile tuning ---------- */
+@media (max-width: 420px){
+  .epCard, .ep{ border-radius: 18px !important; padding: 13px !important; }
+  .playerTop{ padding: 13px !important; }
+  .epTitle{ font-size: 15px !important; }
+}
+
+/* =========================================================
+   END VINYL LISTENING ROOM PATCH
+   ========================================================= */
