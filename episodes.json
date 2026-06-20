@@ -1005,16 +1005,16 @@
         ]
       },
       {
-        "title": "Fall Out Boy",
+        "title": "Foo Fighters",
         "mode": "folder",
         "items": [
           {
-            "title": "KROQ Helpful Honda Sound Space (Full Performance)",
-            "artist": "Fall Out Boy",
-            "year": "Live",
+            "title": "Live At Wembley Stadium (Official Full Concert)",
+            "artist": "Foo Fighters",
+            "year": 2008,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=Jkau6qU7yG8" }
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=xATJlGTZwMI" }
             ]
           }
         ]
@@ -1024,12 +1024,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Full Performance — KEXP",
+            "title": "Full Set w/ Multitrack Audio — Live @ The Foundry Concert Club",
             "artist": "Polaris",
-            "year": 2015,
+            "year": "Live",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=2tKbQQNsUO8" }
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=gx-2U5gFtrc" }
             ]
           }
         ]
@@ -1039,12 +1039,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Wacken Open Air (2023, Pro-Shot Full Show)",
+            "title": "Live at Summer Breeze (2023, ARTE Concert, Entire 19-Song Set)",
             "artist": "Killswitch Engage",
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=SXtrJxa2nfA" }
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=OKpHs0frJKk" }
             ]
           }
         ]
@@ -1339,12 +1339,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Final Show Ever — Scotiabank Arena (2025, Official Full Set)",
+            "title": "Live at Music Box, San Diego (2024, Complete Performance, 4K)",
             "artist": "Sum 41",
-            "year": 2025,
+            "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=n5YIQWDVsOs" }
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=m9GzUvUf5o8" }
             ]
           }
         ]
