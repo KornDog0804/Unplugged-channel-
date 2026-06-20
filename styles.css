@@ -986,3 +986,92 @@ body::before{
 /* =========================================================
    END VINYL LISTENING ROOM PATCH
    ========================================================= */
+/* =========================================================
+   ALBUM ART PATCH
+   Paste at the very bottom of styles.css (after the
+   VINYL LISTENING ROOM patch). Pure additive layer.
+   ========================================================= */
+
+/* ---------- Now Playing stage art ---------- */
+.playerTop{
+  align-items: center !important;
+}
+
+.npArtWrap{
+  flex: 0 0 auto;
+  width: 84px;
+  height: 84px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(201,162,77,.28);
+  box-shadow:
+    0 12px 32px rgba(0,0,0,.55),
+    0 0 26px rgba(122,74,201,.14);
+  background: linear-gradient(145deg, rgba(201,162,77,.20), rgba(122,74,201,.20));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.npArt{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none; /* shown via JS once a src is set */
+}
+
+.npArtWrap.npArtFallback::before{
+  content: "♪";
+  font-size: 30px;
+  color: rgba(255,255,255,.55);
+}
+
+/* ---------- Session card art ---------- */
+.epCard{
+  align-items: center !important;
+}
+
+.epArtWrap{
+  flex: 0 0 auto;
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.10);
+  background: linear-gradient(145deg, rgba(201,162,77,.16), rgba(122,74,201,.16));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.epArt{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.epArtWrap.epArtFallback::before{
+  content: "♪";
+  font-size: 20px;
+  color: rgba(255,255,255,.55);
+}
+
+/* keep title/meta from crowding the art on small screens */
+.epMain{
+  min-width: 0;
+}
+
+/* ---------- Mobile tuning ---------- */
+@media (max-width: 420px){
+  .npArtWrap{ width: 64px; height: 64px; border-radius: 14px; }
+  .npArtWrap.npArtFallback::before{ font-size: 24px; }
+
+  .epArtWrap{ width: 50px; height: 50px; border-radius: 12px; }
+  .epArtWrap.epArtFallback::before{ font-size: 17px; }
+}
+
+/* =========================================================
+   END ALBUM ART PATCH
+   ========================================================= */
