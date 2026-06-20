@@ -2,7 +2,8 @@
    Expects: sessions.html has these IDs:
    #episodes, #playAllBtn, #loadMoreBtn, #status,
    #playerFrame, #playerToggleBtn,
-   #watchOnTvBtn, #nowPlayingTitle, #nowPlayingLine
+   #watchOnTvBtn, #nowPlayingTitle, #nowPlayingLine,
+   #npArtWrap, #npArt
 */
 
 (() => {
@@ -28,6 +29,10 @@
   const $nowPlayingTitle = document.getElementById("nowPlayingTitle");
   const $nowPlayingLine = document.getElementById("nowPlayingLine");
 
+  // Album art (new)
+  const $npArtWrap = document.getElementById("npArtWrap");
+  const $npArt = document.getElementById("npArt");
+
   if (!$episodes) return;
 
   // ==== STATE ====
@@ -39,6 +44,9 @@
   let playerVisible = false;
   let currentWatchUrl = "";
 
+  // Cache of node -> videoId so we don't re-walk folder trees on every render
+  const videoIdCache = new WeakMap();
+
   // ==== UI HELPERS ====
   function setStatus(msg = "") {
     if ($status) $status.textContent = msg;
@@ -47,6 +55,25 @@
   function setNowPlaying(title, line) {
     if ($nowPlayingTitle) $nowPlayingTitle.textContent = title || "Now Playing";
     if ($nowPlayingLine) $nowPlayingLine.textContent = line || "";
+  }
+
+  function setNowPlayingArt(videoId) {
+    if (!$npArtWrap || !$npArt) return;
+
+    if (videoId) {
+      $npArtWrap.classList.remove("npArtFallback");
+      $npArt.style.display = "block";
+      $npArt.onerror = function () {
+        this.onerror = null;
+        this.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+      };
+      $npArt.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+      $npArt.alt = "";
+    } else {
+      $npArtWrap.classList.add("npArtFallback");
+      $npArt.style.display = "none";
+      $npArt.removeAttribute("src");
+    }
   }
 
   function escapeHtml(str) {
@@ -158,6 +185,32 @@
     return node?.title || node?.artist || "Untitled";
   }
 
+  // ==== ALBUM ART HELPERS (new) ====
+  // Finds the first usable YouTube video id inside a node (recursing into folders),
+  // so cards for folders/queues/playlists can still show meaningful artwork.
+  function findFirstVideoId(node) {
+    if (!node || typeof node !== "object") return null;
+    if (videoIdCache.has(node)) return videoIdCache.get(node);
+
+    let result = null;
+
+    if (isFolder(node)) {
+      for (const child of getNodeItems(node)) {
+        result = findFirstVideoId(child);
+        if (result) break;
+      }
+    } else {
+      const playable = collectPlayableFromNode(node);
+      if (playable.length) {
+        const info = parseYouTube(playable[0].url);
+        if (info.kind === "video" && info.id) result = info.id;
+      }
+    }
+
+    videoIdCache.set(node, result);
+    return result;
+  }
+
   // ==== NAV / HISTORY ====
   function currentNode() {
     return viewStack[viewStack.length - 1] || ROOT;
@@ -246,12 +299,13 @@
     else if (playerVisible && currentQueue.length) playTrackAt(currentQueueIndex, false);
   }
 
-  function showOpenExternallyMessage(title, watchUrl) {
+  function showOpenExternallyMessage(title, watchUrl, videoId) {
     // Don’t fight the platform. Tell it like it is.
     if ($playerFrame) {
       $playerFrame.src = "about:blank";
     }
     setNowPlaying("Open in YouTube / SmartTube", title);
+    setNowPlayingArt(videoId || null);
     setStatus("This playlist opens externally (more reliable than embeds).");
     if ($watchOnTvBtn) {
       $watchOnTvBtn.href = watchUrl;
@@ -270,6 +324,7 @@
 
     const info = parseYouTube(track.url);
     currentWatchUrl = info.watchUrl || track.url;
+    const videoId = info.kind === "video" ? info.id : null;
 
     if ($watchOnTvBtn) {
       $watchOnTvBtn.href = currentWatchUrl;
@@ -279,7 +334,7 @@
 
     // ✅ If playlist: open externally (prevents “This video is unavailable” embeds)
     if ((track.kind === "playlist" || info.kind === "playlist") && PLAYLISTS_OPEN_EXTERNALLY) {
-      showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl);
+      showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl, videoId);
       return;
     }
 
@@ -292,6 +347,7 @@
     if ($playerFrame) $playerFrame.src = embed;
 
     setNowPlaying("Now Playing", track.title || "Playing…");
+    setNowPlayingArt(videoId);
     setStatus(`Playing ${currentQueueIndex + 1} of ${currentQueue.length}`);
     if (!playerVisible) showPlayer(true);
   }
@@ -302,6 +358,7 @@
     const items = getNodeItems(node);
 
     setNowPlaying("Now Playing", "Pick a session below 👇");
+    setNowPlayingArt(null);
 
     const visible = items.slice(0, renderLimit);
     const html = visible.map(renderCard).join("");
@@ -336,8 +393,20 @@
       (node.tracks?.length ? `${node.tracks.length} tracks` : "");
 
     const icon = escapeHtml(node.icon || "");
+
+    // Album art (new)
+    const videoId = findFirstVideoId(node);
+    const safeId = videoId ? escapeHtml(videoId) : "";
+    const artHtml = safeId
+      ? `<div class="epArtWrap">
+           <img class="epArt" src="https://img.youtube.com/vi/${safeId}/mqdefault.jpg" alt="" loading="lazy"
+                onerror="this.closest('.epArtWrap').classList.add('epArtFallback'); this.remove();">
+         </div>`
+      : `<div class="epArtWrap epArtFallback"></div>`;
+
     return `
       <div class="epCard" data-idx="${String(idx)}" role="button" tabindex="0">
+        ${artHtml}
         <div class="epMain">
           <div class="epTitle">${icon ? icon + " " : ""}${title}</div>
           ${subtitle ? `<div class="epMeta">${subtitle}</div>` : ""}
