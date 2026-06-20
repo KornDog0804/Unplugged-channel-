@@ -814,12 +814,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Lollapalooza Argentina (2025, Camera Shots Authorized by Tool Management)",
+            "title": "Live at Ball Arena, Denver (2024, Full Show HD)",
             "artist": "Tool",
-            "year": 2025,
+            "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=75kl9XHFzaI" }
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=mzURDTmgNy4" }
             ]
           }
         ]
@@ -889,12 +889,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "For Those That Wish To Exist At Abbey Road",
+            "title": "Live at Wacken Open Air (2024, Full Show HD)",
             "artist": "Architects",
-            "year": 2022,
-            "mode": "playlist",
+            "year": 2024,
+            "mode": "fullshow",
             "tracks": [
-              { "title": "Full Album Stream", "url": "https://www.youtube.com/playlist?list=PLDoJvF54_l4wEHig5KdWK7CVHS_FXHLkq" }
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=KPHzv4pnuho" }
             ]
           }
         ]
@@ -1054,12 +1054,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live In Paris (2023, Full Concert)",
+            "title": "Live at Rock Am Ring (2023, Official Pro-Shot)",
             "artist": "Bullet For My Valentine",
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=ihwdkxayL-Q" }
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=zeZYREfp720" }
             ]
           }
         ]
@@ -1249,12 +1249,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live At The Royal Albert Hall (2016, Official Live Album)",
+            "title": "Live at Rock Am Ring (2023, Full Concert)",
             "artist": "Bring Me The Horizon",
-            "year": 2016,
-            "mode": "playlist",
+            "year": 2023,
+            "mode": "fullshow",
             "tracks": [
-              { "title": "Full Album", "url": "https://www.youtube.com/playlist?list=PLdp3KzF76wW9rw5s-sbIjt7OjP-sGMvWS" }
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=zSwqLsuJRY0" }
             ]
           }
         ]
