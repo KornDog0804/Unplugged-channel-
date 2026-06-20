@@ -1075,3 +1075,91 @@ body::before{
 /* =========================================================
    END ALBUM ART PATCH
    ========================================================= */
+/* =========================================================
+   HOME PAGE REDESIGN PATCH
+   Paste at the very bottom of styles.css.
+   ========================================================= */
+
+.heroTagline{
+  margin: 0 0 16px !important;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  color: rgba(255,255,255,.86) !important;
+  max-width: 56ch;
+}
+
+.featuredSection{
+  margin-top: 4px;
+}
+
+.featuredHead{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  padding: 0 2px;
+}
+
+.featuredTitle{
+  font-weight: 1000;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  font-size: 12px;
+  color: rgba(255,255,255,.86);
+}
+
+.featuredSub{
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(255,255,255,.48);
+}
+
+.featuredScroll{
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 2px 10px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.featuredScroll::-webkit-scrollbar{ display: none; }
+
+.featuredCard{
+  flex: 0 0 auto;
+  width: 116px;
+  scroll-snap-align: start;
+  text-decoration: none;
+}
+
+.featuredArt{
+  width: 116px;
+  height: 116px;
+  border-radius: 20px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(201,162,77,.25);
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.55),
+    0 0 28px rgba(122,74,201,.14);
+  background: linear-gradient(145deg, rgba(201,162,77,.18), rgba(122,74,201,.18));
+}
+
+.featuredCardTitle{
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 850;
+  color: rgba(255,255,255,.86);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 420px){
+  .featuredCard{ width: 100px; }
+  .featuredArt{ width: 100px; height: 100px; border-radius: 16px; }
+}
+
+/* =========================================================
+   END HOME PAGE REDESIGN PATCH
+   ========================================================= */
