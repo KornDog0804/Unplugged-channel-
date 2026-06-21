@@ -1365,6 +1365,21 @@
         ]
       },
       {
+        "title": "Imminence",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Set, Live at The Rave, Milwaukee (2025, Return Of The Black Tour, 4K)",
+            "artist": "Imminence",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=s-UgbCBBIXM" }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Lamb Of God",
         "mode": "folder",
         "items": [
