@@ -1283,3 +1283,71 @@ body{
 /* =========================================================
    END FULL-SCREEN FIT PATCH
    ========================================================= */
+/* =========================================================
+   DEVICE DETECTION (TV vs Desktop vs Phone) PATCH
+   Paste at the very bottom of styles.css.
+   Classes are added to <html> by a tiny script in index.html
+   and sessions.html: device-tv / device-desktop / device-phone
+   ========================================================= */
+
+/* ---------- TV: bigger everything, remote-friendly focus ---------- */
+html.device-tv body{
+  font-size: 19px;
+}
+
+html.device-tv .landingWrap,
+html.device-tv .wrap{
+  max-width: 1400px !important;
+  margin: 0 auto;
+}
+
+html.device-tv .epTitle{
+  font-size: 22px !important;
+}
+
+html.device-tv .epMeta,
+html.device-tv .epSmall{
+  font-size: 16px !important;
+}
+
+html.device-tv .epCard{
+  padding: 22px !important;
+}
+
+html.device-tv .btn,
+html.device-tv .landingBtn{
+  padding: 18px 24px !important;
+  font-size: 18px !important;
+}
+
+html.device-tv #playerFrame{
+  max-height: 85vh !important;
+}
+
+html.device-tv .npArtWrap{
+  width: 64px !important;
+  height: 64px !important;
+}
+
+/* Remotes navigate via focus, not hover — make focus impossible to miss */
+html.device-tv .epCard:focus-visible,
+html.device-tv .btn:focus-visible,
+html.device-tv .landingBtn:focus-visible,
+html.device-tv a:focus-visible{
+  outline: 4px solid rgba(201,162,77,.95) !important;
+  outline-offset: 4px !important;
+  box-shadow: 0 0 0 6px rgba(201,162,77,.25) !important;
+}
+
+/* ---------- Desktop: a little more breathing room, mouse hover stays as-is ---------- */
+html.device-desktop .landingWrap,
+html.device-desktop .wrap{
+  max-width: 1100px !important;
+  margin: 0 auto;
+}
+
+/* Phone: no overrides needed — this is the existing default design */
+
+/* =========================================================
+   END DEVICE DETECTION PATCH
+   ========================================================= */
