@@ -134,7 +134,9 @@
   // const time) since some only exist after render() has run at least once.
   function theaterTargets() {
     return Array.from(document.querySelectorAll(
-      ".top, .listHead, #playAllBtn, #episodes, #loadMoreBtn, .playerTop, .statusLine"
+      ".top, .listHead, #playAllBtn, #episodes, #loadMoreBtn, .playerTop, " +
+      ".statusLine, #playerToggleBtn, #watchOnTvBtn, #nowPlayingTitle, " +
+      "#nowPlayingLine, #npArtWrap"
     ));
   }
 
@@ -143,27 +145,43 @@
   // aggressively caching CSS/JS files, so relying on a freshly-fetched
   // styles.css to hide everything was fragile — a stale cached copy would
   // silently no-op the whole feature. Inline styles set live by JS can't
-  // go stale like that.
+  // go stale like that. styles.css also carries a matching hard override
+  // as a second line of defense, but this is the one actually doing the
+  // work moment-to-moment.
   function enterTheaterMode() {
     if (!isTVDevice()) return;
     document.body.classList.add("tvTheater");
 
     theaterTargets().forEach(el => {
       el.style.setProperty("display", "none", "important");
+      el.style.setProperty("visibility", "hidden", "important");
     });
 
     const shell = document.querySelector(".playerShell");
-    if (shell) {
-      shell.style.setProperty("position", "fixed", "important");
-      shell.style.setProperty("inset", "0", "important");
-      shell.style.setProperty("max-width", "100vw", "important");
-      shell.style.setProperty("padding", "24px", "important");
-      shell.style.setProperty("margin", "0", "important");
-      shell.style.setProperty("display", "flex", "important");
-      shell.style.setProperty("align-items", "center", "important");
-      shell.style.setProperty("justify-content", "center", "important");
-      shell.style.setProperty("background", "#000", "important");
-      shell.style.setProperty("z-index", "100", "important");
+    const frameWrap = document.querySelector(".playerFrameWrap");
+    [shell, frameWrap, $playerFrame].forEach(el => {
+      if (!el) return;
+      el.style.setProperty("position", "fixed", "important");
+      el.style.setProperty("top", "0", "important");
+      el.style.setProperty("left", "0", "important");
+      el.style.setProperty("right", "0", "important");
+      el.style.setProperty("bottom", "0", "important");
+      el.style.setProperty("width", "100vw", "important");
+      el.style.setProperty("height", "100vh", "important");
+      el.style.setProperty("max-width", "none", "important");
+      el.style.setProperty("max-height", "none", "important");
+      el.style.setProperty("min-height", "0", "important");
+      el.style.setProperty("aspect-ratio", "auto", "important");
+      el.style.setProperty("margin", "0", "important");
+      el.style.setProperty("padding", "0", "important");
+      el.style.setProperty("border", "0", "important");
+      el.style.setProperty("border-radius", "0", "important");
+      el.style.setProperty("overflow", "hidden", "important");
+      el.style.setProperty("background", "#000", "important");
+      el.style.setProperty("z-index", "2147483647", "important");
+    });
+    if ($playerFrame) {
+      $playerFrame.style.setProperty("display", "block", "important");
     }
 
     if ($backNavBtn) {
@@ -171,7 +189,7 @@
       $backNavBtn.style.setProperty("position", "fixed", "important");
       $backNavBtn.style.setProperty("top", "24px", "important");
       $backNavBtn.style.setProperty("left", "24px", "important");
-      $backNavBtn.style.setProperty("z-index", "9999", "important");
+      $backNavBtn.style.setProperty("z-index", "2147483647", "important");
     }
 
     updateBackNav();
@@ -182,14 +200,19 @@
 
     theaterTargets().forEach(el => {
       el.style.removeProperty("display");
+      el.style.removeProperty("visibility");
     });
 
     const shell = document.querySelector(".playerShell");
-    if (shell) {
-      ["position", "inset", "max-width", "padding", "margin", "display",
-        "align-items", "justify-content", "background", "z-index"]
-        .forEach(p => shell.style.removeProperty(p));
-    }
+    const frameWrap = document.querySelector(".playerFrameWrap");
+    [shell, frameWrap, $playerFrame].forEach(el => {
+      if (!el) return;
+      ["position", "top", "left", "right", "bottom", "width", "height",
+        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
+        "padding", "border", "border-radius", "overflow", "background",
+        "z-index", "display"]
+        .forEach(p => el.style.removeProperty(p));
+    });
 
     if ($backNavBtn) {
       ["display", "position", "top", "left", "z-index"]
@@ -558,7 +581,7 @@
     setNowPlaying("Now Playing", track.title || "Playing…");
     setNowPlayingArt({ src: track.thumb || null, videoId });
     setStatus(`Playing ${currentQueueIndex + 1} of ${currentQueue.length}`);
-    if (!playerVisible) showPlayer(true);
+    showPlayer(true);
 
     const embed = buildEmbed(track.url, autoplay);
     if (!embed) {
