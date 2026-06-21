@@ -338,44 +338,85 @@
     return out;
   }
 
-  // ==== YOUTUBE IFRAME API (real playback engine) ====
-  // Loaded lazily on first play. Using the real API (instead of just
-  // setting iframe.src) is what makes onStateChange === ENDED possible,
-  // which is what drives queue auto-advance below.
-  let ytPlayer = null;
-  let ytPlayerReady = false;
-  let ytApiPromise = null;
-  let pendingLoad = null; // { videoId, autoplay } — queued if player isn't ready yet
+  // ==== YOUTUBE PLAYBACK ENGINE ====
+  // Uses YouTube's lightweight postMessage protocol directly on a plain
+  // iframe embed (enablejsapi=1 + a "listening" handshake), instead of
+  // loading the full youtube.com/iframe_api script. The TWA/WebView shell
+  // this app runs in on Google TV blocks loading that extra external
+  // script, which silently broke playback entirely. This approach needs
+  // nothing but the embed itself, so it works the same way plain embeds
+  // already did — it just also listens for the "video ended" message so
+  // queues can auto-advance.
+  let handshakeInterval = null;
 
-  function loadYTApi() {
-    if (ytApiPromise) return ytApiPromise;
-
-    ytApiPromise = new Promise((resolve) => {
-      if (window.YT && window.YT.Player) {
-        resolve();
-        return;
-      }
-
-      const prevCallback = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = function () {
-        if (typeof prevCallback === "function") prevCallback();
-        resolve();
-      };
-
-      if (!document.getElementById("youtube-iframe-api-script")) {
-        const tag = document.createElement("script");
-        tag.id = "youtube-iframe-api-script";
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-      }
-    });
-
-    return ytApiPromise;
+  function buildEmbed(url, autoplay = true) {
+    const info = parseYouTube(url);
+    if (!info.embedUrl) return "";
+    const params = new URLSearchParams();
+    if (autoplay) params.set("autoplay", "1");
+    params.set("rel", "0");
+    params.set("modestbranding", "1");
+    params.set("playsinline", "1");
+    params.set("enablejsapi", "1");
+    try {
+      params.set("origin", window.location.origin);
+    } catch (_) {}
+    return `${info.embedUrl}?${params.toString()}`;
   }
 
-  function onYTPlayerStateChange(event) {
-    if (window.YT && event.data === YT.PlayerState.ENDED) {
-      advanceQueue();
+  function attachPostMessageListenerOnce() {
+    if (window.__kdYtMsgAttached) return;
+    window.__kdYtMsgAttached = true;
+
+    window.addEventListener("message", (event) => {
+      if (!event.origin || event.origin.indexOf("youtube.com") === -1) return;
+
+      let data = event.data;
+      if (typeof data === "string") {
+        try { data = JSON.parse(data); } catch (_) { return; }
+      }
+      if (!data || typeof data !== "object") return;
+
+      // playerState 0 === ENDED in YouTube's embed protocol.
+      if (data.event === "infoDelivery" && data.info && typeof data.info.playerState === "number") {
+        if (data.info.playerState === 0) {
+          advanceQueue();
+        }
+      }
+    });
+  }
+
+  // YouTube's embedded player only starts sending state updates once it
+  // sees a "listening" handshake from the parent page, and there's no
+  // single reliable moment to send it (the iframe's own load event fires
+  // before the player inside has actually initialized), so this just
+  // pings a few times over the first few seconds until one lands.
+  function startListeningHandshake() {
+    attachPostMessageListenerOnce();
+    if (handshakeInterval) clearInterval(handshakeInterval);
+
+    let attempts = 0;
+    handshakeInterval = setInterval(() => {
+      attempts++;
+      if ($playerFrame && $playerFrame.contentWindow) {
+        try {
+          $playerFrame.contentWindow.postMessage(
+            JSON.stringify({ event: "listening", id: 1, channel: "widget" }),
+            "*"
+          );
+        } catch (_) {}
+      }
+      if (attempts >= 10) {
+        clearInterval(handshakeInterval);
+        handshakeInterval = null;
+      }
+    }, 500);
+  }
+
+  function stopListeningHandshake() {
+    if (handshakeInterval) {
+      clearInterval(handshakeInterval);
+      handshakeInterval = null;
     }
   }
 
@@ -387,48 +428,6 @@
     }
   }
 
-  function createOrLoadYTPlayer(videoId, autoplay) {
-    if (!$playerFrame) return;
-
-    if (ytPlayer && ytPlayerReady) {
-      if (autoplay) ytPlayer.loadVideoById(videoId);
-      else ytPlayer.cueVideoById(videoId);
-      return;
-    }
-
-    if (ytPlayer && !ytPlayerReady) {
-      // Player is still being constructed — stash this request and the
-      // onReady handler below will apply whatever was asked for most
-      // recently once it's actually ready.
-      pendingLoad = { videoId, autoplay };
-      return;
-    }
-
-    // First-ever play this session: build the player around the existing
-    // #playerFrame iframe element (the API takes it over in place).
-    ytPlayer = new YT.Player($playerFrame, {
-      videoId,
-      playerVars: {
-        autoplay: autoplay ? 1 : 0,
-        rel: 0,
-        modestbranding: 1,
-        playsinline: 1
-      },
-      events: {
-        onReady: () => {
-          ytPlayerReady = true;
-          if (pendingLoad) {
-            const { videoId: pid, autoplay: pAuto } = pendingLoad;
-            pendingLoad = null;
-            if (pAuto) ytPlayer.loadVideoById(pid);
-            else ytPlayer.cueVideoById(pid);
-          }
-        },
-        onStateChange: onYTPlayerStateChange
-      }
-    });
-  }
-
   // ==== PLAYER CONTROL ====
   function showPlayer(show) {
     playerVisible = !!show;
@@ -436,21 +435,16 @@
     document.body.classList.toggle("playerOpen", playerVisible);
 
     if (!playerVisible) {
-      // Pause instead of nuking the iframe's src — once the YouTube
-      // IFrame API has taken over #playerFrame, overwriting .src by
-      // hand breaks the player object permanently.
-      if (ytPlayer && typeof ytPlayer.stopVideo === "function") {
-        try { ytPlayer.stopVideo(); } catch (_) {}
-      }
+      stopListeningHandshake();
+      if ($playerFrame) $playerFrame.src = "";
       exitTheaterMode();
     }
   }
 
   function showOpenExternallyMessage(title, watchUrl, videoId, thumb) {
     exitTheaterMode();
-    if (ytPlayer && typeof ytPlayer.stopVideo === "function") {
-      try { ytPlayer.stopVideo(); } catch (_) {}
-    } else if ($playerFrame) {
+    stopListeningHandshake();
+    if ($playerFrame) {
       $playerFrame.src = "about:blank";
     }
     setNowPlaying("Open in YouTube / SmartTube", title);
@@ -508,9 +502,15 @@
     setStatus(`Playing ${currentQueueIndex + 1} of ${currentQueue.length}`);
     if (!playerVisible) showPlayer(true);
 
-    loadYTApi().then(() => {
-      createOrLoadYTPlayer(videoId, autoplay);
-    });
+    const embed = buildEmbed(track.url, autoplay);
+    if (!embed) {
+      setStatus("Couldn’t build YouTube embed for that link.");
+      return;
+    }
+    if ($playerFrame) {
+      $playerFrame.src = embed;
+      startListeningHandshake();
+    }
 
     // Movie-theater mode on TV: player takes over the whole screen,
     // everything else hides, Back/Exit Player brings the list back.
