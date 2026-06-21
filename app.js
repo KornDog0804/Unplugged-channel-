@@ -157,30 +157,53 @@
       el.style.setProperty("visibility", "hidden", "important");
     });
 
+    // The fixed full-screen black backdrop — this part is safe, it's
+    // just a container, not the actual video element.
     const shell = document.querySelector(".playerShell");
+    if (shell) {
+      shell.style.setProperty("position", "fixed", "important");
+      shell.style.setProperty("top", "0", "important");
+      shell.style.setProperty("left", "0", "important");
+      shell.style.setProperty("right", "0", "important");
+      shell.style.setProperty("bottom", "0", "important");
+      shell.style.setProperty("width", "100vw", "important");
+      shell.style.setProperty("height", "100vh", "important");
+      shell.style.setProperty("max-width", "100vw", "important");
+      shell.style.setProperty("margin", "0", "important");
+      shell.style.setProperty("padding", "24px", "important");
+      shell.style.setProperty("display", "flex", "important");
+      shell.style.setProperty("align-items", "center", "important");
+      shell.style.setProperty("justify-content", "center", "important");
+      shell.style.setProperty("background", "#000", "important");
+      shell.style.setProperty("z-index", "2147483647", "important");
+    }
+
+    // Deliberately NOT forcing literal 100vw/100vh on the iframe or its
+    // wrapper — confirmed on this TV that doing so renders solid black
+    // (almost certainly a hardware video-overlay/compositing limit in
+    // this WebView). Instead, clear any leftover inline sizing so the
+    // existing, already-proven-working CSS sizing (aspect-ratio 16/9,
+    // max-height, width:100%) takes over — just centered inside the
+    // fixed black full-screen shell above instead of in the normal page
+    // flow.
     const frameWrap = document.querySelector(".playerFrameWrap");
-    [shell, frameWrap, $playerFrame].forEach(el => {
-      if (!el) return;
-      el.style.setProperty("position", "fixed", "important");
-      el.style.setProperty("top", "0", "important");
-      el.style.setProperty("left", "0", "important");
-      el.style.setProperty("right", "0", "important");
-      el.style.setProperty("bottom", "0", "important");
-      el.style.setProperty("width", "100vw", "important");
-      el.style.setProperty("height", "100vh", "important");
-      el.style.setProperty("max-width", "none", "important");
-      el.style.setProperty("max-height", "none", "important");
-      el.style.setProperty("min-height", "0", "important");
-      el.style.setProperty("aspect-ratio", "auto", "important");
-      el.style.setProperty("margin", "0", "important");
-      el.style.setProperty("padding", "0", "important");
-      el.style.setProperty("border", "0", "important");
-      el.style.setProperty("border-radius", "0", "important");
-      el.style.setProperty("overflow", "hidden", "important");
-      el.style.setProperty("background", "#000", "important");
-      el.style.setProperty("z-index", "2147483647", "important");
-    });
+    if (frameWrap) {
+      ["position", "top", "left", "right", "bottom", "width", "height",
+        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
+        "padding", "border", "overflow", "background", "z-index", "display"]
+        .forEach(p => frameWrap.style.removeProperty(p));
+      frameWrap.style.setProperty("width", "100%", "important");
+      frameWrap.style.setProperty("max-width", "100%", "important");
+      frameWrap.style.setProperty("border-radius", "0", "important");
+      frameWrap.style.setProperty("border", "none", "important");
+      frameWrap.style.setProperty("box-shadow", "none", "important");
+    }
     if ($playerFrame) {
+      ["position", "top", "left", "right", "bottom", "width", "height",
+        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
+        "padding", "border", "border-radius", "overflow", "background",
+        "z-index"]
+        .forEach(p => $playerFrame.style.removeProperty(p));
       $playerFrame.style.setProperty("display", "block", "important");
     }
 
@@ -204,15 +227,22 @@
     });
 
     const shell = document.querySelector(".playerShell");
-    const frameWrap = document.querySelector(".playerFrameWrap");
-    [shell, frameWrap, $playerFrame].forEach(el => {
-      if (!el) return;
+    if (shell) {
       ["position", "top", "left", "right", "bottom", "width", "height",
-        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
-        "padding", "border", "border-radius", "overflow", "background",
-        "z-index", "display"]
-        .forEach(p => el.style.removeProperty(p));
-    });
+        "max-width", "margin", "padding", "display", "align-items",
+        "justify-content", "background", "z-index"]
+        .forEach(p => shell.style.removeProperty(p));
+    }
+
+    const frameWrap = document.querySelector(".playerFrameWrap");
+    if (frameWrap) {
+      ["width", "max-width", "border-radius", "border", "box-shadow"]
+        .forEach(p => frameWrap.style.removeProperty(p));
+    }
+
+    if ($playerFrame) {
+      $playerFrame.style.removeProperty("display");
+    }
 
     if ($backNavBtn) {
       ["display", "position", "top", "left", "z-index"]
@@ -809,19 +839,27 @@
     $watchOnTvBtn.style.display = "none";
   }
 
-  if ($backNavBtn) {
-    $backNavBtn.addEventListener("click", () => {
-      if (document.body.classList.contains("tvTheater")) {
-        exitTheaterMode();
-        return;
-      }
-      if (viewStack.length > 1) {
-        popView();
-      } else {
-        window.location.href = "./index.html";
-      }
-    });
+  function handleBackAction() {
+    if (document.body.classList.contains("tvTheater")) {
+      exitTheaterMode();
+      return;
+    }
+    if (viewStack.length > 1) {
+      popView();
+    } else {
+      window.location.href = "./index.html";
+    }
   }
+
+  if ($backNavBtn) {
+    $backNavBtn.addEventListener("click", handleBackAction);
+  }
+
+  // Exposed so tv-nav.js's hardware/remote Back key always triggers the
+  // exact same single, correct next step (exit theater, or pop one
+  // folder level, or go home) instead of the keypress sometimes getting
+  // swallowed with no visible effect.
+  window.__kdGoBack = handleBackAction;
 
   // ==== SWIPE BACK (mobile) ====
   let touchStartX = 0;
