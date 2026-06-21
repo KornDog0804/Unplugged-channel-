@@ -1378,3 +1378,25 @@ html.device-tv .wrap{
 /* =========================================================
    END TV TOP-BAR BREATHING ROOM PATCH
    ========================================================= */
+/* =========================================================
+   FORCE FULL-WIDTH FILL ON LARGE SCREENS
+   Paste at the very bottom of styles.css.
+   ========================================================= */
+
+@media (min-width: 900px){
+  .landingWrap,
+  .wrap{
+    max-width: min(1600px, 96vw) !important;
+    width: 96vw !important;
+    margin: 0 auto !important;
+  }
+
+  body{
+    width: 100vw;
+    min-height: 100vh;
+  }
+}
+
+/* =========================================================
+   END FORCE FULL-WIDTH FILL PATCH
+   ========================================================= */
