@@ -1219,3 +1219,22 @@ body::before{
 /* =========================================================
    END BIGGER PLAYER / MINIMAL HEADER PATCH
    ========================================================= */
+/* =========================================================
+   PLAYER CENTERING FIX
+   Paste at the very bottom of styles.css, below the
+   "BIGGER PLAYER" patch.
+   ========================================================= */
+
+.playerFrameWrap{
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#playerFrame{
+  margin: 0 auto !important;
+}
+
+/* =========================================================
+   END PLAYER CENTERING FIX
+   ========================================================= */
