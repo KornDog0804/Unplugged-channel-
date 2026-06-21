@@ -202,14 +202,14 @@
           for (const child of getItems(node)) collectAllPlayable(child, out);
           return;
         }
-        if (node?.thumb) {
-          out.push({ title: node.title || node.artist || "Untitled", thumb: node.thumb });
-          return;
-        }
         const url = firstUrl(node);
         const id = url ? parseVideoId(url) : null;
         if (id) {
           out.push({ title: node.title || node.artist || "Untitled", id });
+          return;
+        }
+        if (node?.thumb) {
+          out.push({ title: node.title || node.artist || "Untitled", thumb: node.thumb });
         }
       }
 
@@ -231,7 +231,9 @@
           const res = await fetch(url, { cache: "no-store" });
           if (!res.ok) continue;
           const raw = await res.json();
-          root = Array.isArray(raw) ? { items: raw } : raw;
+          root = Array.isArray(raw)
+            ? { title: "Sessions", mode: "folder", items: raw }
+            : raw;
           break;
         } catch (_) { /* try next candidate */ }
       }
