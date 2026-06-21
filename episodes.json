@@ -2081,6 +2081,24 @@
             ]
           }
         ]
+      },
+      {
+        "title": "Dean Hall and the Loose Eels",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Rivalry's Sports Bar & Grill",
+            "artist": "Dean Hall and the Loose Eels",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://youtu.be/JRlDBoFZ-yI"
+              }
+            ]
+          }
+        ]
       }
     ]
   },
