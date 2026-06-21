@@ -868,6 +868,20 @@ body::before{
 }
 
 /* ---------- Episode / track cards (new + existing names) ---------- */
+/* .epCard is now a real <button> (TV remotes only reliably generate a
+   click for native interactive elements — a plain div with role="button"
+   silently ate Select/OK presses on Google TV). This resets all the
+   default browser button chrome so it still looks identical everywhere
+   else. */
+.epCard{
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  margin: 0;
+}
+
 .epCard,
 .ep{
   display: flex;
