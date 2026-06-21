@@ -144,7 +144,25 @@
         if (typeof window.__kdTogglePlayPause === 'function') {
           window.__kdTogglePlayPause();
         }
+        return;
       }
+
+      if (e.key === 'ArrowLeft' || e.key === 'MediaRewind') {
+        e.preventDefault();
+        if (typeof window.__kdSeek === 'function') {
+          window.__kdSeek(-10);
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowRight' || e.key === 'MediaFastForward') {
+        e.preventDefault();
+        if (typeof window.__kdSeek === 'function') {
+          window.__kdSeek(10);
+        }
+        return;
+      }
+
       return;
     }
 
