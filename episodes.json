@@ -2101,12 +2101,12 @@
     "title": "🚗 Drag Racing",
     "artist": "Drag Racing",
     "year": "Playlist",
-    "mode": "playlist",
+    "mode": "queue",
     "thumb": "./images/nhra-4-logo-svg-vector.svg",
     "tracks": [
       {
-        "title": "Drag Racing Playlist",
-        "url": "https://www.youtube.com/playlist?list=PL2CE0jAO4lqQuVrJivvvNz7p7JZTQ7JT5"
+        "title": "NHRA 4-Wide Nationals Full Broadcast",
+        "url": "https://youtu.be/b6yi1cF6yX4"
       }
     ]
   }
