@@ -4,6 +4,10 @@
    #playerFrame, #playerToggleBtn,
    #watchOnTvBtn, #nowPlayingTitle, #nowPlayingLine,
    #npArtWrap, #npArt, #backNavBtn
+
+   Deep-link auto-play: if the URL has ?play=<videoId> or
+   ?playTitle=<title> (set by the home page's Featured cards), the
+   matching show starts playing automatically once data loads.
 */
 
 (() => {
@@ -472,6 +476,60 @@
     });
   }
 
+  // ==== DEEP-LINK AUTO-PLAY (from home page Featured cards) ====
+  // Searches the whole tree for a leaf node whose track list contains the
+  // given YouTube video id, or (fallback) whose title matches exactly —
+  // used for thumb-only items like Monster Jam / Drag Racing that have no
+  // single representative video id.
+  function findNodeByVideoId(node, targetId) {
+    if (isFolder(node)) {
+      for (const child of getNodeItems(node)) {
+        const found = findNodeByVideoId(child, targetId);
+        if (found) return found;
+      }
+      return null;
+    }
+    if (isPlayableNode(node)) {
+      const playable = collectPlayableFromNode(node);
+      const match = playable.some(t => {
+        const info = parseYouTube(t.url);
+        return info.kind === "video" && info.id === targetId;
+      });
+      if (match) return node;
+    }
+    return null;
+  }
+
+  function findNodeByTitle(node, targetTitle) {
+    if (isFolder(node)) {
+      for (const child of getNodeItems(node)) {
+        const found = findNodeByTitle(child, targetTitle);
+        if (found) return found;
+      }
+      return null;
+    }
+    if (isPlayableNode(node) && safeTitle(node) === targetTitle) return node;
+    return null;
+  }
+
+  function tryAutoPlayFromQuery() {
+    const params = new URLSearchParams(location.search);
+    const playId = params.get("play");
+    const playTitle = params.get("playTitle");
+    if (!playId && !playTitle) return;
+
+    let target = null;
+    if (playId) target = findNodeByVideoId(ROOT, playId);
+    if (!target && playTitle) target = findNodeByTitle(ROOT, playTitle);
+    if (!target) return;
+
+    const q = collectPlayableFromNode(target);
+    if (!q.length) return;
+
+    currentQueue = q;
+    playTrackAt(0, true);
+  }
+
   // ==== LOAD DATA ====
   async function fetchJson(url) {
     const res = await fetch(url, { cache: "no-store" });
@@ -572,6 +630,7 @@
       setStatus("Loading sessions…");
       await loadData();
       showPlayer(false);
+      tryAutoPlayFromQuery();
       setStatus((($status?.textContent || "") + " — If weird, hard refresh / clear cache.").trim());
     } catch (err) {
       console.error(err);
