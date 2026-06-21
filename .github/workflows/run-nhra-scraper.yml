@@ -1,0 +1,39 @@
+name: NHRA Drag Racing Scraper
+
+# Runs Friday through Sunday (race weekends), several times a day, to
+# catch new full-broadcast uploads as soon as NHRA posts them.
+# Cron times are in UTC. These hit roughly 8am-8pm Central time.
+on:
+  schedule:
+    - cron: "0 13,17,21 * * 5,6,0"   # Fri(5), Sat(6), Sun(0) — 8am/12pm/4pm CT
+  workflow_dispatch: {}               # lets you trigger it manually from the Actions tab
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run NHRA scraper
+        run: python nhra_scraper.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add episodes.json
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Auto-add new NHRA full broadcast(s)"
+            git push
+          fi
