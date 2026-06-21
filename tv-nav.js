@@ -116,8 +116,9 @@
   }
 
   document.addEventListener('keydown', function (e) {
-    // During theater mode, the only thing this script does is let Back
-    // out — no focus movement, no Enter-clicking, nothing else.
+    // During theater mode: Back exits, Enter/Select toggles play/pause
+    // by directly commanding the player (more reliable on this TV than
+    // relying on iframe keyboard focus) — nothing else does anything.
     if (document.body.classList.contains('tvTheater')) {
       if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
@@ -134,6 +135,15 @@
           const first = getFocusable()[0];
           if (first) setFocus(first);
         }, 50);
+        return;
+      }
+
+      if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' ||
+          e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
+        e.preventDefault();
+        if (typeof window.__kdTogglePlayPause === 'function') {
+          window.__kdTogglePlayPause();
+        }
       }
       return;
     }
