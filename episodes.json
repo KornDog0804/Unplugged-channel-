@@ -15,10 +15,22 @@
             "memorial": true,
             "memorial_name": "Brad",
             "tracks": [
-              { "title": "Here Without You (Live)", "url": "https://youtu.be/xocNHKBHsSg" },
-              { "title": "When I'm Gone (Live)", "url": "https://youtu.be/5XpuvhHhx_s" },
-              { "title": "Kryptonite (Live)", "url": "https://youtu.be/m3lSLLklu7Q" },
-              { "title": "Ticket To Heaven (Live)", "url": "https://youtu.be/mdV9iLyrPv8" }
+              {
+                "title": "Here Without You (Live)",
+                "url": "https://youtu.be/xocNHKBHsSg"
+              },
+              {
+                "title": "When I'm Gone (Live)",
+                "url": "https://youtu.be/5XpuvhHhx_s"
+              },
+              {
+                "title": "Kryptonite (Live)",
+                "url": "https://youtu.be/m3lSLLklu7Q"
+              },
+              {
+                "title": "Ticket To Heaven (Live)",
+                "url": "https://youtu.be/mdV9iLyrPv8"
+              }
             ]
           }
         ]
@@ -33,7 +45,10 @@
             "year": 1996,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://youtu.be/Jprla2NvHY0" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://youtu.be/Jprla2NvHY0"
+              }
             ]
           }
         ]
@@ -47,7 +62,10 @@
             "artist": "Alanis Morissette",
             "mode": "fullshow",
             "tracks": [
-              { "title": "MTV Unplugged", "url": "https://youtu.be/irJK3I1m8zY" }
+              {
+                "title": "MTV Unplugged",
+                "url": "https://youtu.be/irJK3I1m8zY"
+              }
             ]
           }
         ]
@@ -62,12 +80,30 @@
             "year": "Acoustic",
             "mode": "queue",
             "tracks": [
-              { "title": "Never Know", "url": "https://youtu.be/tIDxdXRvtLg" },
-              { "title": "Limits", "url": "https://youtu.be/BDMt9gnvMe0" },
-              { "title": "Careful What You Wish For", "url": "https://youtu.be/KlfSm9GZY5Y" },
-              { "title": "Mercy", "url": "https://youtu.be/_5CaAIFdT2c" },
-              { "title": "Burning Out", "url": "https://youtu.be/noGwAB46Bhk" },
-              { "title": "If I'm There", "url": "https://youtu.be/7vkBQFjrorU" }
+              {
+                "title": "Never Know",
+                "url": "https://youtu.be/tIDxdXRvtLg"
+              },
+              {
+                "title": "Limits",
+                "url": "https://youtu.be/BDMt9gnvMe0"
+              },
+              {
+                "title": "Careful What You Wish For",
+                "url": "https://youtu.be/KlfSm9GZY5Y"
+              },
+              {
+                "title": "Mercy",
+                "url": "https://youtu.be/_5CaAIFdT2c"
+              },
+              {
+                "title": "Burning Out",
+                "url": "https://youtu.be/noGwAB46Bhk"
+              },
+              {
+                "title": "If I'm There",
+                "url": "https://youtu.be/7vkBQFjrorU"
+              }
             ]
           }
         ]
@@ -82,7 +118,10 @@
             "year": 2019,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }
+              {
+                "title": "Tiny Desk Concert",
+                "url": "https://youtu.be/WgqaxMOKfnI"
+              }
             ]
           }
         ]
@@ -97,9 +136,18 @@
             "year": "Acoustic",
             "mode": "queue",
             "tracks": [
-              { "title": "Time After Time (St. Jude Sessions)", "url": "https://www.youtube.com/watch?v=2ONqcNXKNxk" },
-              { "title": "So Cold (Y100 Acoustic Session)", "url": "https://www.youtube.com/watch?v=kmH_xnQfcbQ" },
-              { "title": "Breath (Acoustic)", "url": "https://www.youtube.com/watch?v=M4rmSZ_PPSA" }
+              {
+                "title": "Time After Time (St. Jude Sessions)",
+                "url": "https://www.youtube.com/watch?v=2ONqcNXKNxk"
+              },
+              {
+                "title": "So Cold (Y100 Acoustic Session)",
+                "url": "https://www.youtube.com/watch?v=kmH_xnQfcbQ"
+              },
+              {
+                "title": "Breath (Acoustic)",
+                "url": "https://www.youtube.com/watch?v=M4rmSZ_PPSA"
+              }
             ]
           }
         ]
@@ -114,7 +162,10 @@
             "year": "Various",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }
+              {
+                "title": "Collection Stream",
+                "url": "https://youtu.be/2xxonKSQ-1M"
+              }
             ]
           }
         ]
@@ -129,7 +180,10 @@
             "year": "Acoustic",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Acoustic Performance", "url": "https://youtu.be/uetFO7y8WPA" }
+              {
+                "title": "Acoustic Performance",
+                "url": "https://youtu.be/uetFO7y8WPA"
+              }
             ]
           }
         ]
@@ -144,7 +198,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=P7DWcyB9ElQ" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=P7DWcyB9ElQ"
+              }
             ]
           }
         ]
@@ -159,26 +216,26 @@
             "year": "Stripped",
             "mode": "queue",
             "tracks": [
-              { "title": "My Immortal", "url": "https://youtu.be/rnJEV8tVSJc" },
-              { "title": "Neon Grave", "url": "https://youtu.be/dYf3psotQMQ" },
-              { "title": "Sleep Talk (Stripped)", "url": "https://youtu.be/2OEmJel7g5I" },
-              { "title": "Burial Plot", "url": "https://youtu.be/X1LW7ROGTLE" },
-              { "title": "Pale Moonlight", "url": "https://youtu.be/rGKZ2X1WxJ4" }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Eric Clapton",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "MTV Unplugged (Full Session)",
-            "artist": "Eric Clapton",
-            "year": 1992,
-            "mode": "fullshow",
-            "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=XIRnN7AZ0Uo" }
+              {
+                "title": "My Immortal",
+                "url": "https://youtu.be/rnJEV8tVSJc"
+              },
+              {
+                "title": "Neon Grave",
+                "url": "https://youtu.be/dYf3psotQMQ"
+              },
+              {
+                "title": "Sleep Talk (Stripped)",
+                "url": "https://youtu.be/2OEmJel7g5I"
+              },
+              {
+                "title": "Burial Plot",
+                "url": "https://youtu.be/X1LW7ROGTLE"
+              },
+              {
+                "title": "Pale Moonlight",
+                "url": "https://youtu.be/rGKZ2X1WxJ4"
+              }
             ]
           }
         ]
@@ -193,7 +250,10 @@
             "year": 2006,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=8f2ZeHaAHvY" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=8f2ZeHaAHvY"
+              }
             ]
           }
         ]
@@ -208,7 +268,10 @@
             "year": "DVD",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }
+              {
+                "title": "Full Acoustic Session",
+                "url": "https://youtu.be/oSKBnczdyMg"
+              }
             ]
           }
         ]
@@ -223,7 +286,10 @@
             "year": 2012,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=TEuGb-4xbzI" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=TEuGb-4xbzI"
+              }
             ]
           }
         ]
@@ -238,11 +304,26 @@
             "year": "Acoustic",
             "mode": "queue",
             "tracks": [
-              { "title": "Deep End", "url": "https://youtu.be/wFXJapoQRBw" },
-              { "title": "Everytime You Leave", "url": "https://youtu.be/rABqYJAiFTA" },
-              { "title": "Stuck In Your Head", "url": "https://youtu.be/NUcvAirmEm4" },
-              { "title": "Scars", "url": "https://youtu.be/vadGCs66ing" },
-              { "title": "My Heart I Surrender", "url": "https://youtu.be/CqOgxKsIA88" }
+              {
+                "title": "Deep End",
+                "url": "https://youtu.be/wFXJapoQRBw"
+              },
+              {
+                "title": "Everytime You Leave",
+                "url": "https://youtu.be/rABqYJAiFTA"
+              },
+              {
+                "title": "Stuck In Your Head",
+                "url": "https://youtu.be/NUcvAirmEm4"
+              },
+              {
+                "title": "Scars",
+                "url": "https://youtu.be/vadGCs66ing"
+              },
+              {
+                "title": "My Heart I Surrender",
+                "url": "https://youtu.be/CqOgxKsIA88"
+              }
             ]
           }
         ]
@@ -257,7 +338,10 @@
             "year": 2001,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://youtu.be/r2I_pGlvtAY" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://youtu.be/r2I_pGlvtAY"
+              }
             ]
           }
         ]
@@ -272,7 +356,10 @@
             "year": 1995,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM"
+              }
             ]
           }
         ]
@@ -287,7 +374,10 @@
             "year": 2007,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://youtu.be/El8-JgiqcUI" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://youtu.be/El8-JgiqcUI"
+              }
             ]
           }
         ]
@@ -302,7 +392,10 @@
             "year": 2002,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=4SDCuFLAF78" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=4SDCuFLAF78"
+              }
             ]
           }
         ]
@@ -317,7 +410,10 @@
             "year": 1993,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://youtu.be/pOTkCgkxqyg" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://youtu.be/pOTkCgkxqyg"
+              }
             ]
           }
         ]
@@ -332,7 +428,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=f4BK60WVPac" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=f4BK60WVPac"
+              }
             ]
           }
         ]
@@ -347,7 +446,10 @@
             "year": 1992,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Unplugged Full Session", "url": "https://youtu.be/P9fPF204icg" }
+              {
+                "title": "Unplugged Full Session",
+                "url": "https://youtu.be/P9fPF204icg"
+              }
             ]
           }
         ]
@@ -362,7 +464,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }
+              {
+                "title": "Tiny Desk Concert",
+                "url": "https://youtu.be/ajNYTJcF6rE"
+              }
             ]
           }
         ]
@@ -377,7 +482,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://youtu.be/Q4s_nIG8rw0" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://youtu.be/Q4s_nIG8rw0"
+              }
             ]
           }
         ]
@@ -392,14 +500,38 @@
             "year": "Acoustic",
             "mode": "queue",
             "tracks": [
-              { "title": "45", "url": "https://youtu.be/PGiLaRC_U0g" },
-              { "title": "Call Me", "url": "https://youtu.be/r2xsItCZqoo" },
-              { "title": "I'll Follow You", "url": "https://youtu.be/ECEK-g7xayc" },
-              { "title": "If You Only Knew", "url": "https://youtu.be/fyZStLSFGZY" },
-              { "title": "Second Chance", "url": "https://youtu.be/6OJcBSvP40I" },
-              { "title": "Simple Man", "url": "https://youtu.be/4pS84gSQ_OI" },
-              { "title": "Runaway Train", "url": "https://youtu.be/JMT3x0e5F1Y" },
-              { "title": "Monster", "url": "https://youtu.be/2vRHIILUp48" }
+              {
+                "title": "45",
+                "url": "https://youtu.be/PGiLaRC_U0g"
+              },
+              {
+                "title": "Call Me",
+                "url": "https://youtu.be/r2xsItCZqoo"
+              },
+              {
+                "title": "I'll Follow You",
+                "url": "https://youtu.be/ECEK-g7xayc"
+              },
+              {
+                "title": "If You Only Knew",
+                "url": "https://youtu.be/fyZStLSFGZY"
+              },
+              {
+                "title": "Second Chance",
+                "url": "https://youtu.be/6OJcBSvP40I"
+              },
+              {
+                "title": "Simple Man",
+                "url": "https://youtu.be/4pS84gSQ_OI"
+              },
+              {
+                "title": "Runaway Train",
+                "url": "https://youtu.be/JMT3x0e5F1Y"
+              },
+              {
+                "title": "Monster",
+                "url": "https://youtu.be/2vRHIILUp48"
+              }
             ]
           }
         ]
@@ -414,10 +546,22 @@
             "year": 2020,
             "mode": "queue",
             "tracks": [
-              { "title": "With This Knife", "url": "https://youtu.be/Hl_qZX32LiY" },
-              { "title": "Silhouettes", "url": "https://youtu.be/mk78hkKzXMA" },
-              { "title": "Bottom Of A Bottle", "url": "https://youtu.be/cxIoBp8xHwQ" },
-              { "title": "Wonderwall", "url": "https://youtu.be/C08X2DbSPfs" }
+              {
+                "title": "With This Knife",
+                "url": "https://youtu.be/Hl_qZX32LiY"
+              },
+              {
+                "title": "Silhouettes",
+                "url": "https://youtu.be/mk78hkKzXMA"
+              },
+              {
+                "title": "Bottom Of A Bottle",
+                "url": "https://youtu.be/cxIoBp8xHwQ"
+              },
+              {
+                "title": "Wonderwall",
+                "url": "https://youtu.be/C08X2DbSPfs"
+              }
             ]
           }
         ]
@@ -432,7 +576,10 @@
             "year": 2002,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=33MIi9bfmQo" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=33MIi9bfmQo"
+              }
             ]
           }
         ]
@@ -447,7 +594,10 @@
             "year": "1980s",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Live Jam", "url": "https://youtu.be/e_UASyYu1iA" }
+              {
+                "title": "Live Jam",
+                "url": "https://youtu.be/e_UASyYu1iA"
+              }
             ]
           }
         ]
@@ -462,7 +612,10 @@
             "year": 1993,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Acoustic Performance", "url": "https://youtu.be/Apok0654Qnc" }
+              {
+                "title": "Full Acoustic Performance",
+                "url": "https://youtu.be/Apok0654Qnc"
+              }
             ]
           }
         ]
@@ -477,7 +630,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://youtu.be/EGB3xoa7Cus" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://youtu.be/EGB3xoa7Cus"
+              }
             ]
           }
         ]
@@ -492,7 +648,10 @@
             "year": 2012,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=-4q714VDAXk" }
+              {
+                "title": "Full Session Stream",
+                "url": "https://www.youtube.com/watch?v=-4q714VDAXk"
+              }
             ]
           }
         ]
@@ -507,12 +666,30 @@
             "year": 2024,
             "mode": "queue",
             "tracks": [
-              { "title": "Magnetic", "url": "https://youtu.be/zxvZO7MzYzU" },
-              { "title": "Circle The Drain", "url": "https://youtu.be/HasZm8N83cE" },
-              { "title": "Savin Me (Nickelback Cover)", "url": "https://youtu.be/2lcJUfE2LsQ" },
-              { "title": "Me Against Myself", "url": "https://youtu.be/fT9SJV8KCE8" },
-              { "title": "Will We Ever Learn", "url": "https://youtu.be/laiLOhKO9yU" },
-              { "title": "Johnny Cash (Acoustic)", "url": "https://youtu.be/7WVGNUVsDFw" }
+              {
+                "title": "Magnetic",
+                "url": "https://youtu.be/zxvZO7MzYzU"
+              },
+              {
+                "title": "Circle The Drain",
+                "url": "https://youtu.be/HasZm8N83cE"
+              },
+              {
+                "title": "Savin Me (Nickelback Cover)",
+                "url": "https://youtu.be/2lcJUfE2LsQ"
+              },
+              {
+                "title": "Me Against Myself",
+                "url": "https://youtu.be/fT9SJV8KCE8"
+              },
+              {
+                "title": "Will We Ever Learn",
+                "url": "https://youtu.be/laiLOhKO9yU"
+              },
+              {
+                "title": "Johnny Cash (Acoustic)",
+                "url": "https://youtu.be/7WVGNUVsDFw"
+              }
             ]
           }
         ]
@@ -527,15 +704,20 @@
             "year": 2020,
             "mode": "queue",
             "tracks": [
-              { "title": "Body Bag", "url": "https://youtu.be/jkY3QORBHeE" },
-              { "title": "Hangfire", "url": "https://youtu.be/pqWTvbLTV0Q" }
+              {
+                "title": "Body Bag",
+                "url": "https://youtu.be/jkY3QORBHeE"
+              },
+              {
+                "title": "Hangfire",
+                "url": "https://youtu.be/pqWTvbLTV0Q"
+              }
             ]
           }
         ]
       }
     ]
   },
-
   {
     "title": "📺 MTV Unplugged",
     "mode": "folder",
@@ -546,7 +728,10 @@
         "year": 1993,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://youtu.be/pOTkCgkxqyg" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/pOTkCgkxqyg"
+          }
         ]
       },
       {
@@ -555,7 +740,10 @@
         "year": 1996,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://youtu.be/Jprla2NvHY0" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/Jprla2NvHY0"
+          }
         ]
       },
       {
@@ -564,7 +752,10 @@
         "year": 1992,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Unplugged Full Session", "url": "https://youtu.be/P9fPF204icg" }
+          {
+            "title": "Unplugged Full Session",
+            "url": "https://youtu.be/P9fPF204icg"
+          }
         ]
       },
       {
@@ -573,7 +764,10 @@
         "year": 1993,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Acoustic Performance", "url": "https://youtu.be/Apok0654Qnc" }
+          {
+            "title": "Full Acoustic Performance",
+            "url": "https://youtu.be/Apok0654Qnc"
+          }
         ]
       },
       {
@@ -582,7 +776,10 @@
         "year": 2007,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://youtu.be/El8-JgiqcUI" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/El8-JgiqcUI"
+          }
         ]
       },
       {
@@ -591,7 +788,10 @@
         "year": 2001,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://youtu.be/r2I_pGlvtAY" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/r2I_pGlvtAY"
+          }
         ]
       },
       {
@@ -600,16 +800,10 @@
         "year": 2002,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=33MIi9bfmQo" }
-        ]
-      },
-      {
-        "title": "Eric Clapton — Unplugged (Full Session)",
-        "artist": "Eric Clapton",
-        "year": 1992,
-        "mode": "fullshow",
-        "tracks": [
-          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=XIRnN7AZ0Uo" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=33MIi9bfmQo"
+          }
         ]
       },
       {
@@ -618,7 +812,10 @@
         "year": 1995,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM"
+          }
         ]
       },
       {
@@ -627,12 +824,14 @@
         "year": 2002,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=4SDCuFLAF78" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=4SDCuFLAF78"
+          }
         ]
       }
     ]
   },
-
   {
     "title": "🎙 Tiny Desk",
     "mode": "folder",
@@ -640,41 +839,85 @@
       {
         "title": "Scarface — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/ajNYTJcF6rE" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/ajNYTJcF6rE"
+          }
+        ]
       },
       {
         "title": "Billy Strings — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/WgqaxMOKfnI" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/WgqaxMOKfnI"
+          }
+        ]
       },
       {
         "title": "Cypress Hill — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/tUApO77uUUk" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/tUApO77uUUk"
+          }
+        ]
       },
       {
         "title": "Paramore — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/_t-nRXwAL1k" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/_t-nRXwAL1k"
+          }
+        ]
       },
       {
         "title": "Alicia Keys — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/uwUt1fVLb3E" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/uwUt1fVLb3E"
+          }
+        ]
       },
       {
         "title": "Living Colour — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/bzAI4F_ks5s" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/bzAI4F_ks5s"
+          }
+        ]
       },
       {
         "title": "311 — Tiny Desk",
         "mode": "fullshow",
-        "tracks": [{ "title": "Tiny Desk Concert", "url": "https://youtu.be/MgTDLlDY_yY" }]
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/MgTDLlDY_yY"
+          }
+        ]
+      },
+      {
+        "title": "8Ball & MJG — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/gQXf0PNreCo"
+          }
+        ]
       }
     ]
   },
-
   {
     "title": "🎛 Stitched Streams / Full Sessions",
     "mode": "folder",
@@ -685,7 +928,10 @@
         "year": "Acoustic",
         "mode": "fullshow",
         "tracks": [
-          { "title": "Acoustic Performance", "url": "https://youtu.be/uetFO7y8WPA" }
+          {
+            "title": "Acoustic Performance",
+            "url": "https://youtu.be/uetFO7y8WPA"
+          }
         ]
       },
       {
@@ -694,7 +940,10 @@
         "year": 2025,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://www.youtube.com/watch?v=f4BK60WVPac" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=f4BK60WVPac"
+          }
         ]
       },
       {
@@ -703,7 +952,10 @@
         "year": "DVD",
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Acoustic Session", "url": "https://youtu.be/oSKBnczdyMg" }
+          {
+            "title": "Full Acoustic Session",
+            "url": "https://youtu.be/oSKBnczdyMg"
+          }
         ]
       },
       {
@@ -712,7 +964,10 @@
         "year": 2023,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://youtu.be/EGB3xoa7Cus" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/EGB3xoa7Cus"
+          }
         ]
       },
       {
@@ -721,7 +976,10 @@
         "year": 2025,
         "mode": "fullshow",
         "tracks": [
-          { "title": "Full Session Stream", "url": "https://youtu.be/Q4s_nIG8rw0" }
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/Q4s_nIG8rw0"
+          }
         ]
       },
       {
@@ -730,7 +988,10 @@
         "year": "1980s",
         "mode": "fullshow",
         "tracks": [
-          { "title": "Live Jam", "url": "https://youtu.be/e_UASyYu1iA" }
+          {
+            "title": "Live Jam",
+            "url": "https://youtu.be/e_UASyYu1iA"
+          }
         ]
       },
       {
@@ -739,7 +1000,10 @@
         "year": "Various",
         "mode": "fullshow",
         "tracks": [
-          { "title": "Collection Stream", "url": "https://youtu.be/2xxonKSQ-1M" }
+          {
+            "title": "Collection Stream",
+            "url": "https://youtu.be/2xxonKSQ-1M"
+          }
         ]
       },
       {
@@ -748,12 +1012,30 @@
         "year": 2024,
         "mode": "queue",
         "tracks": [
-          { "title": "Magnetic", "url": "https://youtu.be/zxvZO7MzYzU" },
-          { "title": "Circle The Drain", "url": "https://youtu.be/HasZm8N83cE" },
-          { "title": "Savin Me (Nickelback Cover)", "url": "https://youtu.be/2lcJUfE2LsQ" },
-          { "title": "Me Against Myself", "url": "https://youtu.be/fT9SJV8KCE8" },
-          { "title": "Will We Ever Learn", "url": "https://youtu.be/laiLOhKO9yU" },
-          { "title": "Johnny Cash (Acoustic)", "url": "https://youtu.be/7WVGNUVsDFw" }
+          {
+            "title": "Magnetic",
+            "url": "https://youtu.be/zxvZO7MzYzU"
+          },
+          {
+            "title": "Circle The Drain",
+            "url": "https://youtu.be/HasZm8N83cE"
+          },
+          {
+            "title": "Savin Me (Nickelback Cover)",
+            "url": "https://youtu.be/2lcJUfE2LsQ"
+          },
+          {
+            "title": "Me Against Myself",
+            "url": "https://youtu.be/fT9SJV8KCE8"
+          },
+          {
+            "title": "Will We Ever Learn",
+            "url": "https://youtu.be/laiLOhKO9yU"
+          },
+          {
+            "title": "Johnny Cash (Acoustic)",
+            "url": "https://youtu.be/7WVGNUVsDFw"
+          }
         ]
       },
       {
@@ -762,12 +1044,30 @@
         "year": "Acoustic",
         "mode": "queue",
         "tracks": [
-          { "title": "Never Know", "url": "https://youtu.be/tIDxdXRvtLg" },
-          { "title": "Limits", "url": "https://youtu.be/BDMt9gnvMe0" },
-          { "title": "Careful What You Wish For", "url": "https://youtu.be/KlfSm9GZY5Y" },
-          { "title": "Mercy", "url": "https://youtu.be/_5CaAIFdT2c" },
-          { "title": "Burning Out", "url": "https://youtu.be/noGwAB46Bhk" },
-          { "title": "If I'm There", "url": "https://youtu.be/7vkBQFjrorU" }
+          {
+            "title": "Never Know",
+            "url": "https://youtu.be/tIDxdXRvtLg"
+          },
+          {
+            "title": "Limits",
+            "url": "https://youtu.be/BDMt9gnvMe0"
+          },
+          {
+            "title": "Careful What You Wish For",
+            "url": "https://youtu.be/KlfSm9GZY5Y"
+          },
+          {
+            "title": "Mercy",
+            "url": "https://youtu.be/_5CaAIFdT2c"
+          },
+          {
+            "title": "Burning Out",
+            "url": "https://youtu.be/noGwAB46Bhk"
+          },
+          {
+            "title": "If I'm There",
+            "url": "https://youtu.be/7vkBQFjrorU"
+          }
         ]
       },
       {
@@ -776,11 +1076,26 @@
         "year": "Acoustic",
         "mode": "queue",
         "tracks": [
-          { "title": "Deep End", "url": "https://youtu.be/wFXJapoQRBw" },
-          { "title": "Everytime You Leave", "url": "https://youtu.be/rABqYJAiFTA" },
-          { "title": "Stuck In Your Head", "url": "https://youtu.be/NUcvAirmEm4" },
-          { "title": "Scars", "url": "https://youtu.be/vadGCs66ing" },
-          { "title": "My Heart I Surrender", "url": "https://youtu.be/CqOgxKsIA88" }
+          {
+            "title": "Deep End",
+            "url": "https://youtu.be/wFXJapoQRBw"
+          },
+          {
+            "title": "Everytime You Leave",
+            "url": "https://youtu.be/rABqYJAiFTA"
+          },
+          {
+            "title": "Stuck In Your Head",
+            "url": "https://youtu.be/NUcvAirmEm4"
+          },
+          {
+            "title": "Scars",
+            "url": "https://youtu.be/vadGCs66ing"
+          },
+          {
+            "title": "My Heart I Surrender",
+            "url": "https://youtu.be/CqOgxKsIA88"
+          }
         ]
       },
       {
@@ -789,11 +1104,26 @@
         "year": "Stripped",
         "mode": "queue",
         "tracks": [
-          { "title": "My Immortal", "url": "https://youtu.be/rnJEV8tVSJc" },
-          { "title": "Neon Grave", "url": "https://youtu.be/dYf3psotQMQ" },
-          { "title": "Sleep Talk (Stripped)", "url": "https://youtu.be/2OEmJel7g5I" },
-          { "title": "Burial Plot", "url": "https://youtu.be/X1LW7ROGTLE" },
-          { "title": "Pale Moonlight", "url": "https://youtu.be/rGKZ2X1WxJ4" }
+          {
+            "title": "My Immortal",
+            "url": "https://youtu.be/rnJEV8tVSJc"
+          },
+          {
+            "title": "Neon Grave",
+            "url": "https://youtu.be/dYf3psotQMQ"
+          },
+          {
+            "title": "Sleep Talk (Stripped)",
+            "url": "https://youtu.be/2OEmJel7g5I"
+          },
+          {
+            "title": "Burial Plot",
+            "url": "https://youtu.be/X1LW7ROGTLE"
+          },
+          {
+            "title": "Pale Moonlight",
+            "url": "https://youtu.be/rGKZ2X1WxJ4"
+          }
         ]
       },
       {
@@ -802,14 +1132,38 @@
         "year": "Acoustic",
         "mode": "queue",
         "tracks": [
-          { "title": "45", "url": "https://youtu.be/PGiLaRC_U0g" },
-          { "title": "Call Me", "url": "https://youtu.be/r2xsItCZqoo" },
-          { "title": "I'll Follow You", "url": "https://youtu.be/ECEK-g7xayc" },
-          { "title": "If You Only Knew", "url": "https://youtu.be/fyZStLSFGZY" },
-          { "title": "Second Chance", "url": "https://youtu.be/6OJcBSvP40I" },
-          { "title": "Simple Man", "url": "https://youtu.be/4pS84gSQ_OI" },
-          { "title": "Runaway Train", "url": "https://youtu.be/JMT3x0e5F1Y" },
-          { "title": "Monster", "url": "https://youtu.be/2vRHIILUp48" }
+          {
+            "title": "45",
+            "url": "https://youtu.be/PGiLaRC_U0g"
+          },
+          {
+            "title": "Call Me",
+            "url": "https://youtu.be/r2xsItCZqoo"
+          },
+          {
+            "title": "I'll Follow You",
+            "url": "https://youtu.be/ECEK-g7xayc"
+          },
+          {
+            "title": "If You Only Knew",
+            "url": "https://youtu.be/fyZStLSFGZY"
+          },
+          {
+            "title": "Second Chance",
+            "url": "https://youtu.be/6OJcBSvP40I"
+          },
+          {
+            "title": "Simple Man",
+            "url": "https://youtu.be/4pS84gSQ_OI"
+          },
+          {
+            "title": "Runaway Train",
+            "url": "https://youtu.be/JMT3x0e5F1Y"
+          },
+          {
+            "title": "Monster",
+            "url": "https://youtu.be/2vRHIILUp48"
+          }
         ]
       },
       {
@@ -818,13 +1172,18 @@
         "year": 2020,
         "mode": "queue",
         "tracks": [
-          { "title": "Body Bag", "url": "https://youtu.be/jkY3QORBHeE" },
-          { "title": "Hangfire", "url": "https://youtu.be/pqWTvbLTV0Q" }
+          {
+            "title": "Body Bag",
+            "url": "https://youtu.be/jkY3QORBHeE"
+          },
+          {
+            "title": "Hangfire",
+            "url": "https://youtu.be/pqWTvbLTV0Q"
+          }
         ]
       }
     ]
   },
-
   {
     "title": "🎤 Live Concerts",
     "mode": "folder",
@@ -839,7 +1198,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=WMnhw6H-Wfg" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=WMnhw6H-Wfg"
+              }
             ]
           }
         ]
@@ -854,7 +1216,10 @@
             "year": 2019,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=9wz2WWgv9Fs" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=9wz2WWgv9Fs"
+              }
             ]
           }
         ]
@@ -864,12 +1229,15 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Pinkpop Festival (2002, Pro-Shot)",
+            "title": "Rock In Rio 2015 (Full Show HD)",
             "artist": "System Of A Down",
-            "year": 2002,
+            "year": 2015,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=J23YAu9JvNQ" }
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/63SkLEC48Bc"
+              }
             ]
           }
         ]
@@ -884,7 +1252,22 @@
             "year": 2010,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=Sp_GfATanbM" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=Sp_GfATanbM"
+              }
+            ]
+          },
+          {
+            "title": "Full Concert | Live at Woodstock '99",
+            "artist": "Rage Against The Machine",
+            "year": 1999,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/wy9SJkHAI5E"
+              }
             ]
           }
         ]
@@ -899,7 +1282,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=mzURDTmgNy4" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=mzURDTmgNy4"
+              }
             ]
           }
         ]
@@ -909,12 +1295,15 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Lollapalooza Chile (2024, Parque Bicentenario de Cerrillos)",
+            "title": "Live at Woodstock '99 (Full Concert)",
             "artist": "Limp Bizkit",
-            "year": 2024,
+            "year": 1999,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=QL2TmawPj1A" }
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/lE4NPu5nYS4"
+              }
             ]
           }
         ]
@@ -929,7 +1318,10 @@
             "year": "DVD",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=ETqwsTYYdUM" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=ETqwsTYYdUM"
+              }
             ]
           }
         ]
@@ -944,7 +1336,10 @@
             "year": "Live",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=mZxPB8xfM6c" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=mZxPB8xfM6c"
+              }
             ]
           }
         ]
@@ -959,7 +1354,10 @@
             "year": "Live",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=xC-k4FEYpJ8" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=xC-k4FEYpJ8"
+              }
             ]
           }
         ]
@@ -974,7 +1372,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=KPHzv4pnuho" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=KPHzv4pnuho"
+              }
             ]
           }
         ]
@@ -989,7 +1390,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=EV8n2cU4wRw" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=EV8n2cU4wRw"
+              }
             ]
           }
         ]
@@ -1004,7 +1408,10 @@
             "year": 2012,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=vXsFpdYAV9c" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=vXsFpdYAV9c"
+              }
             ]
           }
         ]
@@ -1019,7 +1426,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=T8jVvjSbJRI" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=T8jVvjSbJRI"
+              }
             ]
           }
         ]
@@ -1034,7 +1444,10 @@
             "year": "Live",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=vHLouXKjTNQ" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=vHLouXKjTNQ"
+              }
             ]
           }
         ]
@@ -1049,7 +1462,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=TtmCX9y52ms" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=TtmCX9y52ms"
+              }
             ]
           }
         ]
@@ -1064,7 +1480,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=QC0uFUhFAN4" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=QC0uFUhFAN4"
+              }
             ]
           }
         ]
@@ -1079,7 +1498,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=_kdPhOs5THA" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=_kdPhOs5THA"
+              }
             ]
           }
         ]
@@ -1094,7 +1516,10 @@
             "year": 2008,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=xATJlGTZwMI" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=xATJlGTZwMI"
+              }
             ]
           }
         ]
@@ -1109,7 +1534,10 @@
             "year": "Live",
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=gx-2U5gFtrc" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=gx-2U5gFtrc"
+              }
             ]
           }
         ]
@@ -1124,7 +1552,10 @@
             "year": 2005,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=H0z-4sYzCig" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=H0z-4sYzCig"
+              }
             ]
           }
         ]
@@ -1139,7 +1570,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=zeZYREfp720" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=zeZYREfp720"
+              }
             ]
           }
         ]
@@ -1154,7 +1588,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=2Ai4U94sb5Q" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=2Ai4U94sb5Q"
+              }
             ]
           }
         ]
@@ -1169,7 +1606,10 @@
             "year": 2013,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=Y399t9PIhmw" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=Y399t9PIhmw"
+              }
             ]
           }
         ]
@@ -1184,7 +1624,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Performance", "url": "https://www.youtube.com/watch?v=ChyLmu2HUPk" }
+              {
+                "title": "Full Performance",
+                "url": "https://www.youtube.com/watch?v=ChyLmu2HUPk"
+              }
             ]
           }
         ]
@@ -1199,7 +1642,10 @@
             "year": 2013,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=9dNh_5JxVmE" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=9dNh_5JxVmE"
+              }
             ]
           }
         ]
@@ -1214,7 +1660,10 @@
             "year": 1973,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert Film", "url": "https://www.youtube.com/watch?v=rPDA5pWUGIo" }
+              {
+                "title": "Full Concert Film",
+                "url": "https://www.youtube.com/watch?v=rPDA5pWUGIo"
+              }
             ]
           }
         ]
@@ -1229,7 +1678,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=1j-KMPTAD00" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=1j-KMPTAD00"
+              }
             ]
           }
         ]
@@ -1244,7 +1696,10 @@
             "year": 2022,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=nSJio_JUZao" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=nSJio_JUZao"
+              }
             ]
           }
         ]
@@ -1259,7 +1714,10 @@
             "year": 2007,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=jNAHf8Jab1k" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=jNAHf8Jab1k"
+              }
             ]
           }
         ]
@@ -1274,7 +1732,10 @@
             "year": 2018,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=WgPVKIIGymQ" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=WgPVKIIGymQ"
+              }
             ]
           }
         ]
@@ -1289,7 +1750,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=3WA0RbO04GU" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=3WA0RbO04GU"
+              }
             ]
           }
         ]
@@ -1304,7 +1768,10 @@
             "year": 2026,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=RcIHq4_fZDY" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=RcIHq4_fZDY"
+              }
             ]
           }
         ]
@@ -1319,7 +1786,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU"
+              }
             ]
           }
         ]
@@ -1334,7 +1804,10 @@
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=zSwqLsuJRY0" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=zSwqLsuJRY0"
+              }
             ]
           }
         ]
@@ -1349,7 +1822,10 @@
             "year": 2019,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=d9dhS9B-8mc" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=d9dhS9B-8mc"
+              }
             ]
           }
         ]
@@ -1364,7 +1840,10 @@
             "year": 2012,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=hlBKPFTLSiY" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=hlBKPFTLSiY"
+              }
             ]
           }
         ]
@@ -1379,7 +1858,10 @@
             "year": 1988,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=TvkRYIFE370" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=TvkRYIFE370"
+              }
             ]
           }
         ]
@@ -1394,7 +1876,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=g5tXsoj-lx8" }
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=g5tXsoj-lx8"
+              }
             ]
           }
         ]
@@ -1409,7 +1894,10 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=QzJytOdG2ss" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=QzJytOdG2ss"
+              }
             ]
           }
         ]
@@ -1424,7 +1912,10 @@
             "year": 2021,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=c-XUqFH_85s" }
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=c-XUqFH_85s"
+              }
             ]
           }
         ]
@@ -1439,7 +1930,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert", "url": "https://youtu.be/fY2XkmJU8WI" }
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/fY2XkmJU8WI"
+              }
             ]
           }
         ]
@@ -1454,7 +1948,10 @@
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=gV5Xd9Yl-Gg" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=gV5Xd9Yl-Gg"
+              }
             ]
           }
         ]
@@ -1469,7 +1966,10 @@
             "year": 2022,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Concert Film", "url": "https://www.youtube.com/watch?v=enZLHI3F_7A" }
+              {
+                "title": "Full Concert Film",
+                "url": "https://www.youtube.com/watch?v=enZLHI3F_7A"
+              }
             ]
           }
         ]
@@ -1484,28 +1984,119 @@
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Set", "url": "https://www.youtube.com/watch?v=m9GzUvUf5o8" }
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=m9GzUvUf5o8"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Christone \"Kingfish\" Ingram",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live At The Ground Zero Blues Club",
+            "artist": "Christone \"Kingfish\" Ingram",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://youtu.be/GaQ0IDLw6qs"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Philip Sayce",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full New Year's Eve Show (Maui Sugar Mill, 2018)",
+            "artist": "Philip Sayce",
+            "year": 2018,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://youtu.be/mQ9WYAIz4vI"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Tab Benoit",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Set - Crescent City Blues & BBQ Festival (2025)",
+            "artist": "Tab Benoit",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://youtu.be/lu2QSzuGx80"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "B.B. King",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Montreux",
+            "artist": "B.B. King",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/cx5f1Jtqsxo"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Stevie Ray Vaughan",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Concert | Live at The Capitol Theatre (1985)",
+            "artist": "Stevie Ray Vaughan",
+            "year": 1985,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/YBrRJY_V1lc"
+              }
             ]
           }
         ]
       }
     ]
   },
-
   {
-    "title": "🛻 Monster Jam",
+    "title": "🛻 Monster Jam — 2026 Episodes",
     "artist": "Monster Jam",
     "year": "Playlist",
     "mode": "playlist",
     "thumb": "./images/Logos.webp",
     "tracks": [
       {
-        "title": "Monster Jam - Full Episodes",
-        "url": "https://www.youtube.com/playlist?list=PLaSx_lF7AsqyraPQ6exjOY5C7e-aye_AW"
+        "title": "Monster Jam 2026 - Full Episodes",
+        "url": "https://www.youtube.com/playlist?list=PLaSx_lF7AsqxGq6b5kjFhiraNEUEkqbTT"
       }
     ]
   },
-
   {
     "title": "🚗 Drag Racing",
     "artist": "Drag Racing",
