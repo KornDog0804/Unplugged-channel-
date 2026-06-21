@@ -1,5 +1,5 @@
 /* ============================================
-   KornDog TV Remote Navigation
+   KornDog TV Remote Navigation v2
    Spatial D-pad navigation for Google TV / Android TV
    Paste this whole file as tv-nav.js, then add:
    <script src="tv-nav.js"></script>
@@ -18,9 +18,15 @@
 
   if (!isLikelyTV()) return;
 
+  // Matches the ACTUAL interactive elements in this app:
+  // .epCard      = session/folder rows on sessions.html
+  // .featuredCard = featured cards on the home page
+  // .btn / .landingBtn = all buttons (Play All, Watch on TV, Hide player,
+  //                       Back to Sessions, Enter Sessions, etc.)
+  // a[href] / button / [tabindex] = catch-all fallback
   const FOCUSABLE_SELECTOR =
-    'a, button, [tabindex]:not([tabindex="-1"]), .card, .session-item, ' +
-    '[role="button"], input, select, .folder-tile, .featured-item';
+    '.epCard, .featuredCard, .btn, .landingBtn, a[href], button, ' +
+    '[tabindex]:not([tabindex="-1"]), [role="button"]';
 
   let currentFocus = null;
 
@@ -31,10 +37,13 @@
         outline: 4px solid #7FD41A !important;
         outline-offset: 3px !important;
         box-shadow: 0 0 18px rgba(127, 212, 26, 0.85) !important;
-        transform: scale(1.04);
-        transition: transform 0.12s ease, box-shadow 0.12s ease;
+        transition: box-shadow 0.12s ease;
         z-index: 50;
         position: relative;
+        /* Keeps focused items clear of the sticky header and TV overscan
+           when the browser scrolls them into view. */
+        scroll-margin-top: 100px;
+        scroll-margin-bottom: 100px;
       }
     `;
     document.head.appendChild(style);
@@ -56,7 +65,11 @@
     currentFocus = el;
     el.classList.add('tv-focused');
     el.focus({ preventScroll: true });
-    el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    // 'nearest' only scrolls the minimum needed to bring the element
+    // fully into view — prevents big elements (like the player) from
+    // getting shoved partly off-screen when a nearby small button
+    // gets focused.
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
   }
 
   function rectCenter(rect) {
@@ -140,7 +153,8 @@
     document.addEventListener('DOMContentLoaded', () => setTimeout(init, 300));
   }
 
-  // Re-focus first item whenever content changes (e.g. navigating folders)
+  // Re-focus first item whenever content changes (e.g. navigating folders,
+  // or a fresh render() call rebuilding #episodes)
   const observer = new MutationObserver(() => {
     if (!currentFocus || !document.body.contains(currentFocus)) {
       const first = getFocusable()[0];
