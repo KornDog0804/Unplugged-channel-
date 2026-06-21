@@ -1637,14 +1637,14 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live... Gathered In Their Masses (2013, Official Concert Film)",
+            "title": "Live at Hammersmith Odeon (1978 Full Concert, Remastered HD)",
             "artist": "Black Sabbath",
-            "year": 2013,
+            "year": 1978,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=9dNh_5JxVmE"
+                "url": "https://youtu.be/e0eMNtNlrOA"
               }
             ]
           }
@@ -2101,12 +2101,12 @@
     "title": "🚗 Drag Racing",
     "artist": "Drag Racing",
     "year": "Playlist",
-    "mode": "queue",
+    "mode": "playlist",
     "thumb": "./images/nhra-4-logo-svg-vector.svg",
     "tracks": [
       {
-        "title": "NHRA 4-Wide Nationals Full Broadcast",
-        "url": "https://youtu.be/b6yi1cF6yX4"
+        "title": "Drag Racing Playlist",
+        "url": "https://www.youtube.com/playlist?list=PL2CE0jAO4lqQuVrJivvvNz7p7JZTQ7JT5"
       }
     ]
   }
