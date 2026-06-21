@@ -681,7 +681,7 @@
       : `<div class="epArtWrap epArtFallback"></div>`;
 
     return `
-      <div class="epCard" data-idx="${String(idx)}" role="button" tabindex="0">
+      <button type="button" class="epCard" data-idx="${String(idx)}">
         ${artHtml}
         <div class="epMain">
           <div class="epTitle">${icon ? icon + " " : ""}${title}</div>
@@ -689,7 +689,7 @@
           ${small ? `<div class="epSmall">${escapeHtml(small)}</div>` : ""}
         </div>
         <div class="epChevron">›</div>
-      </div>
+      </button>
     `;
   }
 
