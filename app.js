@@ -59,6 +59,7 @@
   let currentQueueIndex = 0;
   let playerVisible = false;
   let currentWatchUrl = "";
+  let externalMessageActive = false;
 
   const artCache = new WeakMap();
 
@@ -216,18 +217,6 @@
     }
 
     updateBackNav();
-
-    // Move keyboard focus into the video itself once the layout has
-    // settled. Without this, focus stays on whatever button launched
-    // playback, so remote presses (Play/Pause, seek, etc.) never
-    // actually reach the YouTube player — they just silently hit
-    // nothing, since a focused iframe is required for the browser to
-    // deliver input to its contents at all.
-    if ($playerFrame) {
-      setTimeout(() => {
-        try { $playerFrame.focus(); } catch (_) {}
-      }, 150);
-    }
   }
 
   function exitTheaterMode() {
@@ -411,6 +400,7 @@
   function pushView(node) {
     exitTheaterMode();
     resetPlayerShellOverride();
+    externalMessageActive = false;
     viewStack.push(node);
     renderLimit = PAGE_SIZE;
     history.pushState({ viewDepth: viewStack.length }, "", buildHashUrl());
@@ -425,6 +415,7 @@
 
   window.addEventListener("popstate", () => {
     resetPlayerShellOverride();
+    externalMessageActive = false;
     if (viewStack.length > 1) {
       viewStack.pop();
       renderLimit = PAGE_SIZE;
@@ -521,6 +512,8 @@
     return `${info.embedUrl}?${params.toString()}`;
   }
 
+  let playerIsPaused = false;
+
   function attachPostMessageListenerOnce() {
     if (window.__kdYtMsgAttached) return;
     window.__kdYtMsgAttached = true;
@@ -534,14 +527,34 @@
       }
       if (!data || typeof data !== "object") return;
 
-      // playerState 0 === ENDED in YouTube's embed protocol.
+      // playerState: 0 = ENDED, 1 = PLAYING, 2 = PAUSED, in YouTube's
+      // embed protocol.
       if (data.event === "infoDelivery" && data.info && typeof data.info.playerState === "number") {
         if (data.info.playerState === 0) {
           advanceQueue();
         }
+        playerIsPaused = data.info.playerState === 2;
       }
     });
   }
+
+  // Toggling Play/Pause via postMessage commands instead of relying on
+  // the iframe actually having keyboard focus — on this TV's WebView,
+  // native keyboard delivery into a focused cross-origin iframe proved
+  // unreliable (remote presses were landing nowhere). Commanding the
+  // embed directly works regardless of where DOM focus actually is.
+  function togglePlayPause() {
+    if (!$playerFrame || !$playerFrame.contentWindow) return;
+    const func = playerIsPaused ? "playVideo" : "pauseVideo";
+    try {
+      $playerFrame.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func, args: "" }),
+        "*"
+      );
+    } catch (_) {}
+  }
+
+  window.__kdTogglePlayPause = togglePlayPause;
 
   // YouTube's embedded player only starts sending state updates once it
   // sees a "listening" handshake from the parent page, and there's no
@@ -600,6 +613,7 @@
 
   function showOpenExternallyMessage(title, watchUrl, videoId, thumb) {
     exitTheaterMode();
+    externalMessageActive = true;
     stopListeningHandshake();
     if ($playerFrame) {
       $playerFrame.src = "about:blank";
@@ -979,6 +993,13 @@
   }
 
   function handleBackAction() {
+    if (externalMessageActive) {
+      externalMessageActive = false;
+      resetPlayerShellOverride();
+      if ($watchOnTvBtn) $watchOnTvBtn.style.display = "none";
+      render();
+      return;
+    }
     if (document.body.classList.contains("tvTheater")) {
       exitTheaterMode();
       return;
