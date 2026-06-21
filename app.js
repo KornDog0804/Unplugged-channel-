@@ -732,9 +732,6 @@
       };
 
       row.addEventListener("click", handler, { passive: true });
-      row.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") handler();
-      });
     });
   }
 
@@ -822,9 +819,6 @@
       };
 
       card.addEventListener("click", handler, { passive: true });
-      card.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") handler();
-      });
     });
   }
 
