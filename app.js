@@ -216,6 +216,18 @@
     }
 
     updateBackNav();
+
+    // Move keyboard focus into the video itself once the layout has
+    // settled. Without this, focus stays on whatever button launched
+    // playback, so remote presses (Play/Pause, seek, etc.) never
+    // actually reach the YouTube player — they just silently hit
+    // nothing, since a focused iframe is required for the browser to
+    // deliver input to its contents at all.
+    if ($playerFrame) {
+      setTimeout(() => {
+        try { $playerFrame.focus(); } catch (_) {}
+      }, 150);
+    }
   }
 
   function exitTheaterMode() {
@@ -391,8 +403,14 @@
     return `${location.pathname}${hash}`;
   }
 
+  function resetPlayerShellOverride() {
+    const shell = document.querySelector(".playerShell");
+    if (shell) shell.style.removeProperty("display");
+  }
+
   function pushView(node) {
     exitTheaterMode();
+    resetPlayerShellOverride();
     viewStack.push(node);
     renderLimit = PAGE_SIZE;
     history.pushState({ viewDepth: viewStack.length }, "", buildHashUrl());
@@ -406,6 +424,7 @@
   }
 
   window.addEventListener("popstate", () => {
+    resetPlayerShellOverride();
     if (viewStack.length > 1) {
       viewStack.pop();
       renderLimit = PAGE_SIZE;
@@ -593,6 +612,18 @@
       $watchOnTvBtn.style.display = "inline-flex";
       $watchOnTvBtn.textContent = "Open Playlist";
     }
+
+    // On TV, .playerShell is hidden by default (so the idle "Watch on
+    // TV"/"Show player" box doesn't clutter the screen before anything
+    // is selected — see styles.css). Theater mode has its own inline
+    // override to show it again, but playlists like Monster Jam/Drag
+    // Racing never enter theater mode at all, so without this they'd
+    // have the "Open Playlist" button hidden with no way to reach it.
+    if (isTVDevice()) {
+      const shell = document.querySelector(".playerShell");
+      if (shell) shell.style.setProperty("display", "grid", "important");
+    }
+
     if (!playerVisible) showPlayer(true);
   }
 
