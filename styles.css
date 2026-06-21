@@ -625,6 +625,17 @@ body.playerCollapsed #playerFrame{ display:none; }
 }
 
 /* Track rows */
+/* .trackRow is a real <button> (same reasoning as .epCard — TV remotes
+   need a native interactive element to reliably generate a click).
+   This resets the default browser button chrome. */
+.trackRow{
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  text-align: left;
+  width: calc(100% - 24px);
+}
+
 .trackRow{
   display:flex;
   align-items:center;
