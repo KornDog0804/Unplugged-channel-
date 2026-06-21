@@ -118,7 +118,7 @@
       if (installBtn) installBtn.style.display = "none";
     });
 
-    // ===== FEATURED STRIP (randomized every page load) =====
+    // ===== FEATURED STRIP (randomized every page load, deep-links to autoplay) =====
     (async function loadFeatured() {
       const $section = document.getElementById("featuredSection");
       const $scroll = document.getElementById("featuredScroll");
@@ -169,6 +169,8 @@
 
       // Walk the WHOLE tree and collect every playable item (no early stop),
       // so we have a full pool to randomly pick from on every page load.
+      // Each entry also carries a "title" used for deep-link matching on the
+      // sessions page (via ?play=<videoId> or ?playTitle=<title> fallback).
       function collectAllPlayable(node, out) {
         if (isFolder(node)) {
           for (const child of getItems(node)) collectAllPlayable(child, out);
@@ -222,8 +224,16 @@
           ? escapeHtml(item.thumb)
           : `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`;
         const fallback = item.id ? `https://img.youtube.com/vi/${item.id}/hqdefault.jpg` : "";
+
+        // Deep-link: pass the video id (preferred) or title (fallback for
+        // thumb-only items like Monster Jam/Drag Racing) so sessions.html
+        // knows exactly which show to auto-play.
+        const href = item.id
+          ? `./sessions.html?play=${encodeURIComponent(item.id)}`
+          : `./sessions.html?playTitle=${encodeURIComponent(item.title)}`;
+
         return `
-        <a class="featuredCard" href="./sessions.html">
+        <a class="featuredCard" href="${href}">
           <img class="featuredArt" src="${src}"
                alt="" loading="lazy"
                ${fallback ? `onerror="this.onerror=null;this.src='${fallback}';"` : ""}>
