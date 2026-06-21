@@ -2,6 +2,32 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
+  <script>
+    // ===== DEVICE DETECTION (TV / Desktop / Phone) =====
+    // Runs immediately so styling.css can target html.device-tv etc.
+    // with no flash of the wrong layout.
+    (function () {
+      try {
+        var ua = navigator.userAgent || "";
+        var isTvUA = /googletv|google tv|smart-tv|smarttv|appletv|hbbtv|netcast|viera|aquos|bravia(?!.*mobile)|roku|tizen|web0s|androidtv|crkey|adt-?\d/i.test(ua);
+        var hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+        var pointerNone = window.matchMedia && window.matchMedia('(pointer: none)').matches;
+        var pointerFine = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+        var isWide = window.innerWidth >= 960;
+
+        var cls = "device-phone";
+        if (isTvUA || pointerNone || (!hasTouch && !pointerFine && isWide)) {
+          cls = "device-tv";
+        } else if (!hasTouch && pointerFine) {
+          cls = "device-desktop";
+        }
+        document.documentElement.classList.add(cls);
+      } catch (_) {
+        document.documentElement.classList.add("device-phone");
+      }
+    })();
+  </script>
+
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Joey’s Acoustic Corner</title>
 
