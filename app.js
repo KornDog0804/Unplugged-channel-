@@ -321,7 +321,12 @@
     document.body.classList.toggle("playerOpen", playerVisible);
 
     if (!playerVisible && $playerFrame) $playerFrame.src = "";
-    else if (playerVisible && currentQueue.length) playTrackAt(currentQueueIndex, false);
+    // NOTE: intentionally no "reload current track" branch here anymore.
+    // Reloading on every visibility change was overwriting the iframe src
+    // a second time *without* autoplay, right after playTrackAt had just
+    // set it *with* autoplay — silently cancelling auto-start. Showing the
+    // player is now purely a visibility toggle; (re)loading a track is
+    // handled explicitly wherever playback is requested (see below).
   }
 
   function showOpenExternallyMessage(title, watchUrl, videoId, thumb) {
@@ -578,7 +583,12 @@
 
   if ($playerToggleBtn) {
     $playerToggleBtn.addEventListener("click", () => {
-      showPlayer(!playerVisible);
+      const next = !playerVisible;
+      showPlayer(next);
+      if (next && currentQueue.length) {
+        // Re-show: resume the current track explicitly (single load, autoplay).
+        playTrackAt(currentQueueIndex, true);
+      }
     });
   }
 
