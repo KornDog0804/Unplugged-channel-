@@ -118,7 +118,7 @@
       if (installBtn) installBtn.style.display = "none";
     });
 
-    // ===== FEATURED STRIP (capped at 3 cards) =====
+    // ===== FEATURED STRIP (randomized every page load) =====
     (async function loadFeatured() {
       const $section = document.getElementById("featuredSection");
       const $scroll = document.getElementById("featuredScroll");
@@ -167,13 +167,11 @@
         return first?.url || node?.url || null;
       }
 
-      function collectFeatured(node, limit, out) {
-        if (out.length >= limit) return;
+      // Walk the WHOLE tree and collect every playable item (no early stop),
+      // so we have a full pool to randomly pick from on every page load.
+      function collectAllPlayable(node, out) {
         if (isFolder(node)) {
-          for (const child of getItems(node)) {
-            collectFeatured(child, limit, out);
-            if (out.length >= limit) return;
-          }
+          for (const child of getItems(node)) collectAllPlayable(child, out);
           return;
         }
         if (node?.thumb) {
@@ -185,6 +183,16 @@
         if (id) {
           out.push({ title: node.title || node.artist || "Untitled", id });
         }
+      }
+
+      // Fisher-Yates shuffle
+      function shuffle(arr) {
+        const a = arr.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
       }
 
       const candidates = ["./episodes.json"];
@@ -202,9 +210,12 @@
 
       if (!root) return;
 
-      const featured = [];
-      collectFeatured(root, 3, featured); // capped at 3
-      if (!featured.length) return;
+      const allPlayable = [];
+      collectAllPlayable(root, allPlayable);
+      if (!allPlayable.length) return;
+
+      // Pick 3 at random, different set on every load/refresh.
+      const featured = shuffle(allPlayable).slice(0, 3);
 
       $scroll.innerHTML = featured.map(item => {
         const src = item.thumb
