@@ -68,6 +68,7 @@
   }
 
   function setFocus(el) {
+    if (document.body.classList.contains('tvTheater')) return;
     if (!el) return;
     if (currentFocus) currentFocus.classList.remove('tv-focused');
     currentFocus = el;
@@ -115,6 +116,28 @@
   }
 
   document.addEventListener('keydown', function (e) {
+    // During theater mode, the only thing this script does is let Back
+    // out — no focus movement, no Enter-clicking, nothing else.
+    if (document.body.classList.contains('tvTheater')) {
+      if (e.key === 'Escape' || e.key === 'Backspace') {
+        e.preventDefault();
+        if (typeof window.__kdExitTheater === 'function') {
+          window.__kdExitTheater();
+        } else {
+          document.body.classList.remove('tvTheater');
+        }
+        if (currentFocus) {
+          currentFocus.classList.remove('tv-focused');
+          currentFocus = null;
+        }
+        setTimeout(() => {
+          const first = getFocusable()[0];
+          if (first) setFocus(first);
+        }, 50);
+      }
+      return;
+    }
+
     // If whatever we last focused just got hidden (e.g. theater mode
     // kicked in and swallowed the whole session list), drop the stale
     // reference so the next interaction starts fresh instead of doing
@@ -145,21 +168,6 @@
     if (e.key === 'Escape' || e.key === 'Backspace') {
       e.preventDefault();
 
-      // Theater mode takes priority: Back exits it and drops you back
-      // wherever the session list was, rather than just clearing focus.
-      if (document.body.classList.contains('tvTheater')) {
-        if (typeof window.__kdExitTheater === 'function') {
-          window.__kdExitTheater();
-        } else {
-          document.body.classList.remove('tvTheater');
-        }
-        setTimeout(() => {
-          const first = getFocusable()[0];
-          if (first) setFocus(first);
-        }, 50);
-        return;
-      }
-
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
         return;
@@ -183,6 +191,13 @@
   }
 
   const observer = new MutationObserver(() => {
+    if (document.body.classList.contains('tvTheater')) {
+      if (currentFocus) {
+        currentFocus.classList.remove('tv-focused');
+        currentFocus = null;
+      }
+      return;
+    }
     if (!currentFocus || !document.body.contains(currentFocus) || !isVisible(currentFocus)) {
       const first = getFocusable()[0];
       if (first && first !== currentFocus) setFocus(first);
