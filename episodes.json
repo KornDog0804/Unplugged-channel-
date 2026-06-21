@@ -1039,12 +1039,12 @@
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Summer Breeze (2023, ARTE Concert, Entire 19-Song Set)",
+            "title": "Live at The Palladium, Worcester MA (2005, Full Show 4K)",
             "artist": "Killswitch Engage",
-            "year": 2023,
+            "year": 2005,
             "mode": "fullshow",
             "tracks": [
-              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=OKpHs0frJKk" }
+              { "title": "Full Show", "url": "https://www.youtube.com/watch?v=H0z-4sYzCig" }
             ]
           }
         ]
@@ -1330,6 +1330,51 @@
             "mode": "fullshow",
             "tracks": [
               { "title": "Full Set", "url": "https://www.youtube.com/watch?v=QzJytOdG2ss" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Kublai Khan TX",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Underground Arts, Philadelphia (2021, hate5six Concert Film)",
+            "artist": "Kublai Khan TX",
+            "year": 2021,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://www.youtube.com/watch?v=c-XUqFH_85s" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Orthodox",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "hate5six Concert Film (March 2025)",
+            "artist": "Orthodox",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert", "url": "https://youtu.be/fY2XkmJU8WI" }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Lamb Of God",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Portland — A hate5six Concert Film (2022, Officially Sanctioned, ~90 Min)",
+            "artist": "Lamb Of God",
+            "year": 2022,
+            "mode": "fullshow",
+            "tracks": [
+              { "title": "Full Concert Film", "url": "https://www.youtube.com/watch?v=enZLHI3F_7A" }
             ]
           }
         ]
