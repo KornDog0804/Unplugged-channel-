@@ -513,6 +513,7 @@
   }
 
   let playerIsPaused = false;
+  let playerCurrentTime = 0;
 
   function attachPostMessageListenerOnce() {
     if (window.__kdYtMsgAttached) return;
@@ -535,6 +536,11 @@
         }
         playerIsPaused = data.info.playerState === 2;
       }
+      // currentTime arrives on most infoDelivery pings (not guaranteed
+      // on every single one), so just take it whenever it's present.
+      if (data.event === "infoDelivery" && data.info && typeof data.info.currentTime === "number") {
+        playerCurrentTime = data.info.currentTime;
+      }
     });
   }
 
@@ -555,6 +561,29 @@
   }
 
   window.__kdTogglePlayPause = togglePlayPause;
+
+  // Same postMessage-command approach as play/pause, for rewind/fast
+  // forward. deltaSeconds is negative to rewind, positive to skip
+  // ahead. playerCurrentTime is kept up to date by the message
+  // listener above, so this is always seeking relative to wherever
+  // the player actually is, not a stale value.
+  function seekRelative(deltaSeconds) {
+    if (!$playerFrame || !$playerFrame.contentWindow) return;
+    const target = Math.max(0, playerCurrentTime + deltaSeconds);
+    try {
+      $playerFrame.contentWindow.postMessage(
+        JSON.stringify({ event: "command", func: "seekTo", args: [target, true] }),
+        "*"
+      );
+      // Optimistically update our own tracked time so back-to-back
+      // presses (e.g. skipping forward twice quickly) accumulate
+      // correctly instead of both jumping from the same stale base,
+      // since the next real infoDelivery ping won't arrive instantly.
+      playerCurrentTime = target;
+    } catch (_) {}
+  }
+
+  window.__kdSeek = seekRelative;
 
   // YouTube's embedded player only starts sending state updates once it
   // sees a "listening" handshake from the parent page, and there's no
