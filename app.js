@@ -8,6 +8,19 @@
    Deep-link auto-play: if the URL has ?play=<videoId> or
    ?playTitle=<title> (set by the home page's Featured cards), the
    matching show starts playing automatically once data loads.
+
+   PLAYBACK ENGINE: uses the real YouTube IFrame Player API (loaded
+   dynamically below) instead of just swapping the iframe's src. This
+   is what lets us detect when a video actually ENDS so queues
+   ("Stitched Streams", 3 Doors Down tribute, etc.) auto-advance to
+   the next track — that detection is impossible with a plain static
+   embed URL, which is why auto-advance was silently broken before.
+
+   TV THEATER MODE: on TV devices, starting a video adds a
+   `tvTheater` class to <body> which (via styles.css) hides
+   everything except the player and blows it up to fill the screen.
+   Back exits theater mode via the floating "Exit Player" button
+   (and tv-nav.js also listens for the hardware/remote Back key).
 */
 
 (() => {
@@ -48,6 +61,10 @@
   let currentWatchUrl = "";
 
   const artCache = new WeakMap();
+
+  function isTVDevice() {
+    return document.documentElement.classList.contains("device-tv");
+  }
 
   // ==== UI HELPERS ====
   function setStatus(msg = "") {
@@ -101,10 +118,27 @@
   }
 
   // Updates the bottom back button: "Back to Sessions" (pops one level)
-  // while inside a folder, "Back to home" (leaves the app) at the root.
+  // while inside a folder, "Back to home" (leaves the app) at the root,
+  // or "Exit Player" while TV theater mode is active.
   function updateBackNav() {
     if (!$backNavBtn) return;
+    if (document.body.classList.contains("tvTheater")) {
+      $backNavBtn.textContent = "← Exit Player";
+      return;
+    }
     $backNavBtn.textContent = viewStack.length > 1 ? "← Back to Sessions" : "← Back to home";
+  }
+
+  // ==== TV THEATER MODE ====
+  function enterTheaterMode() {
+    if (!isTVDevice()) return;
+    document.body.classList.add("tvTheater");
+    updateBackNav();
+  }
+
+  function exitTheaterMode() {
+    document.body.classList.remove("tvTheater");
+    updateBackNav();
   }
 
   // ==== YOUTUBE PARSING ====
@@ -158,17 +192,6 @@
     } catch (_) {}
 
     return { kind: "unknown", watchUrl: url, embedUrl: "" };
-  }
-
-  function buildEmbed(url, autoplay = true) {
-    const info = parseYouTube(url);
-    if (!info.embedUrl) return "";
-    const params = new URLSearchParams();
-    if (autoplay) params.set("autoplay", "1");
-    params.set("rel", "0");
-    params.set("modestbranding", "1");
-    params.set("playsinline", "1");
-    return `${info.embedUrl}?${params.toString()}`;
   }
 
   // ==== DATA NORMALIZATION ====
@@ -243,6 +266,7 @@
   }
 
   function pushView(node) {
+    exitTheaterMode();
     viewStack.push(node);
     renderLimit = PAGE_SIZE;
     history.pushState({ viewDepth: viewStack.length }, "", buildHashUrl());
@@ -314,23 +338,119 @@
     return out;
   }
 
+  // ==== YOUTUBE IFRAME API (real playback engine) ====
+  // Loaded lazily on first play. Using the real API (instead of just
+  // setting iframe.src) is what makes onStateChange === ENDED possible,
+  // which is what drives queue auto-advance below.
+  let ytPlayer = null;
+  let ytPlayerReady = false;
+  let ytApiPromise = null;
+  let pendingLoad = null; // { videoId, autoplay } — queued if player isn't ready yet
+
+  function loadYTApi() {
+    if (ytApiPromise) return ytApiPromise;
+
+    ytApiPromise = new Promise((resolve) => {
+      if (window.YT && window.YT.Player) {
+        resolve();
+        return;
+      }
+
+      const prevCallback = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () {
+        if (typeof prevCallback === "function") prevCallback();
+        resolve();
+      };
+
+      if (!document.getElementById("youtube-iframe-api-script")) {
+        const tag = document.createElement("script");
+        tag.id = "youtube-iframe-api-script";
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.head.appendChild(tag);
+      }
+    });
+
+    return ytApiPromise;
+  }
+
+  function onYTPlayerStateChange(event) {
+    if (window.YT && event.data === YT.PlayerState.ENDED) {
+      advanceQueue();
+    }
+  }
+
+  function advanceQueue() {
+    if (currentQueueIndex + 1 < currentQueue.length) {
+      playTrackAt(currentQueueIndex + 1, true);
+    } else {
+      setStatus("Queue finished.");
+    }
+  }
+
+  function createOrLoadYTPlayer(videoId, autoplay) {
+    if (!$playerFrame) return;
+
+    if (ytPlayer && ytPlayerReady) {
+      if (autoplay) ytPlayer.loadVideoById(videoId);
+      else ytPlayer.cueVideoById(videoId);
+      return;
+    }
+
+    if (ytPlayer && !ytPlayerReady) {
+      // Player is still being constructed — stash this request and the
+      // onReady handler below will apply whatever was asked for most
+      // recently once it's actually ready.
+      pendingLoad = { videoId, autoplay };
+      return;
+    }
+
+    // First-ever play this session: build the player around the existing
+    // #playerFrame iframe element (the API takes it over in place).
+    ytPlayer = new YT.Player($playerFrame, {
+      videoId,
+      playerVars: {
+        autoplay: autoplay ? 1 : 0,
+        rel: 0,
+        modestbranding: 1,
+        playsinline: 1
+      },
+      events: {
+        onReady: () => {
+          ytPlayerReady = true;
+          if (pendingLoad) {
+            const { videoId: pid, autoplay: pAuto } = pendingLoad;
+            pendingLoad = null;
+            if (pAuto) ytPlayer.loadVideoById(pid);
+            else ytPlayer.cueVideoById(pid);
+          }
+        },
+        onStateChange: onYTPlayerStateChange
+      }
+    });
+  }
+
   // ==== PLAYER CONTROL ====
   function showPlayer(show) {
     playerVisible = !!show;
     if ($playerToggleBtn) $playerToggleBtn.textContent = playerVisible ? "Hide player" : "Show player";
     document.body.classList.toggle("playerOpen", playerVisible);
 
-    if (!playerVisible && $playerFrame) $playerFrame.src = "";
-    // NOTE: intentionally no "reload current track" branch here anymore.
-    // Reloading on every visibility change was overwriting the iframe src
-    // a second time *without* autoplay, right after playTrackAt had just
-    // set it *with* autoplay — silently cancelling auto-start. Showing the
-    // player is now purely a visibility toggle; (re)loading a track is
-    // handled explicitly wherever playback is requested (see below).
+    if (!playerVisible) {
+      // Pause instead of nuking the iframe's src — once the YouTube
+      // IFrame API has taken over #playerFrame, overwriting .src by
+      // hand breaks the player object permanently.
+      if (ytPlayer && typeof ytPlayer.stopVideo === "function") {
+        try { ytPlayer.stopVideo(); } catch (_) {}
+      }
+      exitTheaterMode();
+    }
   }
 
   function showOpenExternallyMessage(title, watchUrl, videoId, thumb) {
-    if ($playerFrame) {
+    exitTheaterMode();
+    if (ytPlayer && typeof ytPlayer.stopVideo === "function") {
+      try { ytPlayer.stopVideo(); } catch (_) {}
+    } else if ($playerFrame) {
       $playerFrame.src = "about:blank";
     }
     setNowPlaying("Open in YouTube / SmartTube", title);
@@ -354,30 +474,47 @@
     const info = parseYouTube(track.url);
     currentWatchUrl = info.watchUrl || track.url;
     const videoId = info.kind === "video" ? info.id : null;
-
-    if ($watchOnTvBtn) {
-      $watchOnTvBtn.href = currentWatchUrl;
-      $watchOnTvBtn.style.display = "inline-flex";
-      $watchOnTvBtn.textContent = "Watch on TV";
-    }
+    const onTV = isTVDevice();
 
     if ((track.kind === "playlist" || info.kind === "playlist") && PLAYLISTS_OPEN_EXTERNALLY) {
+      if ($watchOnTvBtn) {
+        $watchOnTvBtn.href = currentWatchUrl;
+        $watchOnTvBtn.style.display = "inline-flex";
+        $watchOnTvBtn.textContent = "Watch on TV";
+      }
       showOpenExternallyMessage(track.title || "Playlist", currentWatchUrl, videoId, track.thumb);
       return;
     }
 
-    const embed = buildEmbed(track.url, autoplay);
-    if (!embed) {
-      setStatus("Couldn’t build YouTube embed for that link.");
+    if (info.kind !== "video" || !videoId) {
+      setStatus("Couldn’t parse a YouTube video from that link.");
       return;
     }
 
-    if ($playerFrame) $playerFrame.src = embed;
+    // "Watch on TV" is redundant once we're actually on the TV — only
+    // needed for the external-playlist case handled above.
+    if ($watchOnTvBtn) {
+      if (onTV) {
+        $watchOnTvBtn.style.display = "none";
+      } else {
+        $watchOnTvBtn.href = currentWatchUrl;
+        $watchOnTvBtn.style.display = "inline-flex";
+        $watchOnTvBtn.textContent = "Watch on TV";
+      }
+    }
 
     setNowPlaying("Now Playing", track.title || "Playing…");
     setNowPlayingArt({ src: track.thumb || null, videoId });
     setStatus(`Playing ${currentQueueIndex + 1} of ${currentQueue.length}`);
     if (!playerVisible) showPlayer(true);
+
+    loadYTApi().then(() => {
+      createOrLoadYTPlayer(videoId, autoplay);
+    });
+
+    // Movie-theater mode on TV: player takes over the whole screen,
+    // everything else hides, Back/Exit Player brings the list back.
+    if (onTV) enterTheaterMode();
   }
 
   // ==== RENDERING ====
@@ -482,10 +619,6 @@
   }
 
   // ==== DEEP-LINK AUTO-PLAY (from home page Featured cards) ====
-  // Searches the whole tree for a leaf node whose track list contains the
-  // given YouTube video id, or (fallback) whose title matches exactly —
-  // used for thumb-only items like Monster Jam / Drag Racing that have no
-  // single representative video id.
   function findNodeByVideoId(node, targetId) {
     if (isFolder(node)) {
       for (const child of getNodeItems(node)) {
@@ -586,7 +719,6 @@
       const next = !playerVisible;
       showPlayer(next);
       if (next && currentQueue.length) {
-        // Re-show: resume the current track explicitly (single load, autoplay).
         playTrackAt(currentQueueIndex, true);
       }
     });
@@ -598,6 +730,10 @@
 
   if ($backNavBtn) {
     $backNavBtn.addEventListener("click", () => {
+      if (document.body.classList.contains("tvTheater")) {
+        exitTheaterMode();
+        return;
+      }
       if (viewStack.length > 1) {
         popView();
       } else {
