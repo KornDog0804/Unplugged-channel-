@@ -1528,8 +1528,21 @@ html.device-tv body.tvTheater #playerFrame {
   z-index: 2147483647 !important;
 }
 
-html.device-tv body.tvTheater #playerFrame {
+html.device-tv #playerFrame {
   display: block !important;
+}
+
+/* On TV, the normal inline player section (with the now-unused "Watch
+   on TV" / "Show player" / "Hide player" buttons) should never appear —
+   playback always goes straight to fullscreen theater mode instead, so
+   this would just be an empty black box with stray buttons sitting on
+   the page otherwise. The inline JS styles app.js sets in
+   enterTheaterMode() (display:flex !important, set directly on the
+   element) always win over this external rule regardless of selector
+   specificity, so this safely flips back to visible the moment
+   something actually starts playing. */
+html.device-tv .playerShell {
+  display: none !important;
 }
 
 /* =========================================================
