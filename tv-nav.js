@@ -175,6 +175,19 @@
 
       if (currentFocus) currentFocus.classList.remove('tv-focused');
       currentFocus = null;
+
+      // Always delegate to the app's single source of truth for "what
+      // does Back do right now" (pop a folder level, or go home) — this
+      // is what was missing before, which let presses get swallowed
+      // here with no visible effect, requiring multiple presses to
+      // actually get anywhere.
+      if (typeof window.__kdGoBack === 'function') {
+        window.__kdGoBack();
+        setTimeout(() => {
+          const first = getFocusable()[0];
+          if (first) setFocus(first);
+        }, 50);
+      }
     }
   });
 
