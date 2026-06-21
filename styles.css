@@ -1238,3 +1238,48 @@ body::before{
 /* =========================================================
    END PLAYER CENTERING FIX
    ========================================================= */
+/* =========================================================
+   FULL-SCREEN FIT PATCH
+   Paste at the very bottom of styles.css.
+   ========================================================= */
+
+html, body{
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
+*, *::before, *::after{
+  box-sizing: border-box;
+}
+
+/* Containers never exceed the viewport, regardless of content inside */
+.landingWrap,
+.wrap,
+.playerShell,
+.top,
+.brand{
+  max-width: 100vw !important;
+  width: 100%;
+}
+
+/* Nothing inside (images, iframes, embeds) is allowed to force
+   horizontal overflow */
+img, iframe, video{
+  max-width: 100%;
+}
+
+/* Respect notches/rounded corners/gesture bars on modern phones so
+   content doesn't get clipped by the OS chrome */
+body{
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.top{
+  padding-top: env(safe-area-inset-top);
+}
+
+/* =========================================================
+   END FULL-SCREEN FIT PATCH
+   ========================================================= */
