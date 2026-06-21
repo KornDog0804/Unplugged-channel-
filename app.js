@@ -130,14 +130,72 @@
   }
 
   // ==== TV THEATER MODE ====
+  // Elements toggled by theater mode. Selected lazily (not at top-level
+  // const time) since some only exist after render() has run at least once.
+  function theaterTargets() {
+    return Array.from(document.querySelectorAll(
+      ".top, .listHead, #playAllBtn, #episodes, #loadMoreBtn, .playerTop, .statusLine"
+    ));
+  }
+
+  // Theater mode is driven entirely by inline styles set here at runtime,
+  // not by a CSS class + stylesheet rules. TVs/WebViews are notorious for
+  // aggressively caching CSS/JS files, so relying on a freshly-fetched
+  // styles.css to hide everything was fragile — a stale cached copy would
+  // silently no-op the whole feature. Inline styles set live by JS can't
+  // go stale like that.
   function enterTheaterMode() {
     if (!isTVDevice()) return;
     document.body.classList.add("tvTheater");
+
+    theaterTargets().forEach(el => {
+      el.style.setProperty("display", "none", "important");
+    });
+
+    const shell = document.querySelector(".playerShell");
+    if (shell) {
+      shell.style.setProperty("position", "fixed", "important");
+      shell.style.setProperty("inset", "0", "important");
+      shell.style.setProperty("max-width", "100vw", "important");
+      shell.style.setProperty("padding", "24px", "important");
+      shell.style.setProperty("margin", "0", "important");
+      shell.style.setProperty("display", "flex", "important");
+      shell.style.setProperty("align-items", "center", "important");
+      shell.style.setProperty("justify-content", "center", "important");
+      shell.style.setProperty("background", "#000", "important");
+      shell.style.setProperty("z-index", "100", "important");
+    }
+
+    if ($backNavBtn) {
+      $backNavBtn.style.setProperty("display", "inline-flex", "important");
+      $backNavBtn.style.setProperty("position", "fixed", "important");
+      $backNavBtn.style.setProperty("top", "24px", "important");
+      $backNavBtn.style.setProperty("left", "24px", "important");
+      $backNavBtn.style.setProperty("z-index", "9999", "important");
+    }
+
     updateBackNav();
   }
 
   function exitTheaterMode() {
     document.body.classList.remove("tvTheater");
+
+    theaterTargets().forEach(el => {
+      el.style.removeProperty("display");
+    });
+
+    const shell = document.querySelector(".playerShell");
+    if (shell) {
+      ["position", "inset", "max-width", "padding", "margin", "display",
+        "align-items", "justify-content", "background", "z-index"]
+        .forEach(p => shell.style.removeProperty(p));
+    }
+
+    if ($backNavBtn) {
+      ["display", "position", "top", "left", "z-index"]
+        .forEach(p => $backNavBtn.style.removeProperty(p));
+    }
+
     updateBackNav();
   }
 
@@ -769,6 +827,11 @@
 
     if (dx > 0) popView();
   }, { passive: true });
+
+  // Exposed so tv-nav.js's Back-key handler can trigger a full, correct
+  // exit (inline styles + class) instead of just toggling the class and
+  // leaving theater-mode inline styles stuck in place.
+  window.__kdExitTheater = exitTheaterMode;
 
   // ==== INIT ====
   (async function init() {
