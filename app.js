@@ -221,6 +221,17 @@
   function exitTheaterMode() {
     document.body.classList.remove("tvTheater");
 
+    // Actually stop the video itself, not just resize its container.
+    // Leaving it shrunk-but-still-playing was almost certainly the
+    // cause of the black screen after Back — on this TV the hardware
+    // video decode surface can keep compositing on top of the page
+    // even once its container is hidden via CSS, until the underlying
+    // iframe load is actually torn down.
+    stopListeningHandshake();
+    if ($playerFrame) {
+      $playerFrame.src = "";
+    }
+
     theaterTargets().forEach(el => {
       el.style.removeProperty("display");
       el.style.removeProperty("visibility");
@@ -248,6 +259,10 @@
       ["display", "position", "top", "left", "z-index"]
         .forEach(p => $backNavBtn.style.removeProperty(p));
     }
+
+    playerVisible = false;
+    if ($playerToggleBtn) $playerToggleBtn.textContent = "Show player";
+    document.body.classList.remove("playerOpen");
 
     updateBackNav();
   }
