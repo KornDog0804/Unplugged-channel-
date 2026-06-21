@@ -440,6 +440,18 @@
 
   function collectPlayableFromCurrentView() {
     const node = currentNode();
+
+    if (node.__trackPicker) {
+      return (Array.isArray(node.tracks) ? node.tracks : [])
+        .filter(t => t && t.url)
+        .map(t => ({
+          title: t.title || node.title,
+          url: t.url,
+          kind: "video",
+          thumb: node.thumb || null
+        }));
+    }
+
     const items = getNodeItems(node);
     const out = [];
     for (const it of items) {
@@ -631,6 +643,12 @@
   // ==== RENDERING ====
   function render() {
     const node = currentNode();
+
+    if (node.__trackPicker) {
+      renderTrackPicker(node);
+      return;
+    }
+
     const items = getNodeItems(node);
 
     setNowPlaying("Now Playing", "Pick a session below 👇");
@@ -647,10 +665,77 @@
       $loadMoreBtn.style.display = more ? "inline-flex" : "none";
     }
 
+    if ($playAllBtn) $playAllBtn.style.display = "inline-flex";
+
     wireCardClicks();
 
     const path = viewStack.slice(1).map(safeTitle);
     setStatus(path.length ? `In: ${path.join(" / ")}` : `Showing ${Math.min(items.length, renderLimit)} of ${items.length}`);
+  }
+
+  // Renders an individual track list for a queue (e.g. Wage War's 6
+  // songs) so a specific song can actually be picked, instead of
+  // always auto-playing from track 0. Reuses the existing .trackHeader
+  // / .trackRow CSS that was already in styles.css but never wired up.
+  function renderTrackPicker(node) {
+    const tracks = Array.isArray(node.tracks) ? node.tracks : [];
+
+    setNowPlaying("Now Playing", "Pick a track below 👇");
+    setNowPlayingArt({ src: node.thumb || null });
+    updateBackNav();
+
+    const headerHtml = `
+      <div class="trackHeader">
+        <div class="trackHeaderText">
+          <div class="trackHeaderTitle">${escapeHtml(node.title || "Tracks")}</div>
+          ${node.artist ? `<div class="trackHeaderSub">${escapeHtml(node.artist)}</div>` : ""}
+          <div class="trackHeaderSmall">${tracks.length} track${tracks.length === 1 ? "" : "s"} • tap one to start there</div>
+        </div>
+      </div>
+    `;
+
+    const rowsHtml = tracks.map((t, i) => `
+      <button type="button" class="trackRow" data-track-idx="${i}">
+        <div class="trackRowTitle">${escapeHtml(t.title || `Track ${i + 1}`)}</div>
+        <div class="trackRowChevron">▶</div>
+      </button>
+    `).join("");
+
+    $episodes.innerHTML = headerHtml + (rowsHtml || `<div class="empty">No tracks found.</div>`);
+
+    if ($loadMoreBtn) $loadMoreBtn.style.display = "none";
+    if ($playAllBtn) $playAllBtn.style.display = "inline-flex";
+
+    wireTrackRowClicks(node);
+
+    setStatus(`In: ${escapeHtml(node.title || "Tracks")}`);
+  }
+
+  function wireTrackRowClicks(node) {
+    const tracks = (Array.isArray(node.tracks) ? node.tracks : []).filter(t => t && t.url);
+
+    document.querySelectorAll(".trackRow").forEach(row => {
+      const handler = () => {
+        const i = Number(row.getAttribute("data-track-idx"));
+        const raw = (Array.isArray(node.tracks) ? node.tracks : [])[i];
+        if (!raw || !raw.url) return;
+
+        currentQueue = tracks.map(t => ({
+          title: t.title || node.title,
+          url: t.url,
+          kind: "video",
+          thumb: node.thumb || null
+        }));
+
+        const targetIndex = currentQueue.findIndex(q => q.url === raw.url);
+        playTrackAt(targetIndex >= 0 ? targetIndex : 0, true);
+      };
+
+      row.addEventListener("click", handler, { passive: true });
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") handler();
+      });
+    });
   }
 
   function renderCard(node, idx) {
@@ -709,6 +794,20 @@
         }
 
         if (isPlayableNode(chosen)) {
+          // Multi-track queues get a real track picker instead of just
+          // auto-playing from track 0 — that "tap to choose" label was
+          // a lie before; this is what actually makes it true.
+          if (chosen.mode === "queue" && Array.isArray(chosen.tracks) && chosen.tracks.length > 1) {
+            pushView({
+              __trackPicker: true,
+              title: safeTitle(chosen),
+              artist: chosen.artist,
+              thumb: chosen.thumb || null,
+              tracks: chosen.tracks
+            });
+            return;
+          }
+
           const q = collectPlayableFromNode(chosen);
           if (!q.length) {
             setStatus("No playable tracks found in that item.");
