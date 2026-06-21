@@ -148,7 +148,11 @@
       // Theater mode takes priority: Back exits it and drops you back
       // wherever the session list was, rather than just clearing focus.
       if (document.body.classList.contains('tvTheater')) {
-        document.body.classList.remove('tvTheater');
+        if (typeof window.__kdExitTheater === 'function') {
+          window.__kdExitTheater();
+        } else {
+          document.body.classList.remove('tvTheater');
+        }
         setTimeout(() => {
           const first = getFocusable()[0];
           if (first) setFocus(first);
