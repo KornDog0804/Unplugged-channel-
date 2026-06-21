@@ -1351,3 +1351,30 @@ html.device-desktop .wrap{
 /* =========================================================
    END DEVICE DETECTION PATCH
    ========================================================= */
+/* =========================================================
+   TV TOP-BAR BREATHING ROOM PATCH
+   Paste at the very bottom of styles.css, after the
+   DEVICE DETECTION patch.
+   ========================================================= */
+
+/* Since this TV's browser always shows its own address bar,
+   give our header a bit of extra top space so content doesn't
+   feel jammed right up against it. */
+html.device-tv .top{
+  padding-top: 18px !important;
+}
+
+html.device-tv .brand{
+  padding-top: 6px !important;
+}
+
+/* Slightly bigger gap before the hero section too, so the
+   whole page reads as intentional rather than cut off */
+html.device-tv .landingWrap,
+html.device-tv .wrap{
+  padding-top: 10px !important;
+}
+
+/* =========================================================
+   END TV TOP-BAR BREATHING ROOM PATCH
+   ========================================================= */
