@@ -80,6 +80,14 @@
   // also popping a folder level.
   let theaterExitGuardUntil = 0;
 
+  // ---- KornDog Features v1 state (favorites / search / resume) ----
+  let currentSearch = "";          // active search term ("" = off)
+  let lastRenderedItems = null;    // items actually shown, in card order
+  let currentVideoId = null;       // video id currently in the player
+  let currentVideoTitle = "";      // its title (for Continue Watching)
+  let pendingResumeSeconds = 0;    // seek-to-here once playback starts
+  let lastPosSaveTs = 0;           // throttle for saving resume position
+
   const artCache = new WeakMap();
 
   function isTVDevice() {
@@ -156,7 +164,7 @@
     return Array.from(document.querySelectorAll(
       ".top, .listHead, #playAllBtn, #episodes, #loadMoreBtn, .playerTop, " +
       ".statusLine, #playerToggleBtn, #watchOnTvBtn, #nowPlayingTitle, " +
-      "#nowPlayingLine, #npArtWrap"
+      "#nowPlayingLine, #npArtWrap, #kdTools"
     ));
   }
 
@@ -589,13 +597,35 @@
 
       // playerState: 0 = ENDED, 1 = PLAYING, 2 = PAUSED.
       if (data.event === "infoDelivery" && data.info && typeof data.info.playerState === "number") {
-        if (data.info.playerState === 0) {
+        const state = data.info.playerState;
+        if (state === 0) {
+          // Finished — drop it from Continue Watching, then advance.
+          clearContinue(currentVideoId);
           advanceQueue();
         }
-        playerIsPaused = data.info.playerState === 2;
+        if (state === 1 && pendingResumeSeconds > 0) {
+          // Playback started and we have a saved spot — jump to it once.
+          const target = pendingResumeSeconds;
+          pendingResumeSeconds = 0;
+          try {
+            if ($playerFrame && $playerFrame.contentWindow) {
+              $playerFrame.contentWindow.postMessage(
+                JSON.stringify({ event: "command", func: "seekTo", args: [target, true] }),
+                "*"
+              );
+            }
+          } catch (_) {}
+        }
+        playerIsPaused = state === 2;
       }
       if (data.event === "infoDelivery" && data.info && typeof data.info.currentTime === "number") {
         playerCurrentTime = data.info.currentTime;
+        // Save resume position, throttled to ~once every 5s.
+        const now = Date.now();
+        if (currentVideoId && now - lastPosSaveTs > 5000) {
+          lastPosSaveTs = now;
+          saveContinuePosition(currentVideoId, playerCurrentTime, currentVideoTitle);
+        }
       }
     });
   }
@@ -743,6 +773,12 @@
     setStatus(`Playing ${currentQueueIndex + 1} of ${currentQueue.length}`);
     showPlayer(true);
 
+    // Resume support: remember which video is playing and, if we saved a
+    // position for it before, seek there once playback actually starts.
+    currentVideoId = videoId;
+    currentVideoTitle = track.title || safeTitle(currentNode());
+    pendingResumeSeconds = resumePositionFor(videoId);
+
     const embed = buildEmbed(track.url, autoplay);
     if (!embed) {
       setStatus("Couldn’t build YouTube embed for that link.");
@@ -758,6 +794,163 @@
     if (onTV) enterTheaterMode();
   }
 
+  // ==== KORNDOG FEATURES v1 (favorites / continue watching / search / random) ====
+  // All wrapped defensively — if storage is unavailable (private mode,
+  // locked-down WebView) these no-op rather than break the app.
+  const LS_FAVS = "kdFavs";
+  const LS_CONTINUE = "kdContinue";
+
+  function lsGet(key, fallback) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch (_) { return fallback; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (_) {}
+  }
+
+  // A stable identity for a node: its first YouTube video id if it has
+  // one, otherwise its title. Used to remember favorites + positions.
+  function keyForNode(node) {
+    if (!node) return "";
+    const playable = collectPlayableFromNode(node);
+    for (const t of playable) {
+      const info = parseYouTube(t.url);
+      if (info.kind === "video" && info.id) return "v:" + info.id;
+    }
+    return "t:" + safeTitle(node);
+  }
+
+  function loadFavs() { return lsGet(LS_FAVS, []); }
+  function isFav(node) { return loadFavs().includes(keyForNode(node)); }
+  function toggleFav(node) {
+    const k = keyForNode(node);
+    if (!k) return;
+    const favs = loadFavs();
+    const i = favs.indexOf(k);
+    if (i >= 0) favs.splice(i, 1); else favs.push(k);
+    lsSet(LS_FAVS, favs);
+  }
+
+  // Continue Watching store: array of {key, position, title, ts},
+  // most-recent first, capped. Updated as a video plays.
+  function loadContinue() { return lsGet(LS_CONTINUE, []); }
+  function saveContinuePosition(videoId, seconds, title) {
+    if (!videoId || !(seconds > 15)) return;
+    const list = loadContinue().filter(e => e.key !== "v:" + videoId);
+    list.unshift({ key: "v:" + videoId, position: Math.floor(seconds), title: title || "", ts: Date.now() });
+    lsSet(LS_CONTINUE, list.slice(0, 15));
+  }
+  function clearContinue(videoId) {
+    if (!videoId) return;
+    lsSet(LS_CONTINUE, loadContinue().filter(e => e.key !== "v:" + videoId));
+  }
+  function resumePositionFor(videoId) {
+    const e = loadContinue().find(x => x.key === "v:" + videoId);
+    return e ? e.position : 0;
+  }
+
+  // Walk the whole tree and find the node(s) matching a set of keys, so
+  // a favorite / continue entry can be turned back into a real,
+  // playable node to display.
+  function resolveKey(key) {
+    let found = null;
+    (function walk(node) {
+      if (found) return;
+      if (isFolder(node)) { getNodeItems(node).forEach(walk); return; }
+      if (isPlayableNode(node) && keyForNode(node) === key) found = node;
+    })(ROOT);
+    return found;
+  }
+
+  function collectAllPlayableNodes(node, acc) {
+    if (!node) return acc;
+    if (isFolder(node)) { getNodeItems(node).forEach(c => collectAllPlayableNodes(c, acc)); return acc; }
+    if (isPlayableNode(node)) acc.push(node);
+    return acc;
+  }
+
+  // Build the virtual "⭐ Favorites" / "▶ Continue Watching" folders
+  // that get shown at the very top of the home list.
+  function buildVirtualFolders() {
+    const out = [];
+    try {
+      const favItems = loadFavs().map(resolveKey).filter(Boolean);
+      if (favItems.length) {
+        out.push({ title: "Favorites", icon: "⭐", mode: "folder", items: favItems, __virtual: true });
+      }
+      const contItems = loadContinue().map(e => resolveKey(e.key)).filter(Boolean);
+      if (contItems.length) {
+        out.push({ title: "Continue Watching", icon: "▶", mode: "folder", items: contItems, __virtual: true });
+      }
+    } catch (_) {}
+    return out;
+  }
+
+  function playRandom() {
+    const all = collectAllPlayableNodes(ROOT, []).filter(n => {
+      // skip externally-opening playlists so Random always actually plays
+      return n.mode !== "playlist";
+    });
+    if (!all.length) { setStatus("Nothing to shuffle yet."); return; }
+    const pick = all[Math.floor(Math.random() * all.length)];
+    const q = collectPlayableFromNode(pick);
+    if (!q.length) { setStatus("Couldn’t start that one — try again."); return; }
+    currentQueue = q;
+    setStatus(`🎲 ${safeTitle(pick)}`);
+    playTrackAt(0, true);
+  }
+
+  function runSearch(term) {
+    currentSearch = term || "";
+    renderLimit = PAGE_SIZE;
+    render();
+  }
+
+  // Inject the search box + Random button once, in a spot that survives
+  // re-renders (render() only rewrites #episodes, never its siblings).
+  function injectTools() {
+    if (document.getElementById("kdTools")) return;
+    try {
+      const style = document.createElement("style");
+      style.textContent = `
+        #kdTools{display:flex;gap:8px;align-items:center;margin:10px 0;flex-wrap:wrap}
+        #kdSearch{flex:1 1 160px;min-width:120px;background:#1a0a2e;color:#fff;
+          border:1px solid #7FD41A;border-radius:10px;padding:10px 12px;font-size:15px;outline:none}
+        #kdSearch::placeholder{color:#9a86b8}
+        #kdRandom,#kdClearSearch{background:#7FD41A;color:#1a0a2e;border:none;border-radius:10px;
+          padding:10px 14px;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap}
+        #kdClearSearch{background:#2a1640;color:#fff;border:1px solid #7FD41A;display:none}
+        .kdFav{position:absolute;top:8px;right:8px;font-size:20px;line-height:1;cursor:pointer;
+          z-index:60;filter:drop-shadow(0 0 3px rgba(0,0,0,.8));user-select:none}
+      `;
+      document.head.appendChild(style);
+
+      const tools = document.createElement("div");
+      tools.id = "kdTools";
+      tools.innerHTML =
+        '<input id="kdSearch" type="search" placeholder="Search sessions…" autocomplete="off">' +
+        '<button id="kdRandom" type="button">🎲 Random</button>' +
+        '<button id="kdClearSearch" type="button">Clear</button>';
+      $episodes.parentNode.insertBefore(tools, $episodes);
+
+      const $search = tools.querySelector("#kdSearch");
+      const $clear = tools.querySelector("#kdClearSearch");
+      $search.addEventListener("input", () => {
+        const t = $search.value.trim();
+        $clear.style.display = t ? "inline-block" : "none";
+        runSearch(t);
+      });
+      $clear.addEventListener("click", () => {
+        $search.value = "";
+        $clear.style.display = "none";
+        runSearch("");
+      });
+      tools.querySelector("#kdRandom").addEventListener("click", playRandom);
+    } catch (_) {}
+  }
+
   // ==== RENDERING ====
   function render() {
     const node = currentNode();
@@ -767,7 +960,39 @@
       return;
     }
 
-    const items = getVisibleItems(node);
+    // Search mode: flat list of matches across the whole library.
+    const term = (currentSearch || "").trim().toLowerCase();
+    if (term) {
+      const matches = collectAllPlayableNodes(ROOT, []).filter(n => {
+        const hay = ((safeTitle(n) || "") + " " + (n.artist || "")).toLowerCase();
+        return hay.includes(term);
+      });
+      lastRenderedItems = matches;
+
+      setNowPlaying("Now Playing", `Search: “${currentSearch}”`);
+      setNowPlayingArt({});
+      updateBackNav();
+
+      const visible = matches.slice(0, renderLimit);
+      $episodes.innerHTML = visible.map(renderCard).join("") ||
+        `<div class="empty">No matches for “${escapeHtml(currentSearch)}”.</div>`;
+
+      if ($loadMoreBtn) $loadMoreBtn.style.display = matches.length > renderLimit ? "inline-flex" : "none";
+      if ($playAllBtn) $playAllBtn.style.display = matches.length ? "inline-flex" : "none";
+
+      wireCardClicks();
+      setStatus(`${matches.length} match${matches.length === 1 ? "" : "es"}`);
+      return;
+    }
+
+    let items = getVisibleItems(node);
+
+    // On the home screen, surface Favorites / Continue Watching on top.
+    if (node === ROOT) {
+      const virtual = buildVirtualFolders();
+      if (virtual.length) items = virtual.concat(items);
+    }
+    lastRenderedItems = items;
 
     setNowPlaying("Now Playing", "Pick a session below 👇");
     setNowPlayingArt({});
@@ -876,8 +1101,16 @@
          </div>`
       : `<div class="epArtWrap epArtFallback"></div>`;
 
+    // Favorite star — only on playable items (not folders/virtual rows).
+    let favHtml = "";
+    if (isPlayableNode(node) && !node.__virtual) {
+      const on = isFav(node);
+      favHtml = `<span class="kdFav" data-fav-idx="${String(idx)}" role="button" aria-label="Favorite">${on ? "⭐" : "☆"}</span>`;
+    }
+
     return `
       <button type="button" class="epCard" data-idx="${String(idx)}">
+        ${favHtml}
         ${artHtml}
         <div class="epMain">
           <div class="epTitle">${icon ? icon + " " : ""}${title}</div>
@@ -890,8 +1123,20 @@
   }
 
   function wireCardClicks() {
-    const node = currentNode();
-    const items = getVisibleItems(node);
+    const items = lastRenderedItems || getVisibleItems(currentNode());
+
+    // Favorite stars (must run before/independent of the card click).
+    document.querySelectorAll(".kdFav").forEach(star => {
+      star.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const i = Number(star.getAttribute("data-fav-idx"));
+        const target = items[i];
+        if (!target) return;
+        toggleFav(target);
+        render();
+      });
+    });
 
     document.querySelectorAll(".epCard").forEach(card => {
       const handler = () => {
@@ -1111,6 +1356,7 @@
     try {
       setStatus("Loading sessions…");
       await loadData();
+      injectTools();
       showPlayer(false);
       tryAutoPlayFromQuery();
       setStatus((($status?.textContent || "") + " — If weird, hard refresh / clear cache.").trim());
