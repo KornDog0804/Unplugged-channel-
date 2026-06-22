@@ -1,4 +1,4 @@
-/* Joey’s Acoustic Corner — app.js (defensive + mobile-first)
+/* Joey's Acoustic Corner — app.js (defensive + mobile-first)
    Expects: sessions.html has these IDs:
    #episodes, #playAllBtn, #loadMoreBtn, #status,
    #playerFrame, #playerToggleBtn,
@@ -754,7 +754,7 @@
     }
 
     if (info.kind !== "video" || !videoId) {
-      setStatus("Couldn’t parse a YouTube video from that link.");
+      setStatus("Couldn't parse a YouTube video from that link.");
       return;
     }
 
@@ -781,7 +781,7 @@
 
     const embed = buildEmbed(track.url, autoplay);
     if (!embed) {
-      setStatus("Couldn’t build YouTube embed for that link.");
+      setStatus("Couldn't build YouTube embed for that link.");
       return;
     }
     if ($playerFrame) {
@@ -889,18 +889,44 @@
   }
 
   function playRandom() {
+    if (!ROOT) { setStatus("Still loading — try again in a second."); return; }
+
+    // Collect every playable node in the whole tree, then filter:
+    // - skip playlist-mode items (they open externally, not in the player)
+    // - on TV, also skip the hidden sections (Monster Jam / Drag Racing)
+    const tvHidden = isTVDevice() ? HIDE_ON_TV_KEYWORDS : [];
+
     const all = collectAllPlayableNodes(ROOT, []).filter(n => {
-      // skip externally-opening playlists so Random always actually plays
-      return n.mode !== "playlist";
+      if (n.mode === "playlist") return false;
+      if (tvHidden.length) {
+        const t = (safeTitle(n) || "").toLowerCase();
+        if (tvHidden.some(k => t.includes(k))) return false;
+      }
+      return true;
     });
+
     if (!all.length) { setStatus("Nothing to shuffle yet."); return; }
+
     const pick = all[Math.floor(Math.random() * all.length)];
     const q = collectPlayableFromNode(pick);
-    if (!q.length) { setStatus("Couldn’t start that one — try again."); return; }
+    if (!q.length) { setStatus("Couldn't start that one — try again."); return; }
+
     currentQueue = q;
     setStatus(`🎲 ${safeTitle(pick)}`);
     playTrackAt(0, true);
   }
+
+  // Exposed globally so index.html's Random button can call it even before
+  // the sessions page is fully initialized (e.g. from the home page).
+  window.__kdPlayRandom = function () {
+    // If ROOT isn't loaded yet (called from home page before data fetch),
+    // bounce to sessions.html with a ?random=1 flag and let it handle it.
+    if (!ROOT) {
+      window.location.href = "./sessions.html?random=1";
+      return;
+    }
+    playRandom();
+  };
 
   function runSearch(term) {
     currentSearch = term || "";
@@ -969,13 +995,13 @@
       });
       lastRenderedItems = matches;
 
-      setNowPlaying("Now Playing", `Search: “${currentSearch}”`);
+      setNowPlaying("Now Playing", `Search: "${currentSearch}"`);
       setNowPlayingArt({});
       updateBackNav();
 
       const visible = matches.slice(0, renderLimit);
       $episodes.innerHTML = visible.map(renderCard).join("") ||
-        `<div class="empty">No matches for “${escapeHtml(currentSearch)}”.</div>`;
+        `<div class="empty">No matches for "${escapeHtml(currentSearch)}".</div>`;
 
       if ($loadMoreBtn) $loadMoreBtn.style.display = matches.length > renderLimit ? "inline-flex" : "none";
       if ($playAllBtn) $playAllBtn.style.display = matches.length ? "inline-flex" : "none";
@@ -1171,7 +1197,7 @@
           return;
         }
 
-        setStatus("That item isn’t playable (missing mode/tracks).");
+        setStatus("That item isn't playable (missing mode/tracks).");
       };
 
       card.addEventListener("click", handler, { passive: true });
@@ -1210,22 +1236,38 @@
     return null;
   }
 
+  // ==== FIX: TV deep-link black-screen ====
+  // On TV, firing autoplay the instant the page loads hits the WebView
+  // before the player is ready — the hardware compositor paints black.
+  // On phone this never happens so the phone path stays instant.
+  // The delay gives the WebView one paint cycle to settle before we
+  // drop the iframe src. 350ms is enough on this TV; we don't need more.
   function tryAutoPlayFromQuery() {
     const params = new URLSearchParams(location.search);
     const playId = params.get("play");
     const playTitle = params.get("playTitle");
     if (!playId && !playTitle) return;
 
-    let target = null;
-    if (playId) target = findNodeByVideoId(ROOT, playId);
-    if (!target && playTitle) target = findNodeByTitle(ROOT, playTitle);
-    if (!target) return;
+    function doPlay() {
+      let target = null;
+      if (playId) target = findNodeByVideoId(ROOT, playId);
+      if (!target && playTitle) target = findNodeByTitle(ROOT, playTitle);
+      if (!target) return;
 
-    const q = collectPlayableFromNode(target);
-    if (!q.length) return;
+      const q = collectPlayableFromNode(target);
+      if (!q.length) return;
 
-    currentQueue = q;
-    playTrackAt(0, true);
+      currentQueue = q;
+      playTrackAt(0, true);
+    }
+
+    if (isTVDevice()) {
+      // Give the TV WebView a beat to finish layout/paint before we
+      // fire the iframe load. Phone gets instant playback as before.
+      setTimeout(doPlay, 350);
+    } else {
+      doPlay();
+    }
   }
 
   // ==== LOAD DATA ====
@@ -1358,7 +1400,14 @@
       await loadData();
       injectTools();
       showPlayer(false);
-      tryAutoPlayFromQuery();
+      // Handle deep-links: ?play= / ?playTitle= from Featured cards,
+      // or ?random=1 from the home page Random button.
+      const _rp = new URLSearchParams(location.search);
+      if (_rp.get("random") === "1") {
+        playRandom();
+      } else {
+        tryAutoPlayFromQuery();
+      }
       setStatus((($status?.textContent || "") + " — If weird, hard refresh / clear cache.").trim());
     } catch (err) {
       console.error(err);
