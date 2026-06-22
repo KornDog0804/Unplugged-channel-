@@ -13,19 +13,21 @@
    dynamically below) instead of just swapping the iframe's src. This
    is what lets us detect when a video actually ENDS so queues
    ("Stitched Streams", 3 Doors Down tribute, etc.) auto-advance to
-   the next track — that detection is impossible with a plain static
-   embed URL, which is why auto-advance was silently broken before.
+   the next track.
 
    TV THEATER MODE: on TV devices, starting a video adds a
-   `tvTheater` class to <body> which (via styles.css) hides
-   everything except the player and blows it up to fill the screen.
-   Back exits theater mode via the floating "Exit Player" button
-   (and tv-nav.js also listens for the hardware/remote Back key).
+   `tvTheater` class to <body> and styles the player shell fullscreen.
+   Exiting is unified through the browser history: entering theater
+   pushes one dedicated history entry, and ANY Back (the on-screen
+   "Exit Player" button, the remote's Back key, or the TV's native
+   history-back) flows through popstate, which exits the player in a
+   single press and lands back on the session list. A short guard
+   absorbs the case where a TV fires BOTH a key event and a native
+   back for one physical press.
 
    TV SECTION FILTER: Monster Jam / Drag Racing are hidden on TV
    devices only (see HIDE_ON_TV_KEYWORDS + getVisibleItems). They still
-   show on phone/web. Everything else — theater focus, the back button,
-   and the new play/pause + rewind/forward controls — is unchanged.
+   show on phone/web.
 */
 
 (() => {
@@ -71,6 +73,12 @@
   let playerVisible = false;
   let currentWatchUrl = "";
   let externalMessageActive = false;
+
+  // When a Back exits theater mode, a TV can deliver a second Back (a
+  // native history-back) for the same physical press a beat later. This
+  // timestamp tells popstate to swallow that trailing Back instead of
+  // also popping a folder level.
+  let theaterExitGuardUntil = 0;
 
   const artCache = new WeakMap();
 
@@ -162,6 +170,7 @@
   // work moment-to-moment.
   function enterTheaterMode() {
     if (!isTVDevice()) return;
+    const wasTheater = document.body.classList.contains("tvTheater");
     document.body.classList.add("tvTheater");
 
     theaterTargets().forEach(el => {
@@ -225,6 +234,15 @@
       $backNavBtn.style.setProperty("top", "24px", "important");
       $backNavBtn.style.setProperty("left", "24px", "important");
       $backNavBtn.style.setProperty("z-index", "2147483647", "important");
+    }
+
+    // Give Back a dedicated history entry to consume so ONE press always
+    // exits the player cleanly and lands back on the session list —
+    // regardless of whether the remote's Back arrives as a JS key event
+    // or as the TV's native history-back. Only push on the INITIAL entry,
+    // not on queue auto-advance (which re-enters while already theater).
+    if (!wasTheater) {
+      history.pushState({ kdTheater: true, viewDepth: viewStack.length }, "", buildHashUrl());
     }
 
     updateBackNav();
@@ -364,9 +382,6 @@
   // sections listed in HIDE_ON_TV_KEYWORDS (Monster Jam / Drag Racing).
   // Filtering happens ONLY at the root level so nothing deeper in the
   // tree is ever touched, and ONLY on TV — phone/web see everything.
-  // render(), wireCardClicks(), and the Play All collector all go
-  // through this so the displayed cards, their click indices, and the
-  // Play All queue stay perfectly in sync.
   function getVisibleItems(node) {
     const items = getNodeItems(node);
     if (isTVDevice() && node === ROOT) {
@@ -443,6 +458,29 @@
   }
 
   window.addEventListener("popstate", () => {
+    const now = Date.now();
+
+    // Case 1: a Back arrived while the player is in theater mode. Exit
+    // the player in this single press. The history entry consumed here
+    // is the dedicated one pushed by enterTheaterMode, so we land right
+    // back on the session list we launched from — no folder is popped.
+    if (document.body.classList.contains("tvTheater")) {
+      exitTheaterMode();
+      theaterExitGuardUntil = now + 600;
+      return;
+    }
+
+    // Case 2: some TVs fire BOTH a JS key event and a native
+    // history-back for one physical Back press. If theater just exited,
+    // swallow this trailing Back (and restore the history entry it
+    // consumed) so it doesn't also pop a folder level.
+    if (now < theaterExitGuardUntil) {
+      theaterExitGuardUntil = 0;
+      history.pushState({ viewDepth: viewStack.length }, "", buildHashUrl());
+      return;
+    }
+
+    // Normal folder back.
     resetPlayerShellOverride();
     externalMessageActive = false;
     if (viewStack.length > 1) {
@@ -516,14 +554,6 @@
   }
 
   // ==== YOUTUBE PLAYBACK ENGINE ====
-  // Uses YouTube's lightweight postMessage protocol directly on a plain
-  // iframe embed (enablejsapi=1 + a "listening" handshake), instead of
-  // loading the full youtube.com/iframe_api script. The TWA/WebView shell
-  // this app runs in on Google TV blocks loading that extra external
-  // script, which silently broke playback entirely. This approach needs
-  // nothing but the embed itself, so it works the same way plain embeds
-  // already did — it just also listens for the "video ended" message so
-  // queues can auto-advance.
   let handshakeInterval = null;
 
   function buildEmbed(url, autoplay = true) {
@@ -557,27 +587,19 @@
       }
       if (!data || typeof data !== "object") return;
 
-      // playerState: 0 = ENDED, 1 = PLAYING, 2 = PAUSED, in YouTube's
-      // embed protocol.
+      // playerState: 0 = ENDED, 1 = PLAYING, 2 = PAUSED.
       if (data.event === "infoDelivery" && data.info && typeof data.info.playerState === "number") {
         if (data.info.playerState === 0) {
           advanceQueue();
         }
         playerIsPaused = data.info.playerState === 2;
       }
-      // currentTime arrives on most infoDelivery pings (not guaranteed
-      // on every single one), so just take it whenever it's present.
       if (data.event === "infoDelivery" && data.info && typeof data.info.currentTime === "number") {
         playerCurrentTime = data.info.currentTime;
       }
     });
   }
 
-  // Toggling Play/Pause via postMessage commands instead of relying on
-  // the iframe actually having keyboard focus — on this TV's WebView,
-  // native keyboard delivery into a focused cross-origin iframe proved
-  // unreliable (remote presses were landing nowhere). Commanding the
-  // embed directly works regardless of where DOM focus actually is.
   function togglePlayPause() {
     if (!$playerFrame || !$playerFrame.contentWindow) return;
     const func = playerIsPaused ? "playVideo" : "pauseVideo";
@@ -591,11 +613,6 @@
 
   window.__kdTogglePlayPause = togglePlayPause;
 
-  // Same postMessage-command approach as play/pause, for rewind/fast
-  // forward. deltaSeconds is negative to rewind, positive to skip
-  // ahead. playerCurrentTime is kept up to date by the message
-  // listener above, so this is always seeking relative to wherever
-  // the player actually is, not a stale value.
   function seekRelative(deltaSeconds) {
     if (!$playerFrame || !$playerFrame.contentWindow) return;
     const target = Math.max(0, playerCurrentTime + deltaSeconds);
@@ -604,21 +621,12 @@
         JSON.stringify({ event: "command", func: "seekTo", args: [target, true] }),
         "*"
       );
-      // Optimistically update our own tracked time so back-to-back
-      // presses (e.g. skipping forward twice quickly) accumulate
-      // correctly instead of both jumping from the same stale base,
-      // since the next real infoDelivery ping won't arrive instantly.
       playerCurrentTime = target;
     } catch (_) {}
   }
 
   window.__kdSeek = seekRelative;
 
-  // YouTube's embedded player only starts sending state updates once it
-  // sees a "listening" handshake from the parent page, and there's no
-  // single reliable moment to send it (the iframe's own load event fires
-  // before the player inside has actually initialized), so this just
-  // pings a few times over the first few seconds until one lands.
   function startListeningHandshake() {
     attachPostMessageListenerOnce();
     if (handshakeInterval) clearInterval(handshakeInterval);
@@ -685,12 +693,6 @@
       $watchOnTvBtn.textContent = "Open Playlist";
     }
 
-    // On TV, .playerShell is hidden by default (so the idle "Watch on
-    // TV"/"Show player" box doesn't clutter the screen before anything
-    // is selected — see styles.css). Theater mode has its own inline
-    // override to show it again, but playlists like Monster Jam/Drag
-    // Racing never enter theater mode at all, so without this they'd
-    // have the "Open Playlist" button hidden with no way to reach it.
     if (isTVDevice()) {
       const shell = document.querySelector(".playerShell");
       if (shell) shell.style.setProperty("display", "grid", "important");
@@ -726,8 +728,6 @@
       return;
     }
 
-    // "Watch on TV" is redundant once we're actually on the TV — only
-    // needed for the external-playlist case handled above.
     if ($watchOnTvBtn) {
       if (onTV) {
         $watchOnTvBtn.style.display = "none";
@@ -791,10 +791,6 @@
     setStatus(path.length ? `In: ${path.join(" / ")}` : `Showing ${Math.min(items.length, renderLimit)} of ${items.length}`);
   }
 
-  // Renders an individual track list for a queue (e.g. Wage War's 6
-  // songs) so a specific song can actually be picked, instead of
-  // always auto-playing from track 0. Reuses the existing .trackHeader
-  // / .trackRow CSS that was already in styles.css but never wired up.
   function renderTrackPicker(node) {
     const tracks = Array.isArray(node.tracks) ? node.tracks : [];
 
@@ -909,9 +905,6 @@
         }
 
         if (isPlayableNode(chosen)) {
-          // Multi-track queues get a real track picker instead of just
-          // auto-playing from track 0 — that "tap to choose" label was
-          // a lie before; this is what actually makes it true.
           if (chosen.mode === "queue" && Array.isArray(chosen.tracks) && chosen.tracks.length > 1) {
             pushView({
               __trackPicker: true,
@@ -1059,7 +1052,10 @@
       return;
     }
     if (document.body.classList.contains("tvTheater")) {
-      exitTheaterMode();
+      // Route through history so the dedicated theater entry is consumed
+      // and popstate exits the player + lands on the session list in
+      // exactly one step (same single path the remote/native back uses).
+      history.back();
       return;
     }
     if (viewStack.length > 1) {
@@ -1074,9 +1070,7 @@
   }
 
   // Exposed so tv-nav.js's hardware/remote Back key always triggers the
-  // exact same single, correct next step (exit theater, or pop one
-  // folder level, or go home) instead of the keypress sometimes getting
-  // swallowed with no visible effect.
+  // exact same single, correct next step.
   window.__kdGoBack = handleBackAction;
 
   // ==== SWIPE BACK (mobile) ====
@@ -1107,9 +1101,9 @@
     if (dx > 0) popView();
   }, { passive: true });
 
-  // Exposed so tv-nav.js's Back-key handler can trigger a full, correct
-  // exit (inline styles + class) instead of just toggling the class and
-  // leaving theater-mode inline styles stuck in place.
+  // Exposed so tv-nav.js can still force a clean exit if it ever needs
+  // to (e.g. focus stranded). The normal Back path now flows through
+  // history()/popstate instead.
   window.__kdExitTheater = exitTheaterMode;
 
   // ==== INIT ====
