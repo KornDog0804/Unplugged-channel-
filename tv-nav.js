@@ -1,17 +1,20 @@
 /* ============================================
-   KornDog TV Remote Navigation v4
+   KornDog TV Remote Navigation v5
    Spatial D-pad navigation for Google TV / Android TV
    Paste this whole file as tv-nav.js, then add:
    <script src="tv-nav.js"></script>
    right before your closing </body> tag in index.html
    and sessions.html
 
-   v4: dropped the old manual "focus player + Enter = fullscreen"
-   flow — app.js now auto-activates a CSS "theater mode" the moment
-   a video starts on TV, so there's nothing left for this script to
-   do there except handle the Back key to exit it (see below) and
-   make sure focus never gets stranded on something that just got
-   hidden (e.g. a session card, right as theater mode takes over).
+   v5: Back now flows through the browser history (history.back())
+   instead of calling exitTheaterMode() directly. On this TV the
+   remote's Back arrives as a NATIVE history-back, not a JS key event,
+   so the old direct-exit handler never ran and presses fell through to
+   app.js's popstate — which used to walk back through folders under
+   the still-active black theater overlay, leaving "Exit Player" stuck
+   and needing 3-4 presses. Routing every Back (button, remote key,
+   native) through history.back() means app.js's popstate is the single
+   authority and one press cleanly exits the player back to the list.
    ============================================ */
 
 (function () {
@@ -25,12 +28,6 @@
 
   if (!isLikelyTV()) return;
 
-  // Matches the ACTUAL interactive elements in this app:
-  // .epCard          = session/folder rows on sessions.html
-  // .featuredCard    = featured cards on the home page
-  // .btn / .landingBtn = all buttons (Play All, Hide player,
-  //                       Back to Sessions / Exit Player, etc.)
-  // a[href] / button / [tabindex] = catch-all fallback
   const FOCUSABLE_SELECTOR =
     '.epCard, .featuredCard, .btn, .landingBtn, a[href], button, ' +
     '[tabindex]:not([tabindex="-1"]), [role="button"]';
@@ -115,26 +112,35 @@
     return best;
   }
 
+  // Single helper for "exit the player" — routes through the browser
+  // history so app.js's popstate is the one and only place that decides
+  // what Back does. This is the fix for the stuck "Exit Player" / multi-
+  // press bug: one Back = one clean exit straight back to the list.
+  function requestBack() {
+    if (typeof window.__kdGoBack === 'function') {
+      // __kdGoBack itself calls history.back() while in theater mode.
+      window.__kdGoBack();
+    } else {
+      history.back();
+    }
+    if (currentFocus) {
+      currentFocus.classList.remove('tv-focused');
+      currentFocus = null;
+    }
+    // Re-grab focus on the freshly shown list once the exit has settled.
+    setTimeout(() => {
+      const first = getFocusable()[0];
+      if (first) setFocus(first);
+    }, 90);
+  }
+
   document.addEventListener('keydown', function (e) {
-    // During theater mode: Back exits, Enter/Select toggles play/pause
-    // by directly commanding the player (more reliable on this TV than
-    // relying on iframe keyboard focus) — nothing else does anything.
+    // During theater mode: Back exits the player, Enter/Select toggles
+    // play/pause, Left/Right seek. Everything routes through the app.
     if (document.body.classList.contains('tvTheater')) {
       if (e.key === 'Escape' || e.key === 'Backspace') {
         e.preventDefault();
-        if (typeof window.__kdExitTheater === 'function') {
-          window.__kdExitTheater();
-        } else {
-          document.body.classList.remove('tvTheater');
-        }
-        if (currentFocus) {
-          currentFocus.classList.remove('tv-focused');
-          currentFocus = null;
-        }
-        setTimeout(() => {
-          const first = getFocusable()[0];
-          if (first) setFocus(first);
-        }, 50);
+        requestBack();
         return;
       }
 
@@ -166,10 +172,8 @@
       return;
     }
 
-    // If whatever we last focused just got hidden (e.g. theater mode
-    // kicked in and swallowed the whole session list), drop the stale
-    // reference so the next interaction starts fresh instead of doing
-    // nothing.
+    // If whatever we last focused just got hidden, drop the stale
+    // reference so the next interaction starts fresh.
     if (currentFocus && !isVisible(currentFocus)) {
       currentFocus.classList.remove('tv-focused');
       currentFocus = null;
@@ -201,21 +205,7 @@
         return;
       }
 
-      if (currentFocus) currentFocus.classList.remove('tv-focused');
-      currentFocus = null;
-
-      // Always delegate to the app's single source of truth for "what
-      // does Back do right now" (pop a folder level, or go home) — this
-      // is what was missing before, which let presses get swallowed
-      // here with no visible effect, requiring multiple presses to
-      // actually get anywhere.
-      if (typeof window.__kdGoBack === 'function') {
-        window.__kdGoBack();
-        setTimeout(() => {
-          const first = getFocusable()[0];
-          if (first) setFocus(first);
-        }, 50);
-      }
+      requestBack();
     }
   });
 
