@@ -1,8 +1,13 @@
-[{
-      "relation": ["delegate_permission/common.handle_all_urls"],
-      "target": {
-        "namespace": "android_app",
-        "package_name": "app.netlify.mellifluous_tanuki_51d911.twa",
-        "sha256_cert_fingerprints": ["26:5E:FA:C6:46:30:79:EE:91:58:37:DB:74:B7:A4:2F:D1:6C:5D:F4:D9:C4:85:B5:B6:A4:1B:86:8C:2B:55:17"]
-      }
-    }]
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "app.netlify.mellifluous_tanuki_51d911.twa",
+      "sha256_cert_fingerprints": [
+        "AF:08:F8:EC:A0:FB:C6:B5:33:EB:16:17:05:70:E6:E3:8A:7E:24:EE:EC:8D:24:A5:63:59:E1:9C:BF:2B:08:42",
+        "26:5E:FA:C6:46:30:79:EE:91:58:37:DB:74:B7:A4:2F:D1:6C:5D:F4:D9:C4:85:B5:B6:A4:1B:86:8C:2B:55:17"
+      ]
+    }
+  }
+]
