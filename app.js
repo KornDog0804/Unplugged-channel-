@@ -9,22 +9,23 @@
    ?playTitle=<title> (set by the home page's Featured cards), the
    matching show starts playing automatically once data loads.
 
-   PLAYBACK ENGINE: uses YouTube's lightweight postMessage protocol on a
-   plain iframe embed so we can detect when a video ENDS (queues
-   auto-advance) and drive play/pause + rewind/fast-forward from the
-   remote.
+   PLAYBACK ENGINE: uses the real YouTube IFrame Player API (loaded
+   dynamically below) instead of just swapping the iframe's src. This
+   is what lets us detect when a video actually ENDS so queues
+   ("Stitched Streams", 3 Doors Down tribute, etc.) auto-advance to
+   the next track — that detection is impossible with a plain static
+   embed URL, which is why auto-advance was silently broken before.
 
-   TV PLAYER: on TV devices the video now plays in the normal INLINE
-   player (same as phone/web). The old fullscreen "theater" takeover was
-   removed — forcing the iframe to fill the screen made this TV's WebView
-   paint a solid black box, because the hardware video surface couldn't
-   composite into that forced-fullscreen layout. Inline playback never
-   had that problem.
+   TV THEATER MODE: on TV devices, starting a video adds a
+   `tvTheater` class to <body> which (via styles.css) hides
+   everything except the player and blows it up to fill the screen.
+   Back exits theater mode via the floating "Exit Player" button
+   (and tv-nav.js also listens for the hardware/remote Back key).
 
-   TV SECTION FILTER: Monster Jam / Drag Racing are hidden on TV devices
-   only (see HIDE_ON_TV_KEYWORDS + getVisibleItems). They still show on
-   phone/web. They were the only "opens externally" playlist sections and
-   routing them through the TV player made the TV side worse.
+   TV SECTION FILTER: Monster Jam / Drag Racing are hidden on TV
+   devices only (see HIDE_ON_TV_KEYWORDS + getVisibleItems). They still
+   show on phone/web. Everything else — theater focus, the back button,
+   and the new play/pause + rewind/forward controls — is unchanged.
 */
 
 (() => {
@@ -129,17 +130,20 @@
   }
 
   // Updates the bottom back button: "Back to Sessions" (pops one level)
-  // while inside a folder, "Back to home" (leaves the app) at the root.
+  // while inside a folder, "Back to home" (leaves the app) at the root,
+  // or "Exit Player" while TV theater mode is active.
   function updateBackNav() {
     if (!$backNavBtn) return;
+    if (document.body.classList.contains("tvTheater")) {
+      $backNavBtn.textContent = "← Exit Player";
+      return;
+    }
     $backNavBtn.textContent = viewStack.length > 1 ? "← Back to Sessions" : "← Back to home";
   }
 
-  // ==== TV PLAYER (inline) ====
-  // Elements that the old theater mode used to hide. Kept only so
-  // exitTheaterMode can safely clear any leftover inline styles from
-  // older cached sessions. Selected lazily since some only exist after
-  // render() has run at least once.
+  // ==== TV THEATER MODE ====
+  // Elements toggled by theater mode. Selected lazily (not at top-level
+  // const time) since some only exist after render() has run at least once.
   function theaterTargets() {
     return Array.from(document.querySelectorAll(
       ".top, .listHead, #playAllBtn, #episodes, #loadMoreBtn, .playerTop, " +
@@ -148,34 +152,93 @@
     ));
   }
 
-  // The old fullscreen takeover (fixed black backdrop + forcing the
-  // iframe to fill the screen) is what caused the black box on this TV's
-  // WebView — the hardware video surface couldn't composite into that
-  // forced-fullscreen layout and just painted black. So we no longer
-  // take over the screen. We simply reveal the normal inline player
-  // (styles.css hides .playerShell on TV by default) and scroll it into
-  // view. This is the simple, proven player that worked before.
+  // Theater mode is driven entirely by inline styles set here at runtime,
+  // not by a CSS class + stylesheet rules. TVs/WebViews are notorious for
+  // aggressively caching CSS/JS files, so relying on a freshly-fetched
+  // styles.css to hide everything was fragile — a stale cached copy would
+  // silently no-op the whole feature. Inline styles set live by JS can't
+  // go stale like that. styles.css also carries a matching hard override
+  // as a second line of defense, but this is the one actually doing the
+  // work moment-to-moment.
   function enterTheaterMode() {
     if (!isTVDevice()) return;
+    document.body.classList.add("tvTheater");
+
+    theaterTargets().forEach(el => {
+      el.style.setProperty("display", "none", "important");
+      el.style.setProperty("visibility", "hidden", "important");
+    });
+
+    // The fixed full-screen black backdrop — this part is safe, it's
+    // just a container, not the actual video element.
     const shell = document.querySelector(".playerShell");
     if (shell) {
-      shell.style.setProperty("display", "grid", "important");
-      try { shell.scrollIntoView({ behavior: "smooth", block: "start" }); } catch (_) {}
+      shell.style.setProperty("position", "fixed", "important");
+      shell.style.setProperty("top", "0", "important");
+      shell.style.setProperty("left", "0", "important");
+      shell.style.setProperty("right", "0", "important");
+      shell.style.setProperty("bottom", "0", "important");
+      shell.style.setProperty("width", "100vw", "important");
+      shell.style.setProperty("height", "100vh", "important");
+      shell.style.setProperty("max-width", "100vw", "important");
+      shell.style.setProperty("margin", "0", "important");
+      shell.style.setProperty("padding", "24px", "important");
+      shell.style.setProperty("display", "flex", "important");
+      shell.style.setProperty("align-items", "center", "important");
+      shell.style.setProperty("justify-content", "center", "important");
+      shell.style.setProperty("background", "#000", "important");
+      shell.style.setProperty("z-index", "2147483647", "important");
     }
+
+    // Deliberately NOT forcing literal 100vw/100vh on the iframe or its
+    // wrapper — confirmed on this TV that doing so renders solid black
+    // (almost certainly a hardware video-overlay/compositing limit in
+    // this WebView). Instead, clear any leftover inline sizing so the
+    // existing, already-proven-working CSS sizing (aspect-ratio 16/9,
+    // max-height, width:100%) takes over — just centered inside the
+    // fixed black full-screen shell above instead of in the normal page
+    // flow.
+    const frameWrap = document.querySelector(".playerFrameWrap");
+    if (frameWrap) {
+      ["position", "top", "left", "right", "bottom", "width", "height",
+        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
+        "padding", "border", "overflow", "background", "z-index", "display"]
+        .forEach(p => frameWrap.style.removeProperty(p));
+      frameWrap.style.setProperty("width", "100%", "important");
+      frameWrap.style.setProperty("max-width", "100%", "important");
+      frameWrap.style.setProperty("border-radius", "0", "important");
+      frameWrap.style.setProperty("border", "none", "important");
+      frameWrap.style.setProperty("box-shadow", "none", "important");
+    }
+    if ($playerFrame) {
+      ["position", "top", "left", "right", "bottom", "width", "height",
+        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
+        "padding", "border", "border-radius", "overflow", "background",
+        "z-index"]
+        .forEach(p => $playerFrame.style.removeProperty(p));
+      $playerFrame.style.setProperty("display", "block", "important");
+    }
+
+    if ($backNavBtn) {
+      $backNavBtn.style.setProperty("display", "inline-flex", "important");
+      $backNavBtn.style.setProperty("position", "fixed", "important");
+      $backNavBtn.style.setProperty("top", "24px", "important");
+      $backNavBtn.style.setProperty("left", "24px", "important");
+      $backNavBtn.style.setProperty("z-index", "2147483647", "important");
+    }
+
     updateBackNav();
   }
 
-  // Tears the player down cleanly and clears any stale inline styles that
-  // an older cached version of this file may have stamped onto these
-  // elements (from when fullscreen theater mode existed). Safe to call
-  // anytime — removeProperty on an unset property is a no-op.
   function exitTheaterMode() {
     document.body.classList.remove("tvTheater");
 
-    // Actually stop the video itself, not just hide its container — on
-    // this TV the hardware video decode surface can keep compositing on
-    // top of the page even once its container is hidden, until the
-    // underlying iframe load is actually torn down.
+    // Actually stop the video itself, not just resize its container.
+    // Leaving it shrunk-but-still-playing was almost certainly the
+    // cause of the black screen after Back — on this TV the hardware
+    // video decode surface can keep compositing on top of the page
+    // even once its container is hidden via CSS, until the underlying
+    // iframe load is actually torn down.
     stopListeningHandshake();
     if ($playerFrame) {
       $playerFrame.src = "";
@@ -196,19 +259,12 @@
 
     const frameWrap = document.querySelector(".playerFrameWrap");
     if (frameWrap) {
-      ["position", "top", "left", "right", "bottom", "width", "height",
-        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
-        "padding", "border", "border-radius", "overflow", "background",
-        "z-index", "display", "box-shadow"]
+      ["width", "max-width", "border-radius", "border", "box-shadow"]
         .forEach(p => frameWrap.style.removeProperty(p));
     }
 
     if ($playerFrame) {
-      ["position", "top", "left", "right", "bottom", "width", "height",
-        "max-width", "max-height", "min-height", "aspect-ratio", "margin",
-        "padding", "border", "border-radius", "overflow", "background",
-        "z-index", "display"]
-        .forEach(p => $playerFrame.style.removeProperty(p));
+      $playerFrame.style.removeProperty("display");
     }
 
     if ($backNavBtn) {
@@ -631,8 +687,10 @@
 
     // On TV, .playerShell is hidden by default (so the idle "Watch on
     // TV"/"Show player" box doesn't clutter the screen before anything
-    // is selected — see styles.css). Reveal it so the "Open Playlist"
-    // button is reachable.
+    // is selected — see styles.css). Theater mode has its own inline
+    // override to show it again, but playlists like Monster Jam/Drag
+    // Racing never enter theater mode at all, so without this they'd
+    // have the "Open Playlist" button hidden with no way to reach it.
     if (isTVDevice()) {
       const shell = document.querySelector(".playerShell");
       if (shell) shell.style.setProperty("display", "grid", "important");
@@ -695,8 +753,8 @@
       startListeningHandshake();
     }
 
-    // On TV, reveal the inline player and scroll to it. No fullscreen
-    // takeover anymore — that was the black-box culprit.
+    // Movie-theater mode on TV: player takes over the whole screen,
+    // everything else hides, Back/Exit Player brings the list back.
     if (onTV) enterTheaterMode();
   }
 
@@ -1000,12 +1058,8 @@
       render();
       return;
     }
-    // First Back press while the player is open just closes the player
-    // (stops the video, hides it) and returns to the list — no more
-    // "Exit Player" theater special-case, and nothing left compositing
-    // a black box behind the page.
-    if (playerVisible) {
-      showPlayer(false);
+    if (document.body.classList.contains("tvTheater")) {
+      exitTheaterMode();
       return;
     }
     if (viewStack.length > 1) {
@@ -1020,7 +1074,7 @@
   }
 
   // Exposed so tv-nav.js's hardware/remote Back key always triggers the
-  // exact same single, correct next step (close player, or pop one
+  // exact same single, correct next step (exit theater, or pop one
   // folder level, or go home) instead of the keypress sometimes getting
   // swallowed with no visible effect.
   window.__kdGoBack = handleBackAction;
@@ -1054,8 +1108,8 @@
   }, { passive: true });
 
   // Exposed so tv-nav.js's Back-key handler can trigger a full, correct
-  // exit (clears any stale theater inline styles + tears down the iframe)
-  // instead of leaving anything stuck in place.
+  // exit (inline styles + class) instead of just toggling the class and
+  // leaving theater-mode inline styles stuck in place.
   window.__kdExitTheater = exitTheaterMode;
 
   // ==== INIT ====
