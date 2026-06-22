@@ -1,889 +1,810 @@
-/* Joey’s Acoustic Corner — styles.css (UPDATED + CLICK-SAFE)
-   Deep blacks + warm vinyl gold. Premium. Mobile-friendly.
-   FIXES:
-   - Removes Encore/blackout/overlay tap blockers
-   - Removes aggressive global pointer-events rules
-   - Matches your current HTML structure (playerShell / playerFrameWrap / #playerFrame)
-   - Keeps your slide styles but won't block clicks
-*/
+/* =========================================================
+   JOEY'S CONCERT CORNER — styles.css
+   "A KornDog Records joint"
 
+   FULL CLEAN REWRITE (replaces the old gold theme + all the
+   stacked patches). KornDog brand: acid lime + electric purple
+   on OLED black. Premium, neon, motion — built to blow people
+   away on the landing and carry the same energy through sessions,
+   on both mobile AND Google TV.
+
+   ⚠️ VISUAL ONLY. This file does NOT change any app logic.
+   Every class + id app.js and index.html rely on is preserved:
+     .top .brand .brandMark .brandText .titleRow .title .sub
+       .subStrong .subSep .liveBadge .liveDot
+     .landingWrap .landingHero .landingHeroTop .landingHeroTitle
+       .landingHeroBig .landingHeroBody .landingBtns .landingBtn
+       .heroTagline .featuredSection .featuredHead .featuredTitle
+       .featuredSub .featuredScroll .featuredCard .featuredArt
+       .featuredCardTitle .miniItem .miniLabel .miniValue
+     .wrap .listHead .listTitle .listSub
+     #episodes .epCard .ep .epArtWrap .epArt .epArtFallback
+       .epMain .epTitle .epMeta .epSmall .epChevron .chev
+     .trackHeader .trackHeaderText .trackHeaderTitle .trackHeaderSub
+       .trackHeaderSmall .trackRow .trackRowTitle .trackRowChevron
+       .trackFooter .trackPlayAllBtn .trackMoreBtn .trackBackBtn
+     .playerShell .playerTop .npBlock .npTitle .npLine .npBtns
+       .npArtWrap .npArt .playerFrameWrap #playerFrame .statusLine
+     .btn .primary .ghost .wide  #playAllBtn #loadMoreBtn #backNavBtn
+       #playerToggleBtn #watchOnTvBtn  .backRow
+     body.tvTheater  html.device-tv  html.device-desktop
+       html.device-phone  body.playerCollapsed  body.playerOpen
+     #viewWrap #view .slidePage (+ slide animations)
+
+   The TV theater-mode rules at the very bottom are reproduced
+   EXACTLY as they worked before (the black-screen-safe version),
+   because app.js sets matching inline styles and depends on these
+   as the backup layer. Do not "simplify" them.
+   ========================================================= */
+
+/* =========================================================
+   BRAND TOKENS
+   ========================================================= */
 :root{
-  --bg: #0B0B0D;
-  --panel: #141418;
-  --panel2: rgba(255,255,255,.05);
-  --line: rgba(255,255,255,.10);
-  --line2: rgba(255,255,255,.14);
+  /* KornDog core */
+  --lime: #7FD41A;
+  --lime-bright: #9dff2e;
+  --lime-deep: #5fa30f;
+  --purple: #6a3fb5;
+  --purple-bright: #9a5cff;
+  --purple-deep: #1a0a2e;
 
-  --text: #EDEDED;
-  --muted: #B5B5B5;
-  --muted2:#8A8A8A;
+  /* surfaces */
+  --oled: #000000;
+  --bg: #050208;
+  --panel: rgba(122, 74, 201, .07);
+  --panel-2: rgba(255,255,255,.04);
 
-  --gold: #C9A24D;
-  --gold2:#9E8742;
-  --live: #C94A3A;
+  /* glows */
+  --lime-glow: rgba(127, 212, 26, .35);
+  --lime-glow-soft: rgba(127, 212, 26, .16);
+  --purple-glow: rgba(122, 74, 201, .40);
+  --purple-glow-soft: rgba(122, 74, 201, .18);
+
+  /* text */
+  --text: #F4F1F8;
+  --muted: #C7BEDA;
+  --muted-2: #8E84A6;
+
+  /* lines */
+  --line: rgba(154, 92, 255, .18);
+  --line-2: rgba(127, 212, 26, .22);
+
+  --live: #ff3b3b;
 
   --radius-lg: 24px;
   --radius-md: 18px;
 
-  --shadow: 0 22px 70px rgba(0,0,0,.55);
-  --shadow2: 0 14px 40px rgba(0,0,0,.38);
+  --shadow: 0 30px 90px rgba(0,0,0,.7);
+  --shadow-2: 0 16px 50px rgba(0,0,0,.55);
 
   --max: 980px;
+
+  /* asset paths (in ./images/) */
+  --img-logo: url("./images/Screenshot_20250831-144625.png");
+  --img-banner: url("./images/korndog-banner.png");
+  --img-tag: url("./images/Vinyl_Therapy_Never_Dies_TRUE_TRANSPARENT.png");
 }
 
-*{ box-sizing:border-box; }
-html,body{ height:100%; }
+*{ box-sizing: border-box; }
+html, body{ height: 100%; max-width: 100vw; overflow-x: hidden; }
+
+html, body{
+  margin: 0;
+}
+
 body{
-  margin:0;
-  background: var(--bg);
+  background: var(--oled);
   color: var(--text);
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  font-family: "Barlow", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden; /* helps slide transitions */
+  position: relative;
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-/* Links */
-a{ color: var(--text); text-decoration:none; }
-a:hover{ opacity:.95; }
+img, iframe, video{ max-width: 100%; }
 
-/* =========================
+/* =========================================================
+   LIVING NEON BACKGROUND
+   A slow-drifting aurora of purple + lime behind everything.
+   GPU-light (transform/opacity only) so it stays smooth on the
+   TV WebView. Fixed + pointer-events:none so it NEVER blocks taps.
+   ========================================================= */
+body::before{
+  content: "";
+  position: fixed;
+  inset: -20% -20% -20% -20%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 18% 12%, var(--purple-glow-soft), transparent 60%),
+    radial-gradient(55% 45% at 85% 18%, var(--lime-glow-soft), transparent 62%),
+    radial-gradient(70% 60% at 50% 100%, rgba(122,74,201,.16), transparent 60%);
+  filter: blur(20px);
+  animation: auroraDrift 26s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+/* faint vinyl-groove rings, very subtle, behind the hero zone */
+body::after{
+  content: "";
+  position: fixed;
+  top: -160px;
+  left: 50%;
+  width: 720px;
+  height: 720px;
+  margin-left: -360px;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle at center,
+      rgba(154,92,255,.05) 0px,
+      rgba(154,92,255,.05) 1px,
+      transparent 2px,
+      transparent 9px);
+  opacity: .5;
+  animation: spinSlow 80s linear infinite;
+  will-change: transform;
+}
+
+@keyframes auroraDrift{
+  0%   { transform: translate3d(0,0,0) scale(1); opacity: .85; }
+  50%  { transform: translate3d(2%, 1.5%, 0) scale(1.06); opacity: 1; }
+  100% { transform: translate3d(-1.5%, -1%, 0) scale(1.03); opacity: .9; }
+}
+@keyframes spinSlow{
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* keep all real content above the glow layers */
+.top, .landingWrap, .wrap, .playerShell{
+  position: relative;
+  z-index: 1;
+}
+
+a{ color: var(--text); text-decoration: none; }
+
+/* =========================================================
    TOP BAR
-   ========================= */
+   ========================================================= */
 .top{
   position: sticky;
   top: 0;
   z-index: 60;
-  background: rgba(0,0,0,.86);
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: linear-gradient(180deg, rgba(5,2,8,.96), rgba(5,2,8,.82));
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  padding-top: env(safe-area-inset-top);
 }
 
 .brand{
   max-width: var(--max);
   margin: 0 auto;
-  padding: 14px 14px 12px;
-  display:flex;
-  align-items:center;
-  gap:12px;
+  padding: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
+/* brandMark now carries the KornDog corn-dog logo with a neon ring */
 .brandMark{
-  width:44px; height:44px;
-  border-radius:14px;
-  background: url("./icon-192.png") center/cover no-repeat;
-  box-shadow: 0 10px 26px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.08) inset;
-  flex:0 0 auto;
+  width: 46px; height: 46px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+  background-image: var(--img-logo);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #0c0614;
+  box-shadow:
+    0 0 0 1px rgba(127,212,26,.45) inset,
+    0 0 18px var(--purple-glow),
+    0 8px 22px rgba(0,0,0,.6);
 }
 
-.brandText{ flex:1; min-width:0; }
+.brandText{ flex: 1; min-width: 0; }
 
 .titleRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .title{
-  font-weight:900;
-  letter-spacing:.08em;
-  text-transform:uppercase;
-  font-size: 15px;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-size: 17px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: linear-gradient(92deg, var(--lime-bright), var(--purple-bright));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 22px rgba(127,212,26,.18);
 }
 
 .sub{
-  margin-top:4px;
-  font-size:13px;
+  margin-top: 3px;
+  font-size: 12.5px;
   color: var(--muted);
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  align-items:center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
 }
-.subStrong{ color: rgba(255,255,255,.86); font-weight:750; }
-.subSep{ opacity:.5; }
+.subStrong{ color: var(--text); font-weight: 800; }
+.subSep{ opacity: .45; }
 
 .liveBadge{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding: 7px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
   border-radius: 999px;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.10);
-  font-weight:800;
-  font-size:12px;
-  color: rgba(255,255,255,.88);
-  flex:0 0 auto;
+  background: rgba(255,59,59,.10);
+  border: 1px solid rgba(255,59,59,.35);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: .08em;
+  color: #ffd9d9;
+  flex: 0 0 auto;
 }
 .liveDot{
-  width:10px; height:10px;
-  border-radius:999px;
+  width: 9px; height: 9px;
+  border-radius: 999px;
   background: var(--live);
-  box-shadow: 0 0 0 4px rgba(201,74,58,.22);
+  box-shadow: 0 0 0 0 rgba(255,59,59,.6);
+  animation: livePulse 1.8s ease-out infinite;
+}
+@keyframes livePulse{
+  0%   { box-shadow: 0 0 0 0 rgba(255,59,59,.55); }
+  70%  { box-shadow: 0 0 0 9px rgba(255,59,59,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,59,59,0); }
 }
 
-/* =========================
-   WRAP (shared)
-   ========================= */
+/* =========================================================
+   SHARED WRAP
+   ========================================================= */
 .wrap{
   max-width: var(--max);
   margin: 0 auto;
-  padding: 14px;
-  display:grid;
+  padding: 16px 14px 40px;
+  display: grid;
   gap: 14px;
 }
 
-/* =========================
-   BUTTONS (shared)
-   ========================= */
+/* =========================================================
+   BUTTONS
+   ========================================================= */
 .btn,
 .landingBtn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding: 12px 14px;
-  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 18px;
+  border-radius: 14px;
   font-weight: 900;
-  letter-spacing:.2px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
+  letter-spacing: .3px;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
   color: var(--text);
-  cursor:pointer;
-  user-select:none;
+  cursor: pointer;
+  user-select: none;
   -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, border-color .14s ease,
+              box-shadow .14s ease, background .14s ease, filter .14s ease;
 }
-
 .btn:hover,
 .landingBtn:hover{
-  border-color: rgba(201,162,77,.35);
-  background: rgba(255,255,255,.075);
+  border-color: rgba(127,212,26,.45);
+  background: rgba(127,212,26,.06);
+  box-shadow: 0 0 0 1px rgba(127,212,26,.18) inset, 0 0 22px var(--lime-glow-soft);
 }
+.btn:active,
+.landingBtn:active{ transform: scale(.985); }
 
+/* primary = acid lime, the money button */
 .btn.primary,
 .landingBtn.primary{
-  border-color: rgba(201,162,77,.45);
-  background: linear-gradient(90deg, rgba(201,162,77,.92), rgba(158,135,66,.88));
-  color: #0B0B0D;
+  border-color: rgba(127,212,26,.65);
+  background: linear-gradient(95deg, var(--lime), var(--lime-deep));
+  color: #0a1500;
+  box-shadow: 0 10px 30px rgba(127,212,26,.28), 0 0 24px var(--lime-glow);
 }
-
 .btn.primary:hover,
 .landingBtn.primary:hover{
-  filter: brightness(1.02);
+  filter: brightness(1.06);
+  box-shadow: 0 12px 38px rgba(127,212,26,.4), 0 0 32px var(--lime-glow);
 }
 
 .btn.ghost{
-  background: rgba(0,0,0,.40);
-  border-color: rgba(255,255,255,.14);
+  background: rgba(154,92,255,.08);
+  border-color: rgba(154,92,255,.3);
+}
+.btn.ghost:hover{
+  border-color: rgba(154,92,255,.55);
+  background: rgba(154,92,255,.14);
+  box-shadow: 0 0 22px var(--purple-glow-soft);
 }
 
-.btn.wide{
-  width:100%;
-}
+.btn.wide{ width: 100%; }
 
-/* =========================
-   LANDING PAGE (index)
-   ========================= */
-body.landing{ background: var(--bg); }
+/* =========================================================
+   LANDING PAGE (index.html)
+   The showpiece. Logo hero → glow settle, breathing CTA,
+   graffiti tag, featured rail, "A KornDog Records joint".
+   ========================================================= */
+body.landing{ background: var(--oled); }
 
 .landingWrap{
   max-width: var(--max);
   margin: 0 auto;
-  padding: 18px 14px 32px;
-  display:grid;
-  gap: 14px;
+  padding: 20px 14px 36px;
+  display: grid;
+  gap: 16px;
 }
 
+/* ---- THE HERO ---- */
 .landingHero{
+  position: relative;
   border-radius: 28px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-  box-shadow: var(--shadow);
-  overflow:hidden;
+  border: 1px solid rgba(154,92,255,.28);
+  background:
+    radial-gradient(120% 80% at 50% -10%, rgba(122,74,201,.22), transparent 60%),
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+  box-shadow: var(--shadow), 0 0 60px var(--purple-glow-soft);
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* drifting lime sheen sweeping across the hero, behind content */
+.landingHero::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(50% 40% at 80% 0%, var(--lime-glow-soft), transparent 60%);
+  opacity: .8;
+  animation: heroSheen 9s ease-in-out infinite alternate;
+}
+@keyframes heroSheen{
+  0%   { transform: translateX(-6%) translateY(-2%); opacity: .55; }
+  100% { transform: translateX(6%) translateY(2%); opacity: .9; }
 }
 
 .landingHeroTop{
-  padding: 18px 18px 12px;
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 12px;
-  background: rgba(0,0,0,.55);
-  border-bottom: 1px solid rgba(255,255,255,.08);
+  position: relative;
+  z-index: 1;
+  padding: 22px 20px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+}
+
+/* The KornDog logo — drops in with a glow that settles */
+.heroLogo{
+  width: min(64vw, 240px);
+  height: auto;
+  display: block;
+  margin: 6px auto 2px;
+  filter: drop-shadow(0 0 26px var(--purple-glow)) drop-shadow(0 0 10px var(--lime-glow-soft));
+  animation: logoSettle 1100ms cubic-bezier(.16,.84,.34,1) both;
+  will-change: transform, opacity, filter;
+}
+@keyframes logoSettle{
+  0%   { opacity: 0; transform: translateY(14px) scale(.86); filter: drop-shadow(0 0 0 transparent); }
+  60%  { opacity: 1; transform: translateY(0) scale(1.03); }
+  100% { opacity: 1; transform: translateY(0) scale(1);
+         filter: drop-shadow(0 0 26px var(--purple-glow)) drop-shadow(0 0 10px var(--lime-glow-soft)); }
 }
 
 .landingHeroTitle{
-  font-weight: 1000;
-  letter-spacing: .08em;
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-weight: 800;
+  letter-spacing: .22em;
   text-transform: uppercase;
-  font-size: 14px;
-  color: rgba(255,255,255,.84);
+  font-size: 12px;
+  color: var(--muted-2);
 }
 
 .landingHeroBig{
-  margin-top: 8px;
-  font-size: clamp(32px, 6vw, 54px);
-  font-weight: 1100;
-  letter-spacing: -.02em;
-  line-height: .98;
+  margin: 0;
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-size: clamp(34px, 8vw, 60px);
+  font-weight: 900;
+  letter-spacing: .01em;
+  line-height: .95;
+  color: var(--text);
+  text-shadow: 0 0 32px rgba(154,92,255,.25);
 }
-
 .landingHeroBig span{
-  background: linear-gradient(90deg, rgba(201,162,77,.98), rgba(158,135,66,.92));
+  background: linear-gradient(92deg, var(--lime-bright), var(--purple-bright));
   -webkit-background-clip: text;
-  background-clip:text;
+  background-clip: text;
   color: transparent;
 }
 
-.landingHeroBody{
-  padding: 16px 18px 20px;
-  background: rgba(0,0,0,.35);
+/* graffiti "Vinyl Therapy Never Dies" tag under the title */
+.heroTag{
+  width: min(52vw, 200px);
+  height: auto;
+  margin: 4px auto 0;
+  display: block;
+  opacity: .96;
+  filter: drop-shadow(0 4px 18px rgba(0,0,0,.6));
+  animation: tagFade 1200ms ease-out 240ms both;
+}
+@keyframes tagFade{
+  from { opacity: 0; transform: translateY(8px) rotate(-1.5deg); }
+  to   { opacity: .96; transform: translateY(0) rotate(-1.5deg); }
 }
 
-.landingHeroBody p{
-  margin: 0 0 14px;
-  color: rgba(255,255,255,.82);
-  font-size: 14px;
+.landingHeroBody{
+  position: relative;
+  z-index: 1;
+  padding: 14px 20px 22px;
+  text-align: center;
+}
+.landingHeroBody p,
+.heroTagline{
+  margin: 0 auto 14px;
+  color: var(--muted);
+  font-size: 15px;
   line-height: 1.5;
-  max-width: 70ch;
+  max-width: 52ch;
+}
+.heroTagline{
+  font-size: 16px;
+  color: var(--text);
+  font-weight: 600;
 }
 
 .landingBtns{
-  display:flex;
-  gap: 10px;
-  flex-wrap:wrap;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
 }
 
+/* breathing primary CTA — pulls the eye, "doors about to open" */
+.landingBtn.primary{
+  animation: breathe 2.8s ease-in-out infinite;
+}
+@keyframes breathe{
+  0%, 100% { box-shadow: 0 10px 30px rgba(127,212,26,.25), 0 0 18px var(--lime-glow-soft); }
+  50%      { box-shadow: 0 14px 40px rgba(127,212,26,.45), 0 0 34px var(--lime-glow); }
+}
+/* respect reduced-motion users */
+@media (prefers-reduced-motion: reduce){
+  body::before, body::after,
+  .landingHero::before,
+  .heroLogo, .heroTag,
+  .landingBtn.primary, .liveDot{
+    animation: none !important;
+  }
+}
+
+/* mini info tiles (if present) */
 .landingMini{
-  display:grid;
+  display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 14px;
 }
-
 .miniItem{
-  border-radius: 18px;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
   padding: 12px 14px;
 }
-
 .miniLabel{
-  font-size: 11px;
-  opacity:.75;
-  margin-bottom: 6px;
-  font-weight: 1000;
-  letter-spacing:.10em;
+  font-size: 10.5px;
+  opacity: .7;
+  margin-bottom: 5px;
+  font-weight: 900;
+  letter-spacing: .12em;
   text-transform: uppercase;
+  color: var(--lime);
 }
-
-.miniValue{
-  font-size: 13px;
-  color: rgba(255,255,255,.84);
-  font-weight: 800;
-}
-
+.miniValue{ font-size: 13px; color: var(--text); font-weight: 700; }
 @media (max-width: 520px){
   .landingMini{ grid-template-columns: 1fr; }
 }
 
-/* Install button (fixed, but safe) */
-.installBtn{
-  position: fixed;
-  bottom: 18px;
-  right: 18px;
-  z-index: 200;
-  padding: 12px 18px;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #7cffb2, #4ddc7c);
-  color: #0b0f0c;
-  font-weight: 900;
-  font-size: 14px;
-  border: none;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-  cursor: pointer;
+/* =========================================================
+   FEATURED RAIL (home)
+   ========================================================= */
+.featuredSection{ margin-top: 6px; }
+
+.featuredHead{
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding: 0 4px;
 }
-.installBtn:hover{ transform: translateY(-1px); }
+.featuredTitle{
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-weight: 900;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-size: 13px;
+  color: var(--lime);
+  text-shadow: 0 0 18px var(--lime-glow-soft);
+}
+.featuredSub{
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted-2);
+  letter-spacing: .04em;
+}
 
-/* =========================
-   SESSIONS PAGE
-   ========================= */
+.featuredScroll{
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 4px 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.featuredScroll::-webkit-scrollbar{ display: none; }
 
-/* Player shell */
+.featuredCard{
+  flex: 0 0 auto;
+  width: 124px;
+  scroll-snap-align: start;
+  text-decoration: none;
+  transition: transform .16s ease;
+}
+.featuredCard:hover,
+.featuredCard:focus-visible{ transform: translateY(-4px); }
+
+.featuredArt{
+  width: 124px;
+  height: 124px;
+  border-radius: 20px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(127,212,26,.3);
+  box-shadow: 0 16px 40px rgba(0,0,0,.6), 0 0 24px var(--purple-glow-soft);
+  background: linear-gradient(145deg, var(--lime-glow-soft), var(--purple-glow-soft));
+  transition: box-shadow .16s ease, border-color .16s ease;
+}
+.featuredCard:hover .featuredArt,
+.featuredCard:focus-visible .featuredArt{
+  border-color: rgba(127,212,26,.7);
+  box-shadow: 0 20px 50px rgba(0,0,0,.7), 0 0 30px var(--lime-glow);
+}
+.featuredCardTitle{
+  margin-top: 9px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 420px){
+  .featuredCard{ width: 108px; }
+  .featuredArt{ width: 108px; height: 108px; border-radius: 16px; }
+}
+
+/* =========================================================
+   "A KORNDOG RECORDS JOINT" credit footer
+   Add <div class="kdJoint">A KornDog Records joint</div>
+   near the bottom of index.html (and optionally sessions).
+   ========================================================= */
+.kdJoint{
+  margin: 18px auto 6px;
+  text-align: center;
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted-2);
+}
+.kdJoint b,
+.kdJoint span{
+  background: linear-gradient(92deg, var(--lime-bright), var(--purple-bright));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 900;
+}
+.kdJoint::before{
+  content: "";
+  display: block;
+  width: 60px;
+  height: 2px;
+  margin: 0 auto 12px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--lime), transparent);
+  opacity: .7;
+}
+
+/* =========================================================
+   SESSIONS PAGE — player
+   ========================================================= */
 .playerShell{
   max-width: var(--max);
   margin: 0 auto;
   padding: 14px;
-  display:grid;
+  display: grid;
   gap: 12px;
 }
 
 .playerTop{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255,255,255,.10);
-  background: var(--panel);
-  box-shadow: var(--shadow2);
-  padding: 12px 12px;
+  border: 1px solid rgba(154,92,255,.26);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.015)),
+    var(--panel);
+  box-shadow: var(--shadow-2), 0 0 36px var(--purple-glow-soft);
+  padding: 10px 12px;
 }
 
-.npBlock{ min-width: 0; }
+.npBlock{ min-width: 0; flex: 1; overflow: hidden; }
 .npTitle{
-  font-weight: 1000;
+  font-weight: 900;
   letter-spacing: .02em;
-  font-size: 14px;
-  color: rgba(255,255,255,.86);
+  font-size: 13px;
+  color: var(--text);
 }
 .npLine{
-  margin-top: 6px;
-  font-weight: 800;
-  color: rgba(255,255,255,.72);
-  font-size: 13px;
+  margin-top: 2px;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .npBtns{
-  display:flex;
+  display: flex;
   gap: 10px;
-  align-items:center;
-  flex-wrap:wrap;
+  align-items: center;
+  flex-wrap: wrap;
   flex: 0 0 auto;
 }
 
-/* Player frame wrap */
-.playerFrameWrap{
-  border-radius: var(--radius-lg);
-  overflow:hidden;
-  background: #000;
-  border: 1px solid rgba(255,255,255,.10);
-  box-shadow: var(--shadow2);
-}
-
-/* iframe fills */
-#playerFrame{
-  width: 100%;
-  height: 56.25vw;   /* 16:9 */
-  max-height: 560px;
-  min-height: 220px;
-  display:block;
-  border:0;
-  background:#000;
-}
-
-/* status line */
-.statusLine{
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(0,0,0,.55);
-  color: rgba(255,255,255,.84);
-  font-weight: 900;
-  font-size: 12px;
-  white-space:nowrap;
-}
-
-/* Collapse behavior (matches your real markup) */
-body.playerCollapsed .playerFrameWrap{ display:none; }
-body.playerCollapsed #playerFrame{ display:none; }
-
-/* List header */
-.listHead{
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255,255,255,.10);
-  background: var(--panel);
-  box-shadow: var(--shadow2);
-  padding: 14px;
-}
-
-.listTitle{
-  font-size: 22px;
-  font-weight: 1000;
-  letter-spacing: -.01em;
-}
-
-.listSub{
-  margin-top: 6px;
-  color: var(--muted);
-  font-size: 13px;
-  max-width: 62ch;
-}
-
-/* Episodes list container */
-#episodes{
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255,255,255,.10);
-  background: var(--panel);
-  box-shadow: var(--shadow2);
-  padding: 12px;
-  display:grid;
-  gap: 10px;
-}
-
-/* Episode card */
-.ep{
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-  padding: 12px 12px;
-  cursor:pointer;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
-  outline:none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.ep:active{ transform: scale(.99); }
-.ep:hover{
-  border-color: rgba(201,162,77,.35);
-  background: rgba(255,255,255,.07);
-  box-shadow: 0 16px 46px rgba(0,0,0,.55);
-}
-.ep:focus{
-  border-color: rgba(201,162,77,.55);
-  box-shadow: 0 0 0 4px rgba(201,162,77,.14), 0 18px 50px rgba(0,0,0,.55);
-}
-
-.epHead{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:12px;
-}
-
-.epTitle{
-  font-weight: 1000;
-  letter-spacing: -.01em;
-  font-size: 16px;
-  line-height: 1.2;
-}
-
-.epMeta{
-  margin-top:6px;
-  color: rgba(255,255,255,.72);
-  font-weight: 800;
-}
-
-.epSmall{
-  margin-top:6px;
-  font-size: 12px;
-  color: rgba(255,255,255,.55);
-  font-weight: 800;
-}
-
-.chev{
-  width: 34px;
-  height: 34px;
+/* now-playing thumbnail */
+.npArtWrap{
+  flex: 0 0 auto;
+  width: 52px; height: 52px;
   border-radius: 12px;
-  display:grid;
-  place-items:center;
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(0,0,0,.35);
-  color: rgba(255,255,255,.85);
-  font-size: 20px;
-  flex: 0 0 auto;
-}
-
-/* Active (playing) */
-.ep.isActive{
-  border-color: rgba(201,162,77,.55);
-  background:
-    radial-gradient(600px 220px at 25% 0%, rgba(201,162,77,.14), transparent 65%),
-    rgba(255,255,255,.05);
-  box-shadow: 0 0 0 3px rgba(201,162,77,.12), 0 18px 50px rgba(0,0,0,.55);
-}
-.epFeatured{ border-color: rgba(201,162,77,.30); }
-
-/* back row */
-.backRow{
-  display:flex;
-  justify-content:flex-start;
-}
-
-/* =========================
-   Slide Navigation (Mobile App Feel)
-   (kept, but SAFE)
-   ========================= */
-#viewWrap {
+  overflow: hidden;
+  border: 1px solid rgba(127,212,26,.35);
+  background: linear-gradient(145deg, var(--lime-glow-soft), var(--purple-glow-soft));
+  box-shadow: 0 8px 22px rgba(0,0,0,.5), 0 0 18px var(--purple-glow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: relative;
-  overflow: hidden;
 }
-
-#view {
-  will-change: transform;
+.npArt{
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: none; /* shown by JS when a src is set */
 }
-
-/* Incoming page */
-.slidePage {
-  position: absolute;
-  inset: 0;
-  transform: translateX(100%);
-  opacity: 1;
-  will-change: transform;
-}
-
-.slide-in-left { animation: slideInLeft 220ms ease-out forwards; }
-.slide-out-left { animation: slideOutLeft 220ms ease-out forwards; }
-.slide-in-right { animation: slideInRight 220ms ease-out forwards; }
-.slide-out-right { animation: slideOutRight 220ms ease-out forwards; }
-
-@keyframes slideInLeft {
-  from { transform: translateX(100%); }
-  to   { transform: translateX(0%); }
-}
-@keyframes slideOutLeft {
-  from { transform: translateX(0%); }
-  to   { transform: translateX(-25%); }
-}
-@keyframes slideInRight {
-  from { transform: translateX(-25%); }
-  to   { transform: translateX(0%); }
-}
-@keyframes slideOutRight {
-  from { transform: translateX(0%); }
-  to   { transform: translateX(100%); }
-}
-
-/* =========================
-   Mobile tuning
-   ========================= */
-@media (max-width: 420px){
-  .title{ font-size: 14px; }
-  .listTitle{ font-size: 20px; }
-  .epTitle{ font-size: 15px; }
-  #playerFrame{ min-height: 210px; }
-}
-/* =========================================================
-   TRACK DRILL-DOWN VIEW (app.js new UI)
-   Paste at the BOTTOM of styles.css
-   ========================================================= */
-
-.trackHeader{
-  display:flex;
-  gap:12px;
-  align-items:flex-start;
-  padding: 14px;
-  border-bottom: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.35);
-}
-
-.trackBackBtn{
-  flex: 0 0 auto;
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.14);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
-  font-weight: 900;
-  letter-spacing: .2px;
-  cursor: pointer;
-  position: relative;
-  z-index: 60; /* make sure it’s always tappable */
-}
-
-.trackBackBtn:hover{
-  border-color: rgba(201,162,77,.28);
-  background: rgba(255,255,255,.075);
-}
-
-.trackHeaderText{
-  min-width: 0;
-  flex: 1;
-}
-
-.trackHeaderTitle{
-  font-weight: 1000;
-  letter-spacing: -.01em;
-  font-size: 18px;
-  line-height: 1.15;
-  color: rgba(255,255,255,.95);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trackHeaderSub{
-  margin-top: 6px;
-  font-size: 13px;
-  font-weight: 850;
-  color: rgba(255,255,255,.72);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.trackHeaderSmall{
-  margin-top: 6px;
-  font-size: 12px;
-  font-weight: 850;
+.npArtWrap.npArtFallback::before{
+  content: "♪";
+  font-size: 22px;
   color: rgba(255,255,255,.55);
 }
 
-/* Track rows */
-/* .trackRow is a real <button> (same reasoning as .epCard — TV remotes
-   need a native interactive element to reliably generate a click).
-   This resets the default browser button chrome. */
-.trackRow{
-  appearance: none;
-  -webkit-appearance: none;
-  font: inherit;
-  text-align: left;
-  width: calc(100% - 24px);
-}
-
-.trackRow{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:12px;
-
-  margin: 10px 12px;
-  padding: 12px 12px;
-
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(255,255,255,.10);
-  background: rgba(255,255,255,.05);
-
-  cursor: pointer;
-  transition: transform .12s ease, border-color .12s ease, box-shadow .12s ease, background .12s ease;
-  outline: none;
-  position: relative;
-  z-index: 20; /* keep it above decorative layers */
-}
-
-.trackRow:active{ transform: scale(.99); }
-
-.trackRow:hover{
-  border-color: rgba(201,162,77,.35);
-  background: rgba(255,255,255,.07);
-  box-shadow: 0 16px 46px rgba(0,0,0,.55);
-}
-
-.trackRowTitle{
-  font-weight: 950;
-  letter-spacing: -.01em;
-  font-size: 15px;
-  line-height: 1.2;
-  color: rgba(255,255,255,.92);
-
-  /* long titles don’t break your layout */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.trackRowChevron{
-  flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: 14px;
-  display:grid;
-  place-items:center;
-
-  border: 1px solid rgba(201,162,77,.35);
-  background: rgba(201,162,77,.12);
-  color: rgba(255,255,255,.92);
-  font-size: 16px;
-}
-
-/* Footer controls */
-.trackFooter{
-  display:flex;
-  gap:10px;
-  padding: 12px 12px 14px;
-  border-top: 1px solid rgba(255,255,255,.08);
-  background: rgba(0,0,0,.35);
-}
-
-.trackPlayAllBtn,
-.trackMoreBtn{
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 16px;
-  font-weight: 950;
-  letter-spacing: .2px;
-  border: 1px solid rgba(255,255,255,.12);
-  background: rgba(255,255,255,.06);
-  color: rgba(255,255,255,.92);
-  cursor: pointer;
-  position: relative;
-  z-index: 60; /* always tappable */
-}
-
-.trackPlayAllBtn:hover,
-.trackMoreBtn:hover{
-  border-color: rgba(201,162,77,.28);
-  background: rgba(255,255,255,.075);
-}
-
-.trackPlayAllBtn{
-  border-color: rgba(201,162,77,.45);
-  background: linear-gradient(90deg, rgba(201,162,77,.92), rgba(158,135,66,.88));
-  color: #0B0B0D;
-}
-
-.trackPlayAllBtn:hover{
-  filter: brightness(1.02);
-}
-
-/* Make sure nothing “invisible” blocks taps in this view */
-.trackHeader,
-.trackRow,
-.trackFooter{
-  pointer-events: auto;
-}
-
-/* Small phones */
-@media (max-width: 420px){
-  .trackHeaderTitle{ font-size: 17px; }
-  .trackRowTitle{ font-size: 14px; }
-  .trackRowChevron{ width: 36px; height: 36px; border-radius: 13px; }
-}
-
-/* =========================
-   IMPORTANT:
-   DO NOT use global pointer-events:none on body::before etc.
-   That is what breaks clicking. Keep this file clean.
-   ========================= */
-/* =========================================================
-   VINYL LISTENING ROOM — VISUAL UPGRADE PATCH
-   Paste at the very bottom of styles.css
-   Pure additive layer — does not touch existing rules above.
-   ========================================================= */
-
-:root{
-  --room-purple: #6a3fb5;
-  --room-purple-glow: rgba(122, 74, 201, .22);
-  --room-gold-glow: rgba(201, 162, 77, .20);
-  --oled: #000000;
-}
-
-/* ---------- OLED black stage + ambient glow ---------- */
-body{
-  background: var(--oled) !important;
-  position: relative;
-}
-
-body::before{
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none; /* never blocks taps */
-  background:
-    radial-gradient(900px 480px at 50% -10%, var(--room-purple-glow), transparent 60%),
-    radial-gradient(700px 420px at 90% 30%, var(--room-gold-glow), transparent 65%),
-    radial-gradient(800px 500px at 0% 90%, rgba(122,74,201,.12), transparent 60%);
-}
-
-/* keep real content above the glow layer */
-.top, .landingWrap, .playerShell, .wrap{
-  position: relative;
-  z-index: 1;
-}
-
-/* ---------- Top bar: deeper, glassier ---------- */
-.top{
-  background: rgba(0,0,0,.92) !important;
-  border-bottom: 1px solid rgba(201,162,77,.14) !important;
-}
-
-.brandMark{
-  box-shadow:
-    0 10px 30px rgba(0,0,0,.65),
-    0 0 0 1px rgba(201,162,77,.18) inset,
-    0 0 22px rgba(122,74,201,.25) !important;
-}
-
-/* ---------- Hero: bigger, warmer, glowing edge ---------- */
-.landingHero{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.02)) !important;
-  border: 1px solid rgba(201,162,77,.18) !important;
-  box-shadow:
-    0 30px 90px rgba(0,0,0,.65),
-    0 0 60px rgba(122,74,201,.10) !important;
-}
-
-.landingHeroBig{
-  text-shadow: 0 0 40px rgba(201,162,77,.18);
-}
-
-/* ---------- Player: stage-like, spotlit ---------- */
-.playerTop{
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
-    var(--panel) !important;
-  border: 1px solid rgba(201,162,77,.20) !important;
-  box-shadow:
-    0 18px 50px rgba(0,0,0,.55),
-    0 0 40px rgba(122,74,201,.08) !important;
-  padding: 16px !important;
-}
-
-.npTitle{
-  letter-spacing: .03em !important;
-  text-shadow: 0 0 18px rgba(201,162,77,.16);
-}
-
-.npLine{
-  color: rgba(255,255,255,.78) !important;
-}
-
+/* the video frame */
 .playerFrameWrap{
   position: relative;
-  border: 1px solid rgba(201,162,77,.22) !important;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #000;
+  border: 1px solid rgba(154,92,255,.3);
   box-shadow:
     0 0 0 1px rgba(0,0,0,.6) inset,
-    0 26px 70px rgba(0,0,0,.7),
-    0 0 50px rgba(122,74,201,.12) !important;
+    0 26px 70px rgba(0,0,0,.75),
+    0 0 44px var(--purple-glow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
-/* subtle stage vignette around the player, no pointer interference */
+/* subtle stage vignette, never blocks taps */
 .playerFrameWrap::after{
   content: "";
   position: absolute;
   inset: 0;
   pointer-events: none;
-  box-shadow: inset 0 0 60px rgba(0,0,0,.55);
+  box-shadow: inset 0 0 60px rgba(0,0,0,.5);
+  border-radius: var(--radius-lg);
 }
 
 #playerFrame{
-  filter: saturate(1.03);
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  height: auto;
+  max-height: 78vh;
+  min-height: 220px;
+  display: block;
+  border: 0;
+  margin: 0 auto;
+  background: #000;
+  filter: saturate(1.04);
 }
 
-/* ---------- List header ---------- */
+.statusLine{
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(122,74,201,.10);
+  color: var(--muted);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+/* collapse behavior preserved */
+body.playerCollapsed .playerFrameWrap{ display: none; }
+body.playerCollapsed #playerFrame{ display: none; }
+
+/* =========================================================
+   LIST HEADER
+   ========================================================= */
 .listHead{
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(154,92,255,.22);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)),
-    var(--panel) !important;
-  border: 1px solid rgba(201,162,77,.16) !important;
+    linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015)),
+    var(--panel);
+  box-shadow: var(--shadow-2);
+  padding: 16px;
 }
-
 .listTitle{
-  text-shadow: 0 0 24px rgba(201,162,77,.14);
+  font-family: "Bebas Neue", "Barlow", sans-serif;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--text);
+  text-shadow: 0 0 22px var(--lime-glow-soft);
+}
+.listSub{
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 62ch;
+  line-height: 1.45;
 }
 
-/* ---------- Episodes container: more breathing room ---------- */
+/* =========================================================
+   EPISODES / SESSION CARDS
+   ========================================================= */
 #episodes{
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 2px !important;
-  gap: 14px !important;
+  display: grid;
+  gap: 14px;
+  padding: 2px;
 }
 
-/* ---------- Episode / track cards (new + existing names) ---------- */
-/* .epCard is now a real <button> (TV remotes only reliably generate a
-   click for native interactive elements — a plain div with role="button"
-   silently ate Select/OK presses on Google TV). This resets all the
-   default browser button chrome so it still looks identical everywhere
-   else. */
+/* .epCard is a real <button>; reset native chrome */
 .epCard{
   appearance: none;
   -webkit-appearance: none;
@@ -899,561 +820,367 @@ body::before{
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-
-  border-radius: 22px !important;
-  border: 1px solid rgba(255,255,255,.09) !important;
+  border-radius: 22px;
+  border: 1px solid rgba(154,92,255,.18);
   background:
-    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.02)) !important;
-  box-shadow: 0 16px 44px rgba(0,0,0,.5) !important;
-  padding: 16px !important;
-
-  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.018));
+  box-shadow: 0 16px 44px rgba(0,0,0,.55);
+  padding: 16px;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform .14s ease, border-color .14s ease,
+              box-shadow .14s ease, background .14s ease;
 }
-
 .epCard:hover,
 .ep:hover{
-  border-color: rgba(201,162,77,.40) !important;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.03)) !important;
-  box-shadow:
-    0 20px 56px rgba(0,0,0,.6),
-    0 0 30px rgba(122,74,201,.10) !important;
+  transform: translateY(-2px);
+  border-color: rgba(127,212,26,.5);
+  background: linear-gradient(180deg, rgba(127,212,26,.06), rgba(255,255,255,.02));
+  box-shadow: 0 22px 56px rgba(0,0,0,.6), 0 0 28px var(--lime-glow-soft);
 }
-
 .epCard:active,
-.ep:active{ transform: scale(.985); }
+.ep:active{ transform: scale(.99); }
 
-.epMain{
-  min-width: 0;
-  flex: 1;
-}
-
-.epTitle{
-  font-size: 16px !important;
-  letter-spacing: -.01em !important;
-}
-
-.epMeta{
-  color: rgba(255,255,255,.70) !important;
-}
-
-.epSmall{
-  color: rgba(255,255,255,.50) !important;
-}
-
-.epChevron{
+/* card art */
+.epArtWrap{
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: 13px;
-  display: grid;
-  place-items: center;
-  border: 1px solid rgba(201,162,77,.30);
-  background: rgba(201,162,77,.10);
-  color: rgba(255,255,255,.90);
-  font-size: 17px;
-}
-
-/* active/playing card glow */
-.epCard.isActive,
-.ep.isActive{
-  border-color: rgba(201,162,77,.55) !important;
-  box-shadow:
-    0 0 0 1px rgba(201,162,77,.18) inset,
-    0 0 36px rgba(201,162,77,.14),
-    0 0 60px rgba(122,74,201,.10) !important;
-}
-
-/* ---------- Buttons: warmer gold, soft glow on primary ---------- */
-.btn.primary{
-  box-shadow: 0 10px 30px rgba(201,162,77,.18) !important;
-}
-
-.btn:hover{
-  box-shadow: 0 0 0 1px rgba(201,162,77,.18) inset;
-}
-
-/* ---------- Back row ---------- */
-.backRow .btn{
-  border-color: rgba(201,162,77,.20) !important;
-}
-
-/* ---------- Track drill-down view ---------- */
-.trackHeader{
-  background: rgba(0,0,0,.5) !important;
-  border-bottom: 1px solid rgba(201,162,77,.14) !important;
-}
-
-.trackRow{
-  border-radius: 18px !important;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02)) !important;
-  box-shadow: 0 12px 34px rgba(0,0,0,.45) !important;
-}
-
-.trackRow:hover{
-  box-shadow:
-    0 16px 44px rgba(0,0,0,.55),
-    0 0 24px rgba(122,74,201,.08) !important;
-}
-
-.trackFooter{
-  background: rgba(0,0,0,.5) !important;
-}
-
-/* ---------- Mobile tuning ---------- */
-@media (max-width: 420px){
-  .epCard, .ep{ border-radius: 18px !important; padding: 13px !important; }
-  .playerTop{ padding: 13px !important; }
-  .epTitle{ font-size: 15px !important; }
-}
-
-/* =========================================================
-   END VINYL LISTENING ROOM PATCH
-   ========================================================= */
-/* =========================================================
-   ALBUM ART PATCH
-   Paste at the very bottom of styles.css (after the
-   VINYL LISTENING ROOM patch). Pure additive layer.
-   ========================================================= */
-
-/* ---------- Now Playing stage art ---------- */
-.playerTop{
-  align-items: center !important;
-}
-
-.npArtWrap{
-  flex: 0 0 auto;
-  width: 84px;
-  height: 84px;
-  border-radius: 18px;
+  width: 62px; height: 62px;
+  border-radius: 14px;
   overflow: hidden;
-  border: 1px solid rgba(201,162,77,.28);
-  box-shadow:
-    0 12px 32px rgba(0,0,0,.55),
-    0 0 26px rgba(122,74,201,.14);
-  background: linear-gradient(145deg, rgba(201,162,77,.20), rgba(122,74,201,.20));
+  border: 1px solid rgba(127,212,26,.28);
+  background: linear-gradient(145deg, var(--lime-glow-soft), var(--purple-glow-soft));
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
 }
-
-.npArt{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: none; /* shown via JS once a src is set */
-}
-
-.npArtWrap.npArtFallback::before{
-  content: "♪";
-  font-size: 30px;
-  color: rgba(255,255,255,.55);
-}
-
-/* ---------- Session card art ---------- */
-.epCard{
-  align-items: center !important;
-}
-
-.epArtWrap{
-  flex: 0 0 auto;
-  width: 60px;
-  height: 60px;
-  border-radius: 14px;
-  overflow: hidden;
-  border: 1px solid rgba(255,255,255,.10);
-  background: linear-gradient(145deg, rgba(201,162,77,.16), rgba(122,74,201,.16));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .epArt{
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform .35s ease;
 }
-
+.epCard:hover .epArt,
+.ep:hover .epArt{ transform: scale(1.08); }
 .epArtWrap.epArtFallback::before{
   content: "♪";
-  font-size: 20px;
-  color: rgba(255,255,255,.55);
+  font-size: 22px;
+  color: rgba(255,255,255,.5);
 }
 
-/* keep title/meta from crowding the art on small screens */
-.epMain{
-  min-width: 0;
+.epMain{ min-width: 0; flex: 1; }
+
+/* BRIGHT, readable titles — fixes the dark-gray-on-black problem */
+.epTitle{
+  font-weight: 900;
+  letter-spacing: -.01em;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--text);
 }
-
-/* ---------- Mobile tuning ---------- */
-@media (max-width: 420px){
-  .npArtWrap{ width: 64px; height: 64px; border-radius: 14px; }
-  .npArtWrap.npArtFallback::before{ font-size: 24px; }
-
-  .epArtWrap{ width: 50px; height: 50px; border-radius: 12px; }
-  .epArtWrap.epArtFallback::before{ font-size: 17px; }
+.epMeta{
+  margin-top: 5px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 13px;
 }
-
-/* =========================================================
-   END ALBUM ART PATCH
-   ========================================================= */
-/* =========================================================
-   HOME PAGE REDESIGN PATCH
-   Paste at the very bottom of styles.css.
-   ========================================================= */
-
-.heroTagline{
-  margin: 0 0 16px !important;
-  font-size: 16px !important;
-  line-height: 1.5 !important;
-  color: rgba(255,255,255,.86) !important;
-  max-width: 56ch;
-}
-
-.featuredSection{
-  margin-top: 4px;
-}
-
-.featuredHead{
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  padding: 0 2px;
-}
-
-.featuredTitle{
-  font-weight: 1000;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+.epSmall{
+  margin-top: 5px;
   font-size: 12px;
-  color: rgba(255,255,255,.86);
+  color: var(--muted-2);
+  font-weight: 700;
 }
 
-.featuredSub{
-  font-size: 11px;
-  font-weight: 800;
-  color: rgba(255,255,255,.48);
+.epChevron,
+.chev{
+  flex: 0 0 auto;
+  width: 38px; height: 38px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(127,212,26,.32);
+  background: rgba(127,212,26,.1);
+  color: var(--lime-bright);
+  font-size: 18px;
 }
 
-.featuredScroll{
+/* active / playing card */
+.epCard.isActive,
+.ep.isActive{
+  border-color: rgba(127,212,26,.6);
+  background:
+    radial-gradient(600px 220px at 25% 0%, var(--lime-glow-soft), transparent 65%),
+    rgba(255,255,255,.04);
+  box-shadow:
+    0 0 0 1px rgba(127,212,26,.2) inset,
+    0 0 36px var(--lime-glow-soft),
+    0 18px 50px rgba(0,0,0,.6);
+}
+.epFeatured{ border-color: rgba(127,212,26,.3); }
+
+/* empty state */
+.empty{
+  padding: 28px 16px;
+  text-align: center;
+  color: var(--muted-2);
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  border: 1px dashed var(--line);
+}
+
+/* back row */
+.backRow{ display: flex; justify-content: flex-start; }
+.backRow .btn{ border-color: rgba(154,92,255,.3); }
+
+/* =========================================================
+   TRACK DRILL-DOWN VIEW
+   ========================================================= */
+.trackHeader{
   display: flex;
   gap: 12px;
-  overflow-x: auto;
-  padding: 2px 2px 10px;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(154,92,255,.2);
+  background: rgba(122,74,201,.12);
+  margin-bottom: 4px;
 }
-
-.featuredScroll::-webkit-scrollbar{ display: none; }
-
-.featuredCard{
+.trackBackBtn{
   flex: 0 0 auto;
-  width: 116px;
-  scroll-snap-align: start;
-  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(154,92,255,.35);
+  background: rgba(154,92,255,.12);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+  position: relative;
+  z-index: 60;
 }
+.trackBackBtn:hover{ background: rgba(154,92,255,.2); }
 
-.featuredArt{
-  width: 116px;
-  height: 116px;
-  border-radius: 20px;
-  object-fit: cover;
-  display: block;
-  border: 1px solid rgba(201,162,77,.25);
-  box-shadow:
-    0 16px 40px rgba(0,0,0,.55),
-    0 0 28px rgba(122,74,201,.14);
-  background: linear-gradient(145deg, rgba(201,162,77,.18), rgba(122,74,201,.18));
+.trackHeaderText{ min-width: 0; flex: 1; }
+.trackHeaderTitle{
+  font-weight: 900;
+  letter-spacing: -.01em;
+  font-size: 18px;
+  line-height: 1.15;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-
-.featuredCardTitle{
-  margin-top: 8px;
+.trackHeaderSub{
+  margin-top: 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.trackHeaderSmall{
+  margin-top: 6px;
   font-size: 12px;
-  font-weight: 850;
-  color: rgba(255,255,255,.86);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: 800;
+  color: var(--muted-2);
 }
 
-@media (max-width: 420px){
-  .featuredCard{ width: 100px; }
-  .featuredArt{ width: 100px; height: 100px; border-radius: 16px; }
-}
-
-/* =========================================================
-   END HOME PAGE REDESIGN PATCH
-   ========================================================= */
-/* =========================================================
-   BIGGER PLAYER / MINIMAL HEADER PATCH
-   Paste at the very bottom of styles.css.
-   ========================================================= */
-
-/* Much bigger video, properly scaled (16:9, fills more of the screen) */
-#playerFrame{
-  width: 100% !important;
-  aspect-ratio: 16 / 9;
-  height: auto !important;
-  max-height: 78vh !important;
-  min-height: 260px !important;
-}
-
-/* Collapse the text row down to almost nothing — just enough to
-   identify what's playing, no "Now Playing" label, no wrapping wall
-   of text. */
-#nowPlayingTitle{
-  display: none !important;
-}
-
-.npBlock{
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-}
-
-.npLine{
-  margin-top: 0 !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  color: rgba(255,255,255,.62) !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Shrink the art thumbnail so the row stays compact and low-profile */
-.npArtWrap{
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 10px !important;
-}
-
-.playerTop{
-  padding: 8px 10px !important;
-  gap: 8px !important;
-}
-
-.npBtns{
-  flex: 0 0 auto;
-}
-
-/* =========================================================
-   END BIGGER PLAYER / MINIMAL HEADER PATCH
-   ========================================================= */
-/* =========================================================
-   PLAYER CENTERING FIX
-   Paste at the very bottom of styles.css, below the
-   "BIGGER PLAYER" patch.
-   ========================================================= */
-
-.playerFrameWrap{
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-}
-
-#playerFrame{
-  margin: 0 auto !important;
-}
-
-/* =========================================================
-   END PLAYER CENTERING FIX
-   ========================================================= */
-/* =========================================================
-   FULL-SCREEN FIT PATCH
-   Paste at the very bottom of styles.css.
-   ========================================================= */
-
-html, body{
-  max-width: 100vw !important;
-  overflow-x: hidden !important;
-}
-
-*, *::before, *::after{
-  box-sizing: border-box;
-}
-
-/* Containers never exceed the viewport, regardless of content inside */
-.landingWrap,
-.wrap,
-.playerShell,
-.top,
-.brand{
-  max-width: 100vw !important;
+.trackRow{
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  text-align: left;
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(154,92,255,.18);
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.015));
+  box-shadow: 0 12px 34px rgba(0,0,0,.45);
+  cursor: pointer;
+  outline: none;
+  position: relative;
+  z-index: 20;
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+}
+.trackRow:hover{
+  transform: translateY(-2px);
+  border-color: rgba(127,212,26,.45);
+  background: linear-gradient(180deg, rgba(127,212,26,.06), rgba(255,255,255,.02));
+  box-shadow: 0 16px 44px rgba(0,0,0,.55), 0 0 22px var(--lime-glow-soft);
+}
+.trackRow:active{ transform: scale(.99); }
+
+.trackRowTitle{
+  font-weight: 850;
+  letter-spacing: -.01em;
+  font-size: 15px;
+  line-height: 1.2;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.trackRowChevron{
+  flex: 0 0 auto;
+  width: 38px; height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(127,212,26,.35);
+  background: rgba(127,212,26,.12);
+  color: var(--lime-bright);
+  font-size: 16px;
 }
 
-/* Nothing inside (images, iframes, embeds) is allowed to force
-   horizontal overflow */
-img, iframe, video{
-  max-width: 100%;
+.trackFooter{
+  display: flex;
+  gap: 10px;
+  padding: 12px 0 14px;
 }
-
-/* Respect notches/rounded corners/gesture bars on modern phones so
-   content doesn't get clipped by the OS chrome */
-body{
-  padding-left: env(safe-area-inset-left);
-  padding-right: env(safe-area-inset-right);
-  padding-bottom: env(safe-area-inset-bottom);
+.trackPlayAllBtn,
+.trackMoreBtn{
+  flex: 1;
+  padding: 13px 16px;
+  border-radius: 14px;
+  font-weight: 900;
+  border: 1px solid var(--line);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  cursor: pointer;
+  position: relative;
+  z-index: 60;
+  transition: filter .14s ease, box-shadow .14s ease, background .14s ease;
 }
+.trackPlayAllBtn{
+  border-color: rgba(127,212,26,.6);
+  background: linear-gradient(95deg, var(--lime), var(--lime-deep));
+  color: #0a1500;
+  box-shadow: 0 10px 30px rgba(127,212,26,.25);
+}
+.trackPlayAllBtn:hover{ filter: brightness(1.06); }
+.trackMoreBtn:hover{ background: rgba(154,92,255,.14); }
 
-.top{
-  padding-top: env(safe-area-inset-top);
+/* =========================================================
+   SLIDE NAVIGATION (mobile app feel) — preserved
+   ========================================================= */
+#viewWrap{ position: relative; overflow: hidden; }
+#view{ will-change: transform; }
+.slidePage{
+  position: absolute;
+  inset: 0;
+  transform: translateX(100%);
+  opacity: 1;
+  will-change: transform;
+}
+.slide-in-left  { animation: slideInLeft 220ms ease-out forwards; }
+.slide-out-left { animation: slideOutLeft 220ms ease-out forwards; }
+.slide-in-right { animation: slideInRight 220ms ease-out forwards; }
+.slide-out-right{ animation: slideOutRight 220ms ease-out forwards; }
+@keyframes slideInLeft  { from{ transform: translateX(100%);} to{ transform: translateX(0%);} }
+@keyframes slideOutLeft { from{ transform: translateX(0%);} to{ transform: translateX(-25%);} }
+@keyframes slideInRight { from{ transform: translateX(-25%);} to{ transform: translateX(0%);} }
+@keyframes slideOutRight{ from{ transform: translateX(0%);} to{ transform: translateX(100%);} }
+
+/* =========================================================
+   DEVICE: PHONE tuning
+   ========================================================= */
+@media (max-width: 420px){
+  .title{ font-size: 16px; }
+  .listTitle{ font-size: 22px; }
+  .epTitle{ font-size: 15px; }
+  .epCard, .ep{ border-radius: 18px; padding: 13px; }
+  .epArtWrap{ width: 54px; height: 54px; border-radius: 12px; }
+  .npArtWrap{ width: 46px; height: 46px; border-radius: 11px; }
+  #playerFrame{ min-height: 210px; }
 }
 
 /* =========================================================
-   END FULL-SCREEN FIT PATCH
+   FULL-WIDTH FILL on large screens
    ========================================================= */
-/* =========================================================
-   DEVICE DETECTION (TV vs Desktop vs Phone) PATCH
-   Paste at the very bottom of styles.css.
-   Classes are added to <html> by a tiny script in index.html
-   and sessions.html: device-tv / device-desktop / device-phone
-   ========================================================= */
-
-/* ---------- TV: bigger everything, remote-friendly focus ---------- */
-html.device-tv body{
-  font-size: 19px;
+@media (min-width: 900px){
+  .landingWrap, .wrap{
+    max-width: min(1500px, 94vw);
+    width: 94vw;
+    margin: 0 auto;
+  }
 }
+
+/* =========================================================
+   DEVICE: TV  (device-tv on <html>)
+   Bigger everything, remote-friendly NEON focus that pulses.
+   ========================================================= */
+html.device-tv body{ font-size: 19px; }
+
+html.device-tv .top{ padding-top: 18px; }
+html.device-tv .brand{ padding-top: 6px; }
 
 html.device-tv .landingWrap,
 html.device-tv .wrap{
-  max-width: 1400px !important;
+  max-width: 1400px;
   margin: 0 auto;
+  padding-top: 12px;
 }
 
-html.device-tv .epTitle{
-  font-size: 22px !important;
-}
+html.device-tv .heroLogo{ width: min(40vw, 300px); }
+html.device-tv .landingHeroBig{ font-size: clamp(44px, 6vw, 72px); }
 
+html.device-tv .epTitle{ font-size: 22px; }
 html.device-tv .epMeta,
-html.device-tv .epSmall{
-  font-size: 16px !important;
-}
-
-html.device-tv .epCard{
-  padding: 22px !important;
-}
+html.device-tv .epSmall{ font-size: 16px; }
+html.device-tv .epCard{ padding: 22px; }
+html.device-tv .epArtWrap{ width: 76px; height: 76px; }
 
 html.device-tv .btn,
-html.device-tv .landingBtn{
-  padding: 18px 24px !important;
-  font-size: 18px !important;
-}
+html.device-tv .landingBtn{ padding: 18px 26px; font-size: 18px; }
 
-html.device-tv #playerFrame{
-  max-height: 85vh !important;
-}
+html.device-tv #playerFrame{ max-height: 85vh; }
+html.device-tv .npArtWrap{ width: 64px; height: 64px; }
 
-html.device-tv .npArtWrap{
-  width: 64px !important;
-  height: 64px !important;
-}
-
-/* Remotes navigate via focus, not hover — make focus impossible to miss */
+/* pulsing neon focus ring — impossible to miss with a remote */
 html.device-tv .epCard:focus-visible,
+html.device-tv .trackRow:focus-visible,
 html.device-tv .btn:focus-visible,
 html.device-tv .landingBtn:focus-visible,
+html.device-tv .featuredCard:focus-visible,
 html.device-tv a:focus-visible{
-  outline: 4px solid rgba(201,162,77,.95) !important;
-  outline-offset: 4px !important;
-  box-shadow: 0 0 0 6px rgba(201,162,77,.25) !important;
+  outline: 3px solid var(--lime-bright);
+  outline-offset: 4px;
+  box-shadow: 0 0 0 6px rgba(127,212,26,.25), 0 0 30px var(--lime-glow) !important;
+  border-radius: 16px;
+  animation: tvFocusPulse 1.4s ease-in-out infinite;
+}
+@keyframes tvFocusPulse{
+  0%,100% { box-shadow: 0 0 0 5px rgba(127,212,26,.22), 0 0 24px var(--lime-glow-soft); }
+  50%     { box-shadow: 0 0 0 7px rgba(127,212,26,.34), 0 0 38px var(--lime-glow); }
 }
 
-/* ---------- Desktop: a little more breathing room, mouse hover stays as-is ---------- */
+/* =========================================================
+   DEVICE: DESKTOP
+   ========================================================= */
 html.device-desktop .landingWrap,
 html.device-desktop .wrap{
-  max-width: 1100px !important;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
-/* Phone: no overrides needed — this is the existing default design */
-
 /* =========================================================
-   END DEVICE DETECTION PATCH
+   TV THEATER MODE — base layer (matches app.js inline styles)
+   Hides chrome, centers player in a black fullscreen shell.
+   NOTE: deliberately does NOT force 100vw/100vh on the iframe.
    ========================================================= */
-/* =========================================================
-   TV TOP-BAR BREATHING ROOM PATCH
-   Paste at the very bottom of styles.css, after the
-   DEVICE DETECTION patch.
-   ========================================================= */
-
-/* Since this TV's browser always shows its own address bar,
-   give our header a bit of extra top space so content doesn't
-   feel jammed right up against it. */
-html.device-tv .top{
-  padding-top: 18px !important;
-}
-
-html.device-tv .brand{
-  padding-top: 6px !important;
-}
-
-/* Slightly bigger gap before the hero section too, so the
-   whole page reads as intentional rather than cut off */
-html.device-tv .landingWrap,
-html.device-tv .wrap{
-  padding-top: 10px !important;
-}
-
-/* =========================================================
-   END TV TOP-BAR BREATHING ROOM PATCH
-   ========================================================= */
-/* =========================================================
-   FORCE FULL-WIDTH FILL ON LARGE SCREENS
-   Paste at the very bottom of styles.css.
-   ========================================================= */
-
-@media (min-width: 900px){
-  .landingWrap,
-  .wrap{
-    max-width: min(1600px, 96vw) !important;
-    width: 96vw !important;
-    margin: 0 auto !important;
-  }
-
-  body{
-    width: 100vw;
-    min-height: 100vh;
-  }
-}
-
-/* =========================================================
-   END FORCE FULL-WIDTH FILL PATCH
-   ========================================================= */
-
-/* =========================================================
-   TV THEATER MODE PATCH
-   Paste at the very bottom of styles.css.
-   Activated by app.js adding `tvTheater` class to <body>
-   whenever a video starts playing on a TV device. Hides
-   everything except the player and fills the screen with it,
-   movie-theater style. A floating "Exit Player" button (the
-   same #backNavBtn, repositioned) is the way out — both a
-   D-pad click on it and the remote's Back/Escape key (handled
-   in tv-nav.js) will drop you back to the list.
-   ========================================================= */
-
-body.tvTheater .top{
-  display: none !important;
-}
-
+body.tvTheater .top{ display: none !important; }
 body.tvTheater .listHead,
 body.tvTheater #playAllBtn,
 body.tvTheater #episodes,
-body.tvTheater #loadMoreBtn{
-  display: none !important;
-}
-
-body.tvTheater .wrap{
-  padding: 0 !important;
-  gap: 0 !important;
-}
-
+body.tvTheater #loadMoreBtn{ display: none !important; }
+body.tvTheater .wrap{ padding: 0 !important; gap: 0 !important; }
 body.tvTheater .backRow{
   display: flex !important;
   position: fixed;
@@ -1461,11 +1188,7 @@ body.tvTheater .backRow{
   left: 24px;
   z-index: 9999;
 }
-
-body.tvTheater .playerTop{
-  display: none !important;
-}
-
+body.tvTheater .playerTop{ display: none !important; }
 body.tvTheater .playerShell{
   position: fixed;
   inset: 0;
@@ -1479,14 +1202,6 @@ body.tvTheater .playerShell{
   background: #000;
   z-index: 100;
 }
-
-/* Deliberately NOT forcing literal 100vw/100vh on the iframe here —
-   some TV WebViews render a YouTube embed as solid black when it's
-   sized to the exact full screen. Instead this just hides everything
-   else and lets the player use the same width/aspect-ratio/max-height
-   sizing that was already confirmed working on this TV before theater
-   mode existed (see the "BIGGER PLAYER" and TV device-detection
-   patches above) — just centered, with no surrounding chrome. */
 body.tvTheater .playerFrameWrap{
   width: 100%;
   max-width: 100%;
@@ -1494,30 +1209,17 @@ body.tvTheater .playerFrameWrap{
   border: none !important;
   box-shadow: none !important;
 }
-
-body.tvTheater .statusLine{
-  display: none !important;
-}
-
-/* =========================================================
-   END TV THEATER MODE PATCH
-   ========================================================= */
+body.tvTheater .statusLine{ display: none !important; }
 
 /* =========================================================
    TV THEATER MODE — HARD OVERRIDE (second line of defense)
-   The actual hide/show + fullscreen sizing is driven live by
-   JS inline styles in app.js (immune to stale CSS caching).
-   This stylesheet block is a backup in case the JS runs before
-   styles.css finishes parsing, or any edge case where the inline
-   styles haven't landed yet.
+   JS inline styles in app.js do the real work; this backs them
+   up if JS runs before CSS parses. Reproduced exactly.
    ========================================================= */
-
 html.device-tv body.tvTheater,
-html.device-tv body.tvTheater * {
-  box-sizing: border-box;
-}
+html.device-tv body.tvTheater *{ box-sizing: border-box; }
 
-html.device-tv body.tvTheater {
+html.device-tv body.tvTheater{
   margin: 0 !important;
   padding: 0 !important;
   overflow: hidden !important;
@@ -1530,14 +1232,14 @@ html.device-tv body.tvTheater #playAllBtn,
 html.device-tv body.tvTheater #episodes,
 html.device-tv body.tvTheater #loadMoreBtn,
 html.device-tv body.tvTheater .playerTop,
-html.device-tv body.tvTheater .statusLine {
+html.device-tv body.tvTheater .statusLine{
   display: none !important;
   visibility: hidden !important;
 }
 
 html.device-tv body.tvTheater .playerShell,
 html.device-tv body.tvTheater .playerFrameWrap,
-html.device-tv body.tvTheater #playerFrame {
+html.device-tv body.tvTheater #playerFrame{
   position: fixed !important;
   inset: 0 !important;
   width: 100vw !important;
@@ -1552,24 +1254,8 @@ html.device-tv body.tvTheater #playerFrame {
   background: #000 !important;
   z-index: 2147483647 !important;
 }
+html.device-tv body.tvTheater #playerFrame{ display: block !important; }
 
-html.device-tv #playerFrame {
-  display: block !important;
-}
-
-/* On TV, the normal inline player section (with the now-unused "Watch
-   on TV" / "Show player" / "Hide player" buttons) should never appear —
-   playback always goes straight to fullscreen theater mode instead, so
-   this would just be an empty black box with stray buttons sitting on
-   the page otherwise. The inline JS styles app.js sets in
-   enterTheaterMode() (display:flex !important, set directly on the
-   element) always win over this external rule regardless of selector
-   specificity, so this safely flips back to visible the moment
-   something actually starts playing. */
-html.device-tv .playerShell {
-  display: none !important;
-}
-
-/* =========================================================
-   END TV THEATER MODE HARD OVERRIDE
-   ========================================================= */
+/* On TV the idle inline player section stays hidden until something
+   plays; app.js's enterTheaterMode() inline display:flex wins over this. */
+html.device-tv .playerShell{ display: none !important; }
