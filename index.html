@@ -35,11 +35,11 @@
 
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#07070a">
-  <meta name="description" content="Stripped & unplugged sessions — handpicked only. Queues stitch tracks together automatically.">
+  <meta name="description" content="From unplugged sessions to sold-out arenas — handpicked concerts built for the couch.">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Acoustic Corner">
+  <meta name="apple-mobile-web-app-title" content="Joey’s Concert Corner">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
@@ -57,9 +57,9 @@
           <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
         </div>
         <div class="sub">
-          <span class="subStrong">Stripped and Electric &amp; Unplugged Sessions/Live Concerts</span>
+          <span class="subStrong">Raw, unplugged, and up close</span>
           <span class="subSep">—</span>
-          <span>handpicked only.</span>
+          <span>handpicked sessions made to be felt.</span>
         </div>
       </div>
     </div>
@@ -78,7 +78,10 @@
 
       <div class="landingHeroBody">
         <p class="heroTagline">
-          No studio shine. No fake polish. Just artists, stripped down, powered up but meaning every note.
+          Nothing between you and the music.
+        </p>
+        <p class="heroTagline" style="margin-top:8px;opacity:.85;font-weight:500;">
+          From unplugged sessions to sold-out arenas. Handpicked concerts built for the couch.
         </p>
 
         <div class="landingBtns">
@@ -149,6 +152,11 @@
       const $section = document.getElementById("featuredSection");
       const $scroll = document.getElementById("featuredScroll");
       if (!$section || !$scroll) return;
+
+      // Sections to keep OUT of Featured on TV only (matches the session
+      // list filter in app.js). Still appear on phone/web.
+      const HIDE_ON_TV_KEYWORDS = ["monster jam", "drag racing", "nhra"];
+      const onTV = document.documentElement.classList.contains("device-tv");
 
       function escapeHtml(str) {
         return String(str ?? "")
@@ -242,10 +250,20 @@
 
       const allPlayable = [];
       collectAllPlayable(root, allPlayable);
-      if (!allPlayable.length) return;
+
+      // On TV, drop the hidden sections (Monster Jam / Drag Racing) from
+      // the Featured pool so they never show up there either.
+      const pool = onTV
+        ? allPlayable.filter(it => {
+            const t = (it.title || "").toLowerCase();
+            return !HIDE_ON_TV_KEYWORDS.some(k => t.includes(k));
+          })
+        : allPlayable;
+
+      if (!pool.length) return;
 
       // Pick 3 at random, different set on every load/refresh.
-      const featured = shuffle(allPlayable).slice(0, 3);
+      const featured = shuffle(pool).slice(0, 3);
 
       $scroll.innerHTML = featured.map(item => {
         const src = item.thumb
@@ -254,8 +272,7 @@
         const fallback = item.id ? `https://img.youtube.com/vi/${item.id}/hqdefault.jpg` : "";
 
         // Deep-link: pass the video id (preferred) or title (fallback for
-        // thumb-only items like Monster Jam/Drag Racing) so sessions.html
-        // knows exactly which show to auto-play.
+        // thumb-only items) so sessions.html knows which show to auto-play.
         const href = item.id
           ? `./sessions.html?play=${encodeURIComponent(item.id)}`
           : `./sessions.html?playTitle=${encodeURIComponent(item.title)}`;
