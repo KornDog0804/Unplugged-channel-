@@ -1,165 +1,94 @@
 # Joey's Concert Corner
 
-Stripped down sessions. Full concerts. Handpicked performances.
+A TV and mobile concert platform built for people who still sit down and watch music.
 
-Joey's Concert Corner is a TV-friendly music experience built for Google TV, Android TV, mobile devices, and desktop browsers. It combines acoustic sessions, live concerts, full performances, festival sets, and curated music collections into a single remote-friendly experience.
+No algorithms.
 
-"No studio shine. No fake polish. Just artists, meaning every note."
+No recommendations.
+
+No doomscrolling.
+
+Just concerts, sessions, and performances worth your time.
 
 ---
 
-## Features
+## What Is Joey's Concert Corner?
+
+Joey's Concert Corner is a handcrafted music experience focused on:
 
 - Acoustic performances
-- Full concerts
-- Festival sets
-- Tribute collections
-- Queue playback
-- TV remote navigation
-- Theater mode playback
-- YouTube integration
-- Play / Pause controls
-- Rewind and Fast Forward
-- Session folders
-- Live concert collections
-- Mobile and TV support
+- Live concerts
+- MTV Unplugged sessions
+- Tiny Desk concerts
+- Festival performances
+- Rare live recordings
+- Metalcore shows
+- Arena concerts
+- Handpicked sessions
+
+Every performance is chosen intentionally.
+
+No autoplay rabbit holes.
+
+No engagement farming.
+
+Just music.
 
 ---
 
-## Main Files
+# Platforms
 
-### index.html
+## Google TV Experience
 
-Landing page and home screen.
+Designed specifically for:
 
-### sessions.html
-
-Main browser for concerts, sessions, and collections.
-
-### app.js
-
-Core application logic including:
-
-- Loading episodes.json
-- Folder navigation
-- Queue playback
-- YouTube player controls
-- TV theater mode
-- Remote navigation
-- Auto-advance playback
-
-### tv-nav.js
-
-Google TV and Android TV remote support.
+- Google TV Streamer
+- Android TV
+- Google TV devices
 
 Features:
 
-- D-pad navigation
-- Enter button support
-- Back button handling
-- Theater mode exit
-
-### styles.css
-
-Application styling including:
-
-- Mobile layouts
-- TV layouts
-- Focus states
-- Player styling
+- Remote navigation
+- D-pad support
 - Theater mode
-- Remote-friendly interfaces
-
-### episodes.json
-
-Content library containing:
-
-- Sessions
-- Concerts
-- Festival performances
-- Tribute collections
-- Playlists
-- Full shows
-
----
-
-## Playback Features
-
-### Theater Mode
-
-When playback begins on a TV device:
-
-- Menus disappear
-- Player expands
-- Remote navigation remains active
-- Back exits playback cleanly
-
-### Player Controls
-
-- Play / Pause
-- Rewind 10 seconds
-- Forward 10 seconds
-- Queue advancement
-- Exit player
-- Return to browser
-
-### Queue Playback
-
-Videos automatically advance when finished.
-
-This allows:
-
-- Complete concerts
-- Multi-song sessions
-- Tribute collections
-- Festival sets
-
----
-
-## Supported Content Types
-
-### Acoustic Sessions
-
-MTV Unplugged style performances.
-
-### Full Concerts
-
-Complete live shows.
-
-### Festival Sets
-
-Professional live recordings.
-
-### Tribute Collections
-
-Artist-focused sessions and performances.
-
-### Stitched Streams
-
-Multiple videos played sequentially.
-
----
-
-## TV Experience
-
-Joey's Concert Corner is designed primarily for:
-
-- Google TV
-- Android TV
-- Chromecast with Google TV
-- TV browsers
-- Remote controls
-
-The interface prioritizes:
-
-- Large buttons
-- D-pad navigation
-- Simple controls
 - Full-screen playback
+- Queue playback
+- Auto-advance
+- Back button support
+- Play / Pause controls
+- Rewind controls
+- Fast-forward controls
+- TV-friendly layouts
+
+The goal:
+
+Turn your living room into your own music channel.
 
 ---
 
-## Design Philosophy
+## Mobile Experience
+
+Built for Android phones and tablets.
+
+Features:
+
+- Browse sessions
+- Explore collections
+- Search artists
+- Continue watching
+- Favorites
+- Playlist support
+- Cast to TV
+- Remote control features
+- Pocket-sized concert library
+
+The goal:
+
+Take your music channel everywhere.
+
+---
+
+# Design Philosophy
 
 No algorithms.
 
@@ -167,33 +96,200 @@ No recommendations.
 
 No endless scrolling.
 
-Just handpicked music worth watching.
+No engagement farming.
+
+No rage bait.
+
+No influencer nonsense.
+
+Just music worth sitting down for.
+
+Music wasn't meant to be consumed.
+
+It was meant to be experienced.
 
 ---
 
-## Future Plans
+# Current Features
 
-- Favorites system
-- Resume playback
-- Search
-- Genre collections
-- Artist pages
-- Continue Watching
-- Recently Added
-- Concert schedules
-- Custom playlists
+✅ Session folders
+
+✅ Live concert collections
+
+✅ Queue playback
+
+✅ Auto-advance
+
+✅ Theater mode
+
+✅ TV remote navigation
+
+✅ Back button support
+
+✅ YouTube integration
+
+✅ Mobile support
+
+✅ Full-screen playback
+
+✅ Playback controls
+
+✅ Deep linking
+
+✅ Recently added sessions
 
 ---
 
-## Built By
+# Playback Features
+
+- Play
+- Pause
+- Rewind
+- Fast Forward
+- Queue playback
+- Auto-advance
+- Resume playback support
+
+Supported content:
+
+- YouTube videos
+- Full concerts
+- Acoustic sessions
+- Playlists
+- Multi-track sessions
+
+---
+
+# Main Files
+
+## index.html
+
+Landing page and featured content.
+
+## sessions.html
+
+Primary browsing interface.
+
+## app.js
+
+Core application engine.
+
+Handles:
+
+- Navigation
+- Playback
+- Queue management
+- Theater mode
+- TV controls
+- Mobile controls
+- YouTube integration
+
+## styles.css
+
+Responsive styling for:
+
+- Mobile
+- Tablets
+- TVs
+- Google TV devices
+
+## episodes.json
+
+Content database.
+
+Contains:
+
+- Sessions
+- Artists
+- Concerts
+- Queues
+- Collections
+
+## tv-nav.js
+
+Remote control support.
+
+Handles:
+
+- D-pad navigation
+- Back button support
+- Playback shortcuts
+- TV focus management
+
+---
+
+# Future Plans
+
+⭐ Favorites system
+
+▶ Continue Watching
+
+⏯ Resume Playback
+
+🔍 Search
+
+🎸 Artist pages
+
+🎤 Genre collections
+
+🔥 Recently Added
+
+❤️ Most Played
+
+📺 Concert schedules
+
+📱 Mobile remote control
+
+📡 Cast to TV
+
+🎵 Custom playlists
+
+🎲 Random concert button
+
+👤 Multiple profiles
+
+🎫 Live event calendar
+
+🏟 Concert collections
+
+---
+
+# Built By
 
 Joey Begley
 
-Nashville Born.
-Bowling Green Driven.
+Bowling Green, Kentucky
+
+Nashville born.
+
+Vinyl collector.
+
+Music fan.
+
+Concert addict.
 
 ---
 
-# Joey's Concert Corner
+# Special Thanks
 
-Where live music lives.
+Brandi
+
+Elizabeth 
+
+Olivia
+
+Zombie Kitty
+
+KornDog Records
+
+And everyone who still sits down and watches music.
+
+---
+
+# Motto
+
+No studio shine.
+
+No fake polish.
+
+Just artists, stripped down, meaning every note.
