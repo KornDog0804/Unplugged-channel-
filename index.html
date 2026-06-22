@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <script>
     // ===== DEVICE DETECTION (TV / Desktop / Phone) =====
-    // Runs immediately so styling.css can target html.device-tv etc.
+    // Runs immediately so styles.css can target html.device-tv etc.
     // with no flash of the wrong layout.
     (function () {
       try {
@@ -34,8 +34,8 @@
   <link rel="stylesheet" href="./styles.css" />
 
   <link rel="manifest" href="./manifest.webmanifest">
-  <meta name="theme-color" content="#07070a">
-  <meta name="description" content="From unplugged sessions to sold-out arenas — handpicked concerts built for the couch.">
+  <meta name="theme-color" content="#050208">
+  <meta name="description" content="From unplugged sessions to sold-out arenas — handpicked concerts built for the couch. A KornDog Records joint.">
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -59,7 +59,7 @@
         <div class="sub">
           <span class="subStrong">Raw, unplugged, and up close</span>
           <span class="subSep">—</span>
-          <span>handpicked sessions made to be felt.</span>
+          <span>handpicked only.</span>
         </div>
       </div>
     </div>
@@ -68,12 +68,24 @@
   <main class="landingWrap">
     <section class="landingHero">
       <div class="landingHeroTop">
-        <div style="min-width:0">
-          <div class="landingHeroTitle">WELCOME TO</div>
-          <div class="landingHeroBig">
-            Joey’s <span>Concert Corner</span>
-          </div>
+        <!-- KornDog Records corn-dog/vinyl logo: the hero -->
+        <img
+          class="heroLogo"
+          src="./images/Screenshot_20250831-144625.png"
+          alt="KornDog Records"
+          onerror="this.style.display='none'"
+        />
+        <div class="landingHeroTitle">WELCOME TO</div>
+        <div class="landingHeroBig">
+          Joey’s <span>Concert Corner</span>
         </div>
+        <!-- graffiti tag under the title -->
+        <img
+          class="heroTag"
+          src="./images/Vinyl_Therapy_Never_Dies_TRUE_TRANSPARENT.png"
+          alt="Vinyl Therapy Never Dies"
+          onerror="this.style.display='none'"
+        />
       </div>
 
       <div class="landingHeroBody">
@@ -115,6 +127,9 @@
         <div class="miniValue">Use “Watch on TV” inside the player.</div>
       </div>
     </section>
+
+    <!-- brand credit -->
+    <div class="kdJoint">A <span>KornDog Records</span> joint</div>
   </main>
 
   <script>
