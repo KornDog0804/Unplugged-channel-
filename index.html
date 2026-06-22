@@ -4,8 +4,6 @@
   <meta charset="utf-8" />
   <script>
     // ===== DEVICE DETECTION (TV / Desktop / Phone) =====
-    // Runs immediately so styles.css can target html.device-tv etc.
-    // with no flash of the wrong layout.
     (function () {
       try {
         var ua = navigator.userAgent || "";
@@ -29,7 +27,7 @@
   </script>
 
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Joey’s Concert Corner</title>
+  <title>Joey's Concert Corner</title>
 
   <link rel="stylesheet" href="./styles.css" />
 
@@ -39,11 +37,25 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Joey’s Concert Corner">
+  <meta name="apple-mobile-web-app-title" content="Joey's Concert Corner">
   <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 
   <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+
+  <style>
+    /* Random button on landing — lime ghost style, fits the row */
+    .landingBtn.random {
+      background: rgba(127,212,26,.08);
+      border-color: rgba(127,212,26,.45);
+      color: var(--lime-bright);
+      font-size: 15px;
+    }
+    .landingBtn.random:hover {
+      background: rgba(127,212,26,.15);
+      box-shadow: 0 0 22px var(--lime-glow);
+    }
+  </style>
 </head>
 
 <body class="landing">
@@ -53,7 +65,7 @@
       <div class="brandMark"></div>
       <div class="brandText">
         <div class="titleRow">
-          <div class="title">JOEY’S CONCERT CORNER</div>
+          <div class="title">JOEY'S CONCERT CORNER</div>
           <div class="liveBadge"><span class="liveDot"></span> LIVE</div>
         </div>
         <div class="sub">
@@ -68,7 +80,6 @@
   <main class="landingWrap">
     <section class="landingHero">
       <div class="landingHeroTop">
-        <!-- KornDog Records corn-dog/vinyl logo: the hero -->
         <img
           class="heroLogo"
           src="./images/Screenshot_20250831-144625.png"
@@ -77,9 +88,8 @@
         />
         <div class="landingHeroTitle">WELCOME TO</div>
         <div class="landingHeroBig">
-          Joey’s <span>Concert Corner</span>
+          Joey's <span>Concert Corner</span>
         </div>
-        <!-- graffiti tag under the title -->
         <img
           class="heroTag"
           src="./images/Vinyl_Therapy_Never_Dies_TRUE_TRANSPARENT.png"
@@ -99,6 +109,8 @@
         <div class="landingBtns">
           <a class="landingBtn primary" href="./sessions.html">Enter Sessions</a>
           <a class="landingBtn" href="./sessions.html?open=1">Browse Sets</a>
+          <!-- Random: bounces to sessions.html?random=1; app.js fires playRandom() after load -->
+          <a class="landingBtn random" href="./sessions.html?random=1" id="landingRandomBtn">🎲 Random</a>
         </div>
 
         <div class="landingBtns" style="margin-top:12px;">
@@ -124,11 +136,10 @@
       </div>
       <div class="miniItem">
         <div class="miniLabel">TV ready</div>
-        <div class="miniValue">Use “Watch on TV” inside the player.</div>
+        <div class="miniValue">Use "Watch on TV" inside the player.</div>
       </div>
     </section>
 
-    <!-- brand credit -->
     <div class="kdJoint">A <span>KornDog Records</span> joint</div>
   </main>
 
@@ -162,14 +173,12 @@
       if (installBtn) installBtn.style.display = "none";
     });
 
-    // ===== FEATURED STRIP (randomized every page load, deep-links to autoplay) =====
+    // ===== FEATURED STRIP =====
     (async function loadFeatured() {
       const $section = document.getElementById("featuredSection");
       const $scroll = document.getElementById("featuredScroll");
       if (!$section || !$scroll) return;
 
-      // Sections to keep OUT of Featured on TV only (matches the session
-      // list filter in app.js). Still appear on phone/web.
       const HIDE_ON_TV_KEYWORDS = ["monster jam", "drag racing", "nhra"];
       const onTV = document.documentElement.classList.contains("device-tv");
 
@@ -216,10 +225,6 @@
         return first?.url || node?.url || null;
       }
 
-      // Walk the WHOLE tree and collect every playable item (no early stop),
-      // so we have a full pool to randomly pick from on every page load.
-      // Each entry also carries a "title" used for deep-link matching on the
-      // sessions page (via ?play=<videoId> or ?playTitle=<title> fallback).
       function collectAllPlayable(node, out) {
         if (isFolder(node)) {
           for (const child of getItems(node)) collectAllPlayable(child, out);
@@ -236,7 +241,6 @@
         }
       }
 
-      // Fisher-Yates shuffle
       function shuffle(arr) {
         const a = arr.slice();
         for (let i = a.length - 1; i > 0; i--) {
@@ -258,7 +262,7 @@
             ? { title: "Sessions", mode: "folder", items: raw }
             : raw;
           break;
-        } catch (_) { /* try next candidate */ }
+        } catch (_) {}
       }
 
       if (!root) return;
@@ -266,8 +270,6 @@
       const allPlayable = [];
       collectAllPlayable(root, allPlayable);
 
-      // On TV, drop the hidden sections (Monster Jam / Drag Racing) from
-      // the Featured pool so they never show up there either.
       const pool = onTV
         ? allPlayable.filter(it => {
             const t = (it.title || "").toLowerCase();
@@ -277,7 +279,6 @@
 
       if (!pool.length) return;
 
-      // Pick 3 at random, different set on every load/refresh.
       const featured = shuffle(pool).slice(0, 3);
 
       $scroll.innerHTML = featured.map(item => {
@@ -286,8 +287,6 @@
           : `https://img.youtube.com/vi/${item.id}/mqdefault.jpg`;
         const fallback = item.id ? `https://img.youtube.com/vi/${item.id}/hqdefault.jpg` : "";
 
-        // Deep-link: pass the video id (preferred) or title (fallback for
-        // thumb-only items) so sessions.html knows which show to auto-play.
         const href = item.id
           ? `./sessions.html?play=${encodeURIComponent(item.id)}`
           : `./sessions.html?playTitle=${encodeURIComponent(item.title)}`;
@@ -306,7 +305,6 @@
     })();
   </script>
 
-  <!-- TV REMOTE NAVIGATION (only activates on TV devices) -->
   <script src="./tv-nav.js"></script>
 
 </body>
