@@ -1,6 +1,10 @@
 "use strict";
 
-// ── Trusted channel signals ───────────────────────────────────────────────────
+// ── Config ────────────────────────────────────────────────────────────────────
+const REPO  = "KornDog0804/Unplugged-channel-";
+const BRANCH = "main";
+const TOKEN_KEY = "cc_admin_gh_token";
+
 const TRUSTED_CHANNEL_KEYWORDS = [
   "calibertv","hate5six","arte concert","arte","kroq","kerrang",
   "nme","rock sound","3voor12","plus concert","world music festivals",
@@ -20,77 +24,333 @@ function isTrustedChannel(name) {
   const l = (name || "").toLowerCase();
   return TRUSTED_CHANNEL_KEYWORDS.some(k => l.includes(k));
 }
-function isRecent(discoveredAt) {
-  if (!discoveredAt) return false;
-  return Date.now() - new Date(discoveredAt).getTime() < 7 * 864e5;
+function isRecent(d) {
+  return d && Date.now() - new Date(d).getTime() < 7 * 864e5;
 }
-function esc(str) {
-  return String(str ?? "")
+function esc(s) {
+  return String(s ?? "")
     .replace(/&/g,"&amp;").replace(/</g,"&lt;")
     .replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let allCandidates    = [];
-let approvedHistory  = [];
-let rejectedHistory  = [];
-// Map of videoId → { selected: bool, rejected: bool, reason: string }
+let allCandidates   = [];
+let approvedHistory = [];
+let rejectedHistory = [];
 const itemState = {};
-
 function getState(id) {
-  if (!itemState[id]) itemState[id] = { selected: false, rejected: false, reason: "other" };
+  if (!itemState[id]) itemState[id] = { selected:false, rejected:false, reason:"other" };
   return itemState[id];
 }
 
-// ── DOM refs ──────────────────────────────────────────────────────────────────
-const $grid          = document.getElementById("grid");
-const $stats         = document.getElementById("stats");
-const $folderSelect  = document.getElementById("folderSelect");
-const $selectAllBtn  = document.getElementById("selectAllBtn");
-const $approveBtn    = document.getElementById("approveBtn");
-const $rejectBtn     = document.getElementById("rejectBtn");
-const $clearReviewed = document.getElementById("clearReviewedBtn");
-const $clearPending  = document.getElementById("clearPendingBtn");
-const $resetRejected = document.getElementById("resetRejectedBtn");
-const $exportBtn     = document.getElementById("exportBtn");
-const $copyBtn       = document.getElementById("copyBtn");
-const $outputSection = document.getElementById("outputSection");
-const $outputPre     = document.getElementById("outputPre");
-const $toast         = document.getElementById("toast");
+// ── DOM ───────────────────────────────────────────────────────────────────────
+const $grid           = document.getElementById("grid");
+const $stats          = document.getElementById("stats");
+const $folderSelect   = document.getElementById("folderSelect");
+const $selectAllBtn   = document.getElementById("selectAllBtn");
+const $approveBtn     = document.getElementById("approveBtn");
+const $rejectBtn      = document.getElementById("rejectBtn");
+const $clearReviewed  = document.getElementById("clearReviewedBtn");
+const $clearPending   = document.getElementById("clearPendingBtn");
+const $resetRejected  = document.getElementById("resetRejectedBtn");
+const $exportBtn      = document.getElementById("exportBtn");
+const $toast          = document.getElementById("toast");
+const $tokenBar       = document.getElementById("tokenBar");
+const $tokenStatus    = document.getElementById("tokenStatus");
+const $tokenInput     = document.getElementById("tokenInput");
+const $tokenSaveBtn   = document.getElementById("tokenSaveBtn");
+const $progressOverlay= document.getElementById("progressOverlay");
+const $progressTitle  = document.getElementById("progressTitle");
+const $progressLog    = document.getElementById("progressLog");
+const $progressClose  = document.getElementById("progressClose");
+
+// ── Token management ──────────────────────────────────────────────────────────
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ""; }
+function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
+
+function updateTokenUI() {
+  const t = getToken();
+  if (t) {
+    $tokenStatus.textContent = "✓ GitHub token saved — one-tap approve ready";
+    $tokenStatus.className = "token-status ok";
+    $tokenBar.className = "token-bar ok";
+    $tokenInput.value = "";
+    $tokenInput.placeholder = "Token saved (tap to replace)";
+    $approveBtn.disabled = false;
+  } else {
+    $tokenStatus.textContent = "⚠ Paste your GitHub PAT token to enable one-tap approve";
+    $tokenStatus.className = "token-status bad";
+    $tokenBar.className = "token-bar";
+    $approveBtn.disabled = true;
+  }
+}
+
+$tokenSaveBtn.addEventListener("click", () => {
+  const val = $tokenInput.value.trim();
+  if (!val) { showToast("Paste your token first.", true); return; }
+  setToken(val);
+  updateTokenUI();
+  showToast("✓ Token saved — approve is now one tap.");
+});
 
 // ── Toast ─────────────────────────────────────────────────────────────────────
 let toastTimer = null;
-function showToast(msg, isError = false) {
+function showToast(msg, isError=false) {
   $toast.textContent = msg;
   $toast.style.background = isError ? "#ff4444" : "var(--lime)";
-  $toast.style.color      = isError ? "#fff"    : "#0a1500";
+  $toast.style.color = isError ? "#fff" : "#0a1500";
   $toast.classList.add("show");
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => $toast.classList.remove("show"), 3000);
+  toastTimer = setTimeout(() => $toast.classList.remove("show"), 3200);
+}
+
+// ── Progress log ──────────────────────────────────────────────────────────────
+function showProgress(title) {
+  $progressTitle.textContent = title;
+  $progressLog.textContent = "";
+  $progressClose.style.display = "none";
+  $progressOverlay.classList.add("show");
+}
+function logProgress(msg) {
+  $progressLog.textContent += msg + "\n";
+  $progressLog.scrollTop = $progressLog.scrollHeight;
+}
+function doneProgress(success) {
+  $progressTitle.textContent = success ? "✅ Done!" : "❌ Error — check log";
+  $progressClose.style.display = "inline-block";
+}
+$progressClose.addEventListener("click", () => {
+  $progressOverlay.classList.remove("show");
+});
+
+// ── GitHub API helpers ────────────────────────────────────────────────────────
+async function ghGet(path) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`, {
+    headers: { Authorization: `token ${getToken()}`, Accept: "application/vnd.github.v3+json" }
+  });
+  if (!res.ok) throw new Error(`GET ${path}: ${res.status} ${res.statusText}`);
+  return res.json();
+}
+
+async function ghPut(path, content, sha, message) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `token ${getToken()}`,
+      Accept: "application/vnd.github.v3+json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      message,
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+      sha,
+      branch: BRANCH
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`PUT ${path}: ${res.status} — ${err.message || res.statusText}`);
+  }
+  return res.json();
+}
+
+// ── One-tap approve: runs entirely in the browser via GitHub API ──────────────
+async function runApproval() {
+  const approved = allCandidates.filter(c => getState(c.videoId).selected);
+  const rejected = allCandidates.filter(c => getState(c.videoId).rejected);
+  const folder   = $folderSelect.value;
+
+  if (!approved.length && !rejected.length) {
+    showToast("Select or reject some cards first.", true); return;
+  }
+  if (!getToken()) {
+    showToast("Save your GitHub token first.", true); return;
+  }
+
+  showProgress(`Approving ${approved.length} · Rejecting ${rejected.length}…`);
+  const nowIso  = new Date().toISOString();
+  const today   = nowIso.slice(0, 10);
+
+  try {
+    // ── 1. Fetch all four files from GitHub ──────────────────────────────────
+    logProgress("📥 Fetching files from GitHub…");
+    const [epFile, candFile, appFile, rejFile] = await Promise.all([
+      ghGet("episodes.json"),
+      ghGet("data/discovery-candidates.json"),
+      ghGet("data/approved-history.json").catch(() => ({ content: btoa("[]"), sha: null })),
+      ghGet("data/rejected-history.json").catch(() => ({ content: btoa("[]"), sha: null })),
+    ]);
+
+    const episodes        = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    let   candidates      = JSON.parse(decodeURIComponent(escape(atob(candFile.content.replace(/\n/g,"")))));
+    const approvedHist    = JSON.parse(decodeURIComponent(escape(atob(appFile.content.replace(/\n/g,"")))));
+    const rejectedHist    = JSON.parse(decodeURIComponent(escape(atob(rejFile.content.replace(/\n/g,"")))));
+
+    logProgress(`✓ Loaded: ${episodes.length || "?"} sections · ${candidates.length} candidates`);
+
+    // ── 2. Index existing videoIds ───────────────────────────────────────────
+    const existingIds = new Set(approvedHist.map(h => h.videoId));
+    const existingUrls = new Set();
+    function indexNode(node) {
+      if (!node) return;
+      if (Array.isArray(node)) { node.forEach(indexNode); return; }
+      if (Array.isArray(node.items)) { node.items.forEach(indexNode); return; }
+      (node.tracks || []).forEach(t => {
+        if (!t?.url) return;
+        existingUrls.add(t.url);
+        try {
+          const u = new URL(t.url);
+          const v = u.searchParams.get("v") ||
+            (u.hostname.includes("youtu.be") ? u.pathname.replace("/","").trim() : null);
+          if (v) existingIds.add(v);
+        } catch {}
+      });
+    }
+    indexNode(episodes);
+
+    // ── 3. Find target folder (top-level only, no recursion) ─────────────────
+    const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+    let folder_node = rootArray.find(item => item?.title === folder && Array.isArray(item.items));
+    if (!folder_node) {
+      logProgress(`📁 Creating new folder: "${folder}"`);
+      folder_node = { title: folder, mode: "folder", items: [] };
+      rootArray.splice(Math.max(0, rootArray.length - 2), 0, folder_node);
+    } else {
+      logProgress(`📁 Found folder: "${folder}" (${folder_node.items.length} existing items)`);
+    }
+
+    // ── 4. Add approved episodes ─────────────────────────────────────────────
+    let added = 0, skipped = 0;
+    for (const c of approved) {
+      // Only skip true duplicates already in episodes.json or approved history.
+      // NOT being in the candidates list is NOT a reason to skip —
+      // the card is already on screen so Joey chose it intentionally.
+      if (existingIds.has(c.videoId)) {
+        logProgress(`  ⚠ Skip (already in library): ${c.title?.slice(0,50)}`);
+        skipped++; continue;
+      }
+
+      // Build episode node from suggestedEpisodesJson if available,
+      // otherwise build from the card data directly — no candidate lookup required.
+      let node = c.suggestedEpisodesJson
+        ? JSON.parse(JSON.stringify(c.suggestedEpisodesJson))
+        : {
+            title: c.title || `Video ${c.videoId}`,
+            artist: c.artistMatched || c.suggestedArtist || "",
+            year: new Date().getFullYear(),
+            mode: "fullshow",
+            tracks: [{ title: c.title || "Full Show", url: c.url || `https://www.youtube.com/watch?v=${c.videoId}` }]
+          };
+
+      node.added = today;
+
+      // Clean expiring YouTube thumb tracking params
+      if (node.thumb?.includes("sqp=")) {
+        try { const u = new URL(node.thumb); u.search = ""; node.thumb = u.toString(); } catch {}
+      }
+
+      if (folder === "Live Concerts") {
+        const artistName = node.artist || c.artistMatched || c.suggestedArtist || "Unknown";
+        let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
+        if (!artistFolder) {
+          artistFolder = { title: artistName, mode: "folder", items: [] };
+          folder_node.items.push(artistFolder);
+        }
+        const { artist, ...nodeClean } = node;
+        artistFolder.items.push(nodeClean);
+      } else {
+        folder_node.items.push(node);
+      }
+
+      existingIds.add(c.videoId);
+      approvedHist.unshift({
+        videoId: c.videoId,
+        title: c.title,
+        artist: c.artistMatched || c.suggestedArtist || "",
+        targetFolder: folder,
+        approvedAt: nowIso,
+        url: c.url || `https://www.youtube.com/watch?v=${c.videoId}`,
+      });
+      logProgress(`  ✅ Added: ${c.title?.slice(0,55)}`);
+      added++;
+    }
+
+    // ── 5. Process rejections ────────────────────────────────────────────────
+    for (const c of rejected) {
+      const reason = getState(c.videoId).reason;
+      if (!rejectedHist.some(h => h.videoId === c.videoId)) {
+        rejectedHist.unshift({ videoId: c.videoId, title: c.title, artist: c.artistMatched || "",
+          channelName: c.channelName || "", reason, rejectedAt: nowIso, url: c.url });
+        logProgress(`  🗑 Rejected (${reason}): ${c.title?.slice(0,40)}`);
+      }
+    }
+
+    // ── 6. Remove processed from candidates ─────────────────────────────────
+    const processedIds = new Set([...approved, ...rejected].map(c => c.videoId));
+    candidates = candidates.filter(c => !processedIds.has(c.videoId));
+    logProgress(`\n📊 Added: ${added} · Skipped: ${skipped} · Rejected: ${rejected.length} · Remaining: ${candidates.length}`);
+
+    // ── 7. Write all four files back to GitHub ───────────────────────────────
+    logProgress("\n📤 Writing to GitHub…");
+
+    await ghPut("episodes.json", episodes, epFile.sha,
+      `✅ Admin: added ${added} to "${folder}" · ${today}`);
+    logProgress("  ✓ episodes.json");
+
+    await ghPut("data/discovery-candidates.json", candidates, candFile.sha,
+      `🔄 Candidates: removed ${processedIds.size} processed · ${today}`);
+    logProgress("  ✓ discovery-candidates.json");
+
+    await ghPut("data/approved-history.json", approvedHist, appFile.sha || undefined,
+      `📋 Approved history: +${added} · ${today}`);
+    logProgress("  ✓ approved-history.json");
+
+    await ghPut("data/rejected-history.json", rejectedHist, rejFile.sha || undefined,
+      `🗑 Rejected history: +${rejected.length} · ${today}`);
+    logProgress("  ✓ rejected-history.json");
+
+    // ── 8. Update local state ────────────────────────────────────────────────
+    allCandidates   = candidates;
+    approvedHistory = approvedHist;
+    rejectedHistory = rejectedHist;
+    // Clear selections
+    [...approved, ...rejected].forEach(c => {
+      itemState[c.videoId] = { selected:false, rejected:false, reason:"other" };
+    });
+
+    logProgress(`\n🎸 All done! Netlify will deploy in ~30 seconds.`);
+    doneProgress(true);
+    render();
+
+  } catch (e) {
+    logProgress(`\n❌ ERROR: ${e.message}`);
+    doneProgress(false);
+    console.error(e);
+  }
 }
 
 // ── Stats ─────────────────────────────────────────────────────────────────────
 function renderStats() {
-  const pending  = allCandidates.length;
-  const selected = allCandidates.filter(c => getState(c.videoId).selected).length;
-  const rejected = allCandidates.filter(c => getState(c.videoId).rejected).length;
-
+  const sel = allCandidates.filter(c => getState(c.videoId).selected).length;
+  const rej = allCandidates.filter(c => getState(c.videoId).rejected).length;
   $stats.innerHTML =
-    `<span>${pending}</span> pending &nbsp;|&nbsp; ` +
-    `<span>${selected}</span> selected &nbsp;|&nbsp; ` +
-    `<span style="color:#ff6666">${rejected}</span> marked rejected &nbsp;|&nbsp; ` +
+    `<span>${allCandidates.length}</span> pending &nbsp;|&nbsp; ` +
+    `<span>${sel}</span> selected &nbsp;|&nbsp; ` +
+    `<span style="color:#ff6666">${rej}</span> marked rejected &nbsp;|&nbsp; ` +
     `<span style="color:#9a5cff">${approvedHistory.length}</span> approved all-time &nbsp;|&nbsp; ` +
     `<span style="color:#888">${rejectedHistory.length}</span> rejected all-time`;
 }
 
-// ── Render grid ───────────────────────────────────────────────────────────────
+// ── Grid ──────────────────────────────────────────────────────────────────────
 function renderGrid() {
   if (!allCandidates.length) {
-    $grid.innerHTML = `
-      <div class="empty" style="grid-column:1/-1">
-        📭 Queue is empty.<br>
-        <p>Run <strong>Discover New Shows</strong> in GitHub Actions to find new candidates.</p>
-      </div>`;
+    $grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      📭 Queue is empty.<br>
+      <p>Run <strong>Discover New Shows</strong> in GitHub Actions to find new shows.</p>
+      <p style="margin-top:8px;font-size:12px;color:#666">
+        Approved all-time: ${approvedHistory.length} &nbsp;|&nbsp;
+        Rejected all-time: ${rejectedHistory.length}
+      </p></div>`;
     return;
   }
 
@@ -100,86 +360,57 @@ function renderGrid() {
     const isNew   = isRecent(c.discoveredAt);
     const thumb   = c.thumbnail || c.thumb ||
       `https://img.youtube.com/vi/${c.videoId}/mqdefault.jpg`;
-
-    const reasonOptions = REJECT_REASONS.map(r =>
-      `<option value="${esc(r)}" ${st.reason === r ? "selected" : ""}>${esc(r)}</option>`
+    const reasonOpts = REJECT_REASONS.map(r =>
+      `<option value="${esc(r)}" ${st.reason===r?"selected":""}>${esc(r)}</option>`
     ).join("");
 
-    return `
-    <div class="card ${st.selected ? "selected" : ""} ${st.rejected ? "rejected" : ""}"
-         data-id="${esc(c.videoId)}">
+    return `<div class="card ${st.selected?"selected":""} ${st.rejected?"rejected":""}" data-id="${esc(c.videoId)}">
       <div class="card-overlay">REJECTED</div>
       <div class="thumb-wrap">
-        <img src="${esc(thumb)}" alt=""
-             onerror="this.src='https://img.youtube.com/vi/${esc(c.videoId)}/mqdefault.jpg'">
-        ${c.duration ? `<div class="thumb-badge">${esc(c.duration)}</div>` : ""}
-        ${isNew ? `<div class="thumb-new">NEW</div>` : ""}
-        ${trusted ? `<div class="thumb-trusted">✓ TRUSTED</div>` : ""}
+        <img src="${esc(thumb)}" alt="" onerror="this.src='https://img.youtube.com/vi/${esc(c.videoId)}/mqdefault.jpg'">
+        ${c.duration?`<div class="thumb-badge">${esc(c.duration)}</div>`:""}
+        ${isNew?`<div class="thumb-new">NEW</div>`:""}
+        ${trusted?`<div class="thumb-trusted">✓ TRUSTED</div>`:""}
       </div>
       <div class="card-body">
         <div class="card-title">${esc(c.title)}</div>
-        <div class="card-meta">
-          🎤 <span>${esc(c.artistMatched || c.suggestedArtist || "")}</span>
-          ${c.viewCountText ? `&nbsp;·&nbsp; 👁 <span>${esc(c.viewCountText)}</span>` : ""}
-        </div>
-        <div class="card-channel ${trusted ? "trusted" : ""}">
-          ${esc(c.channelName)}${c.publishedText ? ` · ${esc(c.publishedText)}` : ""}
-        </div>
-        <div class="card-search-term">found via "${esc(c.searchTerm || "")}"</div>
+        <div class="card-meta">🎤 <span>${esc(c.artistMatched||c.suggestedArtist||"")}</span>${c.viewCountText?` &nbsp;·&nbsp; 👁 <span>${esc(c.viewCountText)}</span>`:""}</div>
+        <div class="card-channel ${trusted?"trusted":""}">${esc(c.channelName)}${c.publishedText?` · ${esc(c.publishedText)}`:""}</div>
+        <div class="card-search-term">found via "${esc(c.searchTerm||"")}"</div>
         <div class="card-actions">
-          <input type="checkbox" class="card-cb" data-id="${esc(c.videoId)}"
-                 ${st.selected ? "checked" : ""} ${st.rejected ? "disabled" : ""}>
+          <input type="checkbox" class="card-cb" data-id="${esc(c.videoId)}" ${st.selected?"checked":""} ${st.rejected?"disabled":""}>
           <a class="card-yt" href="${esc(c.url)}" target="_blank" rel="noopener">▶ Watch</a>
-          <select class="reason-select" data-id="${esc(c.videoId)}" ${!st.rejected ? "disabled" : ""}>
-            ${reasonOptions}
-          </select>
-          <button class="card-reject-btn" data-id="${esc(c.videoId)}">
-            ${st.rejected ? "↩ Restore" : "✕ Reject"}
-          </button>
+          <select class="reason-select" data-id="${esc(c.videoId)}" ${!st.rejected?"disabled":""}>${reasonOpts}</select>
+          <button class="card-reject-btn" data-id="${esc(c.videoId)}">${st.rejected?"↩ Restore":"✕ Reject"}</button>
         </div>
       </div>
     </div>`;
   }).join("");
 
-  // Wire checkboxes
   $grid.querySelectorAll(".card-cb").forEach(cb => {
     cb.addEventListener("change", () => {
-      const id = cb.getAttribute("data-id");
-      getState(id).selected = cb.checked;
-      syncCard(id);
-      renderStats();
+      getState(cb.getAttribute("data-id")).selected = cb.checked;
+      syncCard(cb.getAttribute("data-id")); renderStats();
     });
   });
-
-  // Wire reason selects
   $grid.querySelectorAll(".reason-select").forEach(sel => {
-    sel.addEventListener("change", () => {
-      getState(sel.getAttribute("data-id")).reason = sel.value;
-    });
+    sel.addEventListener("change", () => { getState(sel.getAttribute("data-id")).reason = sel.value; });
   });
-
-  // Wire reject buttons
   $grid.querySelectorAll(".card-reject-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      const id = btn.getAttribute("data-id");
-      const st = getState(id);
+      const id = btn.getAttribute("data-id"), st = getState(id);
       st.rejected = !st.rejected;
       if (st.rejected) st.selected = false;
-      syncCard(id);
-      renderStats();
+      syncCard(id); renderStats();
     });
   });
-
-  // Wire card body click to toggle checkbox
   $grid.querySelectorAll(".card").forEach(card => {
     card.addEventListener("click", e => {
       if (e.target.closest("a,button,input,select")) return;
-      const id = card.getAttribute("data-id");
-      const st = getState(id);
+      const id = card.getAttribute("data-id"), st = getState(id);
       if (st.rejected) return;
       st.selected = !st.selected;
-      syncCard(id);
-      renderStats();
+      syncCard(id); renderStats();
     });
   });
 }
@@ -187,7 +418,7 @@ function renderGrid() {
 function syncCard(id) {
   const card = $grid.querySelector(`.card[data-id="${id}"]`);
   if (!card) return;
-  const st  = getState(id);
+  const st = getState(id);
   card.classList.toggle("selected", st.selected);
   card.classList.toggle("rejected", st.rejected);
   const cb  = card.querySelector(".card-cb");
@@ -200,34 +431,6 @@ function syncCard(id) {
 
 function render() { renderGrid(); renderStats(); }
 
-// ── Generate output ───────────────────────────────────────────────────────────
-function generateOutput() {
-  const approved = allCandidates.filter(c => getState(c.videoId).selected);
-  const rejected = allCandidates.filter(c => getState(c.videoId).rejected);
-  const folder   = $folderSelect.value;
-
-  if (!approved.length && !rejected.length) {
-    showToast("Select or reject some cards first.", true);
-    return null;
-  }
-
-  const approvedIds   = approved.map(c => c.videoId).join(",");
-  const rejectedIds   = rejected.map(c => c.videoId).join(",");
-  const rejectReasons = rejected.map(c => getState(c.videoId).reason).join(",");
-
-  const lines = [
-    `videoIds: ${approvedIds || "(none)"}`,
-    `targetFolder: ${folder}`,
-    `rejectIds: ${rejectedIds || "(none)"}`,
-    `rejectReasons: ${rejectReasons || "(none)"}`,
-  ];
-
-  $outputPre.textContent = lines.join("\n");
-  $outputSection.classList.add("visible");
-  $outputSection.scrollIntoView({ behavior: "smooth", block: "start" });
-  return lines.join("\n");
-}
-
 // ── Toolbar buttons ───────────────────────────────────────────────────────────
 $selectAllBtn.addEventListener("click", () => {
   const visible = allCandidates.filter(c => !getState(c.videoId).rejected);
@@ -237,122 +440,71 @@ $selectAllBtn.addEventListener("click", () => {
   render();
 });
 
-$approveBtn.addEventListener("click", () => {
-  const out = generateOutput();
-  if (out) showToast("✅ Output generated — copy it and run the Action.");
-});
+$approveBtn.addEventListener("click", runApproval);
 
 $rejectBtn.addEventListener("click", () => {
   const sel = allCandidates.filter(c => getState(c.videoId).selected);
   if (!sel.length) { showToast("Nothing selected.", true); return; }
-  sel.forEach(c => {
-    const st = getState(c.videoId);
-    st.rejected = true;
-    st.selected = false;
-  });
-  render();
-  showToast(`${sel.length} marked as rejected.`);
+  sel.forEach(c => { getState(c.videoId).rejected = true; getState(c.videoId).selected = false; });
+  render(); showToast(`${sel.length} marked as rejected — tap Approve to commit.`);
 });
 
-// Clear Reviewed: removes items that are selected OR rejected from the visible list
-// (they still get processed when you run the Action)
 $clearReviewed && $clearReviewed.addEventListener("click", () => {
-  const count = allCandidates.filter(c => {
-    const st = getState(c.videoId);
-    return st.selected || st.rejected;
-  }).length;
+  const count = allCandidates.filter(c => { const s=getState(c.videoId); return s.selected||s.rejected; }).length;
   if (!count) { showToast("Nothing reviewed yet.", true); return; }
-  if (!confirm(`Hide ${count} reviewed items from view? They'll still be processed when you run the Action.`)) return;
-  allCandidates = allCandidates.filter(c => {
-    const st = getState(c.videoId);
-    return !st.selected && !st.rejected;
-  });
-  render();
-  showToast(`${count} items hidden from view.`);
+  if (!confirm(`Hide ${count} reviewed items from view?`)) return;
+  allCandidates = allCandidates.filter(c => { const s=getState(c.videoId); return !s.selected&&!s.rejected; });
+  render(); showToast(`${count} items hidden.`);
 });
 
-// Clear All Pending: wipes the entire queue (use with caution)
 $clearPending && $clearPending.addEventListener("click", () => {
-  if (!allCandidates.length) { showToast("Queue is already empty."); return; }
-  if (!confirm(`Clear ALL ${allCandidates.length} pending candidates? This only affects the local view — run the Action to persist.`)) return;
-  allCandidates = [];
-  render();
-  showToast("Queue cleared locally.");
+  if (!allCandidates.length) { showToast("Queue already empty."); return; }
+  if (!confirm(`Clear ALL ${allCandidates.length} pending candidates from view?`)) return;
+  allCandidates = []; render(); showToast("Queue cleared from view.");
 });
 
-// Reset Rejected History: shows a warning, does NOT auto-run — just generates output
 $resetRejected && $resetRejected.addEventListener("click", () => {
-  if (!confirm("This will generate a note to clear rejected-history.json. You'll need to manually empty that file in GitHub. Are you sure?")) return;
-  $outputPre.textContent =
-    "MANUAL ACTION REQUIRED:\n" +
-    "Go to your repo → data/rejected-history.json → Edit → Replace all content with: []\n" +
-    "Commit the change. The discovery bot will then resurface previously rejected videos.";
-  $outputSection.classList.add("visible");
-  $outputSection.scrollIntoView({ behavior: "smooth" });
-  showToast("Instructions generated — see output below.");
+  if (!confirm("Clear rejected history? Previously rejected videos will resurface in future discovery runs.")) return;
+  showProgress("Clearing rejected history…");
+  ghGet("data/rejected-history.json").then(f => {
+    return ghPut("data/rejected-history.json", [], f.sha, "🔄 Reset rejected history");
+  }).then(() => {
+    rejectedHistory = [];
+    logProgress("✓ rejected-history.json cleared.");
+    doneProgress(true);
+    renderStats();
+  }).catch(e => {
+    logProgress(`❌ ${e.message}`);
+    doneProgress(false);
+  });
 });
 
-// Export Backup
 $exportBtn && $exportBtn.addEventListener("click", () => {
-  const backup = {
-    exportedAt: new Date().toISOString(),
-    pendingCandidates: allCandidates,
-    approvedHistory,
-    rejectedHistory,
-  };
-  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-  const a    = document.createElement("a");
-  a.href     = URL.createObjectURL(blob);
-  a.download = `concert-corner-backup-${new Date().toISOString().slice(0,10)}.json`;
-  a.click();
-  showToast("Backup downloaded.");
+  const backup = { exportedAt: new Date().toISOString(), pendingCandidates: allCandidates, approvedHistory, rejectedHistory };
+  const a = Object.assign(document.createElement("a"), {
+    href: URL.createObjectURL(new Blob([JSON.stringify(backup, null, 2)], {type:"application/json"})),
+    download: `concert-corner-backup-${new Date().toISOString().slice(0,10)}.json`,
+  });
+  a.click(); showToast("Backup downloaded.");
 });
 
-// Copy button
-$copyBtn && $copyBtn.addEventListener("click", () => {
-  const out = generateOutput();
-  if (!out) return;
-  navigator.clipboard.writeText($outputPre.textContent)
-    .then(() => showToast("📋 Copied to clipboard!"))
-    .catch(() => showToast("Select the text above and copy manually."));
-});
-
-// ── Load data ─────────────────────────────────────────────────────────────────
+// ── Load ──────────────────────────────────────────────────────────────────────
 async function loadJson(url) {
-  try {
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) return [];
-    return await res.json();
-  } catch { return []; }
+  try { const r = await fetch(url,{cache:"no-store"}); return r.ok ? r.json() : []; }
+  catch { return []; }
 }
 
 async function init() {
+  updateTokenUI();
   $grid.innerHTML = `<div class="empty" style="grid-column:1/-1">Loading…</div>`;
-
-  const [candidates, approved, rejected] = await Promise.all([
+  const [cands, approved, rejected] = await Promise.all([
     loadJson("./data/discovery-candidates.json"),
     loadJson("./data/approved-history.json"),
     loadJson("./data/rejected-history.json"),
   ]);
-
-  allCandidates   = Array.isArray(candidates) ? candidates : [];
-  approvedHistory = Array.isArray(approved)   ? approved   : [];
-  rejectedHistory = Array.isArray(rejected)   ? rejected   : [];
-
-  if (!allCandidates.length) {
-    $grid.innerHTML = `
-      <div class="empty" style="grid-column:1/-1">
-        📭 No pending candidates.<br>
-        <p>Run <strong>Discover New Shows</strong> in GitHub Actions to find new shows.</p>
-        <p style="margin-top:8px;font-size:12px;color:#666">
-          Approved all-time: ${approvedHistory.length} &nbsp;|&nbsp;
-          Rejected all-time: ${rejectedHistory.length}
-        </p>
-      </div>`;
-    renderStats();
-    return;
-  }
-
+  allCandidates   = Array.isArray(cands)    ? cands    : [];
+  approvedHistory = Array.isArray(approved) ? approved : [];
+  rejectedHistory = Array.isArray(rejected) ? rejected : [];
   render();
 }
 
