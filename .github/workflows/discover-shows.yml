@@ -1,12 +1,15 @@
 name: Discover New Shows
 
 on:
+  schedule:
+    - cron: "0 10 * * 1"   # Monday 10am UTC
+    - cron: "0 10 * * 4"   # Thursday 10am UTC
   workflow_dispatch:
 
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
 
     permissions:
       contents: write
@@ -20,28 +23,39 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Shrink discovery for proof of concept
+      - name: Configure discovery scope
         run: |
           node - <<'NODE'
           const fs = require("fs");
-
           const file = "data/artist-watchlist.json";
           const data = JSON.parse(fs.readFileSync(file, "utf8"));
 
-          data.tier_1_core = (data.tier_1_core || []).slice(0, 5);
-          data.tier_2_adjacent = [];
+          // Tier 1: 15 artists — core weekly artists, shuffled so
+          // different ones get coverage each run
+          const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+          data.tier_1_core = shuffle(data.tier_1_core || []).slice(0, 15);
+
+          // Tier 2: 8 artists — adjacent taste, rotates each run
+          data.tier_2_adjacent = shuffle(data.tier_2_adjacent || []).slice(0, 8);
+
+          // Tier 3: off for now — re-enable once workflow is proven stable
           data.tier_3_watchlist = [];
 
+          // 5 search terms — good spread without going nuclear
           data.searchTerms = [
             "full concert",
+            "full set live",
             "live at",
-            "acoustic session"
+            "acoustic session",
+            "official live"
           ];
 
-          data.maxResultsPerSearch = 3;
-          data.minDurationMinutes = 15;
+          // 5 results per search — enough to find gold, filtered hard
+          data.maxResultsPerSearch = 5;
+          data.minDurationMinutes = 20;
 
           fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+          console.log(`Scope: ${data.tier_1_core.length + data.tier_2_adjacent.length} artists x ${data.searchTerms.length} terms = ${(data.tier_1_core.length + data.tier_2_adjacent.length) * data.searchTerms.length} searches`);
           NODE
 
       - name: Run discovery bot
@@ -52,12 +66,10 @@ jobs:
         run: |
           git config user.name "concert-corner-bot"
           git config user.email "actions@github.com"
-
           git add data/discovery-candidates.json
-
           if git diff --staged --quiet; then
-            echo "No discovery changes to commit."
+            echo "No new candidates found."
           else
-            git commit -m "🎸 Discovery proof of concept $(date +'%Y-%m-%d')"
+            git commit -m "🎸 Discovery: new concert candidates $(date +'%Y-%m-%d')"
             git push
           fi
