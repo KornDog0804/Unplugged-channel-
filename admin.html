@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Concert Corner — Admin</title>
+  <style>
+    :root {
+      --lime:#7FD41A; --lime-bright:#9dff2e; --lime-deep:#5fa30f;
+      --purple:#6a3fb5; --purple-bright:#9a5cff; --purple-deep:#1a0a2e;
+      --oled:#000; --text:#F4F1F8; --muted:#C7BEDA; --muted-2:#8E84A6;
+      --line:rgba(154,92,255,.22); --red:#ff4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--oled);color:var(--text);font-family:"Barlow",system-ui,sans-serif;min-height:100vh;padding-bottom:80px;}
+
+    /* Header */
+    .header{background:linear-gradient(180deg,rgba(5,2,8,.98),rgba(5,2,8,.88));border-bottom:1px solid var(--line);padding:14px 20px;position:sticky;top:0;z-index:100;backdrop-filter:blur(16px);}
+    .header h1{font-size:18px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;background:linear-gradient(92deg,var(--lime-bright),var(--purple-bright));-webkit-background-clip:text;background-clip:text;color:transparent;}
+    .header p{font-size:12px;color:var(--muted);margin-top:2px;}
+
+    /* Toolbar */
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 20px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.02);}
+    .toolbar select{background:var(--purple-deep);color:var(--text);border:1px solid rgba(154,92,255,.4);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;flex:1 1 180px;}
+
+    /* Buttons */
+    .btn{display:inline-flex;align-items:center;gap:5px;padding:8px 14px;border-radius:10px;font-weight:800;font-size:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);cursor:pointer;transition:all .14s;white-space:nowrap;}
+    .btn:hover{border-color:rgba(127,212,26,.5);background:rgba(127,212,26,.08);}
+    .btn.primary{background:linear-gradient(95deg,var(--lime),var(--lime-deep));color:#0a1500;border-color:rgba(127,212,26,.7);font-weight:900;}
+    .btn.primary:hover{filter:brightness(1.08);}
+    .btn.danger{border-color:rgba(255,68,68,.4);background:rgba(255,68,68,.07);color:#ffaaaa;}
+    .btn.danger:hover{background:rgba(255,68,68,.18);}
+    .btn.copy{border-color:rgba(154,92,255,.5);background:rgba(154,92,255,.1);color:var(--purple-bright);}
+    .btn.copy:hover{background:rgba(154,92,255,.22);}
+    .btn.warn{border-color:rgba(255,165,0,.4);background:rgba(255,165,0,.07);color:#ffcc66;}
+    .btn.warn:hover{background:rgba(255,165,0,.18);}
+
+    /* Divider in toolbar */
+    .toolbar-sep{width:1px;height:28px;background:var(--line);flex-shrink:0;}
+
+    /* Stats */
+    .stats{padding:8px 20px;font-size:11px;color:var(--muted-2);font-weight:700;letter-spacing:.04em;display:flex;gap:14px;flex-wrap:wrap;border-bottom:1px solid rgba(255,255,255,.04);}
+    .stats span{color:var(--lime);}
+
+    /* Grid */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;padding:16px 20px;}
+
+    /* Card */
+    .card{border-radius:16px;border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));overflow:hidden;transition:border-color .15s,box-shadow .15s;position:relative;cursor:pointer;}
+    .card.selected{border-color:var(--lime);box-shadow:0 0 0 2px rgba(127,212,26,.2),0 0 24px rgba(127,212,26,.14);}
+    .card.rejected{opacity:.35;border-color:rgba(255,68,68,.3);}
+    .card.rejected .card-overlay{display:flex;}
+    .card-overlay{display:none;position:absolute;inset:0;background:rgba(0,0,0,.65);align-items:center;justify-content:center;font-size:28px;font-weight:900;color:var(--red);letter-spacing:.1em;z-index:10;border-radius:16px;}
+
+    .thumb-wrap{position:relative;width:100%;aspect-ratio:16/9;background:#111;overflow:hidden;}
+    .thumb-wrap img{width:100%;height:100%;object-fit:cover;display:block;}
+    .thumb-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,.82);color:#fff;font-size:11px;font-weight:800;padding:2px 7px;border-radius:5px;}
+    .thumb-new{position:absolute;top:6px;left:6px;background:var(--lime);color:#0a1500;font-size:9px;font-weight:900;padding:2px 7px;border-radius:5px;letter-spacing:.06em;text-transform:uppercase;}
+    .thumb-trusted{position:absolute;top:6px;right:6px;background:rgba(127,212,26,.85);color:#0a1500;font-size:9px;font-weight:900;padding:2px 7px;border-radius:5px;}
+
+    .card-body{padding:10px 12px 12px;}
+    .card-title{font-weight:900;font-size:13px;line-height:1.3;color:var(--text);margin-bottom:5px;}
+    .card-meta{font-size:11px;color:var(--muted);font-weight:700;margin-bottom:2px;}
+    .card-meta span{color:var(--muted-2);}
+    .card-channel{font-size:11px;color:var(--muted-2);margin-bottom:2px;}
+    .card-channel.trusted{color:var(--lime);}
+    .card-search-term{font-size:10px;color:#555;margin-bottom:8px;}
+    .card-actions{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+    .card-cb{width:18px;height:18px;accent-color:var(--lime);cursor:pointer;flex-shrink:0;}
+    .card-yt{font-size:11px;font-weight:800;color:var(--purple-bright);text-decoration:none;padding:3px 9px;border-radius:7px;border:1px solid rgba(154,92,255,.35);background:rgba(154,92,255,.1);}
+    .card-yt:hover{background:rgba(154,92,255,.22);}
+    .reason-select{font-size:10px;background:#0d0720;color:var(--muted);border:1px solid rgba(255,68,68,.3);border-radius:7px;padding:3px 6px;cursor:pointer;flex:1 1 90px;min-width:80px;}
+    .reason-select:disabled{opacity:.35;cursor:default;}
+    .card-reject-btn{font-size:10px;font-weight:800;color:#ffaaaa;padding:3px 9px;border-radius:7px;border:1px solid rgba(255,68,68,.3);background:rgba(255,68,68,.07);cursor:pointer;margin-left:auto;}
+    .card-reject-btn:hover{background:rgba(255,68,68,.2);}
+
+    /* Output */
+    .output-section{margin:0 20px 20px;border-radius:14px;border:1px solid rgba(154,92,255,.35);background:var(--purple-deep);padding:14px;display:none;}
+    .output-section.visible{display:block;}
+    .output-section h3{font-size:12px;font-weight:900;color:var(--lime);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;}
+    .output-section pre{font-family:"Courier New",monospace;font-size:12px;color:var(--lime-bright);white-space:pre-wrap;word-break:break-all;background:rgba(0,0,0,.4);border-radius:8px;padding:10px;margin-bottom:8px;line-height:1.6;}
+    .output-instructions{font-size:11px;color:var(--muted);line-height:1.7;}
+    .output-instructions strong{color:var(--text);}
+
+    /* Empty */
+    .empty{padding:50px 20px;text-align:center;color:var(--muted-2);font-weight:700;font-size:14px;}
+    .empty p{margin-top:8px;font-size:12px;font-weight:500;}
+
+    /* Toast */
+    .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);font-weight:900;font-size:13px;padding:10px 22px;border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.5);transition:transform .25s ease;z-index:9999;white-space:nowrap;}
+    .toast.show{transform:translateX(-50%) translateY(0);}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎸 Concert Corner — Admin</h1>
+  <p>Review discovery candidates · Approve good ones · Reject the rest · Run the Action</p>
+</div>
+
+<div class="toolbar">
+  <!-- Folder target -->
+  <select id="folderSelect">
+    <option value="Live Concerts">🎤 Live Concerts</option>
+    <option value="Acoustic Collection">🎸 Acoustic Collection</option>
+    <option value="MTV Unplugged">📺 MTV Unplugged</option>
+    <option value="Tiny Desk">🎙 Tiny Desk</option>
+    <option value="Stitched Streams / Full Sessions">🎛 Stitched Streams / Full Sessions</option>
+    <option value="Joey's Picks">🎧 Joey's Picks</option>
+    <option value="Recently Added">🆕 Recently Added</option>
+  </select>
+
+  <div class="toolbar-sep"></div>
+
+  <!-- Selection -->
+  <button class="btn" id="selectAllBtn">☑ Select All</button>
+
+  <!-- Core actions -->
+  <button class="btn primary" id="approveBtn">✅ Approve Selected</button>
+  <button class="btn danger"  id="rejectBtn">🗑 Reject Selected</button>
+
+  <div class="toolbar-sep"></div>
+
+  <!-- Output -->
+  <button class="btn copy" id="copyBtn">📋 Copy Action Input</button>
+
+  <div class="toolbar-sep"></div>
+
+  <!-- Maintenance -->
+  <button class="btn"  id="clearReviewedBtn">🧹 Clear Reviewed</button>
+  <button class="btn warn" id="clearPendingBtn">⚠ Clear All Pending</button>
+  <button class="btn warn" id="resetRejectedBtn">🔄 Reset Rejected History</button>
+  <button class="btn"  id="exportBtn">💾 Export Backup</button>
+</div>
+
+<div class="stats" id="stats">Loading…</div>
+<div class="grid"  id="grid"></div>
+
+<div class="output-section" id="outputSection">
+  <h3>GitHub Action Input — Paste this into Run Workflow</h3>
+  <pre id="outputPre"></pre>
+  <div class="output-instructions">
+    <strong>How to use:</strong><br>
+    1. Copy the text above<br>
+    2. GitHub → Actions → <strong>Approve Candidates</strong> → Run workflow<br>
+    3. Paste <code>videoIds</code>, <code>targetFolder</code>, <code>rejectIds</code>, <code>rejectReasons</code> into the fields<br>
+    4. Run — bot updates <strong>episodes.json</strong>, <strong>approved-history.json</strong>, <strong>rejected-history.json</strong>, and cleans <strong>discovery-candidates.json</strong> automatically
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="./admin.js"></script>
+</body>
+</html>
