@@ -987,6 +987,14 @@
 
       const $search = tools.querySelector("#kdSearch");
       const $clear = tools.querySelector("#kdClearSearch");
+
+      // On TV the remote can't type into a text field — hide search entirely.
+      // Random is the right TV discovery interaction anyway.
+      if (isTVDevice()) {
+        $search.style.display = "none";
+        $clear.style.display = "none";
+      }
+
       $search.addEventListener("input", () => {
         const t = $search.value.trim();
         $clear.style.display = t ? "inline-block" : "none";
