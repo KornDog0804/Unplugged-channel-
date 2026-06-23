@@ -36,6 +36,23 @@
         ]
       },
       {
+        "title": "Alanis Morissette",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "MTV Unplugged (Full Session)",
+            "artist": "Alanis Morissette",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "MTV Unplugged",
+                "url": "https://youtu.be/irJK3I1m8zY"
+              }
+            ]
+          }
+        ]
+      },
+      {
         "title": "Alice In Chains",
         "mode": "folder",
         "items": [
@@ -48,23 +65,6 @@
               {
                 "title": "Full Session Stream",
                 "url": "https://youtu.be/Jprla2NvHY0"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Alanis Morissette",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "MTV Unplugged (Full Session)",
-            "artist": "Alanis Morissette",
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "MTV Unplugged",
-                "url": "https://youtu.be/irJK3I1m8zY"
               }
             ]
           }
@@ -723,18 +723,6 @@
     "mode": "folder",
     "items": [
       {
-        "title": "Nirvana — MTV Unplugged (Full Session)",
-        "artist": "Nirvana",
-        "year": 1993,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/pOTkCgkxqyg"
-          }
-        ]
-      },
-      {
         "title": "Alice In Chains — MTV Unplugged (Full Session)",
         "artist": "Alice In Chains",
         "year": 1996,
@@ -743,42 +731,6 @@
           {
             "title": "Full Session Stream",
             "url": "https://youtu.be/Jprla2NvHY0"
-          }
-        ]
-      },
-      {
-        "title": "Pearl Jam — MTV Unplugged (Full Session)",
-        "artist": "Pearl Jam",
-        "year": 1992,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Unplugged Full Session",
-            "url": "https://youtu.be/P9fPF204icg"
-          }
-        ]
-      },
-      {
-        "title": "Stone Temple Pilots — MTV Unplugged (Full Session)",
-        "artist": "Stone Temple Pilots",
-        "year": 1993,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Acoustic Performance",
-            "url": "https://youtu.be/Apok0654Qnc"
-          }
-        ]
-      },
-      {
-        "title": "Korn — MTV Unplugged (Full Session)",
-        "artist": "Korn",
-        "year": 2007,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/El8-JgiqcUI"
           }
         ]
       },
@@ -795,18 +747,6 @@
         ]
       },
       {
-        "title": "Staind — MTV Unplugged (Full Session)",
-        "artist": "Staind",
-        "year": 2002,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://www.youtube.com/watch?v=33MIi9bfmQo"
-          }
-        ]
-      },
-      {
         "title": "KISS — MTV Unplugged (Full Session, 1995)",
         "artist": "KISS",
         "year": 1995,
@@ -815,6 +755,18 @@
           {
             "title": "Full Session Stream",
             "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM"
+          }
+        ]
+      },
+      {
+        "title": "Korn — MTV Unplugged (Full Session)",
+        "artist": "Korn",
+        "year": 2007,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/El8-JgiqcUI"
           }
         ]
       },
@@ -829,6 +781,54 @@
             "url": "https://www.youtube.com/watch?v=4SDCuFLAF78"
           }
         ]
+      },
+      {
+        "title": "Nirvana — MTV Unplugged (Full Session)",
+        "artist": "Nirvana",
+        "year": 1993,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/pOTkCgkxqyg"
+          }
+        ]
+      },
+      {
+        "title": "Pearl Jam — MTV Unplugged (Full Session)",
+        "artist": "Pearl Jam",
+        "year": 1992,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Unplugged Full Session",
+            "url": "https://youtu.be/P9fPF204icg"
+          }
+        ]
+      },
+      {
+        "title": "Staind — MTV Unplugged (Full Session)",
+        "artist": "Staind",
+        "year": 2002,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=33MIi9bfmQo"
+          }
+        ]
+      },
+      {
+        "title": "Stone Temple Pilots — MTV Unplugged (Full Session)",
+        "artist": "Stone Temple Pilots",
+        "year": 1993,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Acoustic Performance",
+            "url": "https://youtu.be/Apok0654Qnc"
+          }
+        ]
       }
     ]
   },
@@ -837,12 +837,32 @@
     "mode": "folder",
     "items": [
       {
-        "title": "Scarface — Tiny Desk",
+        "title": "311 — Tiny Desk",
         "mode": "fullshow",
         "tracks": [
           {
             "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/ajNYTJcF6rE"
+            "url": "https://youtu.be/MgTDLlDY_yY"
+          }
+        ]
+      },
+      {
+        "title": "8Ball & MJG — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/gQXf0PNreCo"
+          }
+        ]
+      },
+      {
+        "title": "Alicia Keys — Tiny Desk",
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Tiny Desk Concert",
+            "url": "https://youtu.be/uwUt1fVLb3E"
           }
         ]
       },
@@ -867,26 +887,6 @@
         ]
       },
       {
-        "title": "Paramore — Tiny Desk",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/_t-nRXwAL1k"
-          }
-        ]
-      },
-      {
-        "title": "Alicia Keys — Tiny Desk",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/uwUt1fVLb3E"
-          }
-        ]
-      },
-      {
         "title": "Living Colour — Tiny Desk",
         "mode": "fullshow",
         "tracks": [
@@ -897,22 +897,22 @@
         ]
       },
       {
-        "title": "311 — Tiny Desk",
+        "title": "Paramore — Tiny Desk",
         "mode": "fullshow",
         "tracks": [
           {
             "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/MgTDLlDY_yY"
+            "url": "https://youtu.be/_t-nRXwAL1k"
           }
         ]
       },
       {
-        "title": "8Ball & MJG — Tiny Desk",
+        "title": "Scarface — Tiny Desk",
         "mode": "fullshow",
         "tracks": [
           {
             "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/gQXf0PNreCo"
+            "url": "https://youtu.be/ajNYTJcF6rE"
           }
         ]
       }
@@ -922,122 +922,6 @@
     "title": "🎛 Stitched Streams / Full Sessions",
     "mode": "folder",
     "items": [
-      {
-        "title": "Corey Taylor — Acoustic Session",
-        "artist": "Corey Taylor",
-        "year": "Acoustic",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Acoustic Performance",
-            "url": "https://youtu.be/uetFO7y8WPA"
-          }
-        ]
-      },
-      {
-        "title": "Papa Roach — WRIF Acoustic Set (Full Session)",
-        "artist": "Papa Roach",
-        "year": 2025,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://www.youtube.com/watch?v=f4BK60WVPac"
-          }
-        ]
-      },
-      {
-        "title": "Flyleaf — Acoustic Session (Bonus DVD)",
-        "artist": "Flyleaf",
-        "year": "DVD",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Acoustic Session",
-            "url": "https://youtu.be/oSKBnczdyMg"
-          }
-        ]
-      },
-      {
-        "title": "The Home Team — Acoustic Session",
-        "artist": "The Home Team",
-        "year": 2023,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/EGB3xoa7Cus"
-          }
-        ]
-      },
-      {
-        "title": "Sevendust — Acoustic Session",
-        "artist": "Sevendust",
-        "year": 2025,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/Q4s_nIG8rw0"
-          }
-        ]
-      },
-      {
-        "title": "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
-        "artist": "Stevie Ray Vaughan • Joe Satriani",
-        "year": "1980s",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Live Jam",
-            "url": "https://youtu.be/e_UASyYu1iA"
-          }
-        ]
-      },
-      {
-        "title": "Chris Cornell — Acoustic Collection",
-        "artist": "Chris Cornell",
-        "year": "Various",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Collection Stream",
-            "url": "https://youtu.be/2xxonKSQ-1M"
-          }
-        ]
-      },
-      {
-        "title": "Wage War — Acoustic Queue (6 Songs)",
-        "artist": "Wage War",
-        "year": 2024,
-        "mode": "queue",
-        "tracks": [
-          {
-            "title": "Magnetic",
-            "url": "https://youtu.be/zxvZO7MzYzU"
-          },
-          {
-            "title": "Circle The Drain",
-            "url": "https://youtu.be/HasZm8N83cE"
-          },
-          {
-            "title": "Savin Me (Nickelback Cover)",
-            "url": "https://youtu.be/2lcJUfE2LsQ"
-          },
-          {
-            "title": "Me Against Myself",
-            "url": "https://youtu.be/fT9SJV8KCE8"
-          },
-          {
-            "title": "Will We Ever Learn",
-            "url": "https://youtu.be/laiLOhKO9yU"
-          },
-          {
-            "title": "Johnny Cash (Acoustic)",
-            "url": "https://youtu.be/7WVGNUVsDFw"
-          }
-        ]
-      },
       {
         "title": "Bad Omens — Acoustic Queue (6 Songs)",
         "artist": "Bad Omens",
@@ -1071,30 +955,26 @@
         ]
       },
       {
-        "title": "I Prevail — Acoustic Queue (5 Songs)",
-        "artist": "I Prevail",
-        "year": "Acoustic",
-        "mode": "queue",
+        "title": "Chris Cornell — Acoustic Collection",
+        "artist": "Chris Cornell",
+        "year": "Various",
+        "mode": "fullshow",
         "tracks": [
           {
-            "title": "Deep End",
-            "url": "https://youtu.be/wFXJapoQRBw"
-          },
+            "title": "Collection Stream",
+            "url": "https://youtu.be/2xxonKSQ-1M"
+          }
+        ]
+      },
+      {
+        "title": "Corey Taylor — Acoustic Session",
+        "artist": "Corey Taylor",
+        "year": "Acoustic",
+        "mode": "fullshow",
+        "tracks": [
           {
-            "title": "Everytime You Leave",
-            "url": "https://youtu.be/rABqYJAiFTA"
-          },
-          {
-            "title": "Stuck In Your Head",
-            "url": "https://youtu.be/NUcvAirmEm4"
-          },
-          {
-            "title": "Scars",
-            "url": "https://youtu.be/vadGCs66ing"
-          },
-          {
-            "title": "My Heart I Surrender",
-            "url": "https://youtu.be/CqOgxKsIA88"
+            "title": "Acoustic Performance",
+            "url": "https://youtu.be/uetFO7y8WPA"
           }
         ]
       },
@@ -1123,6 +1003,70 @@
           {
             "title": "Pale Moonlight",
             "url": "https://youtu.be/rGKZ2X1WxJ4"
+          }
+        ]
+      },
+      {
+        "title": "Flyleaf — Acoustic Session (Bonus DVD)",
+        "artist": "Flyleaf",
+        "year": "DVD",
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Acoustic Session",
+            "url": "https://youtu.be/oSKBnczdyMg"
+          }
+        ]
+      },
+      {
+        "title": "I Prevail — Acoustic Queue (5 Songs)",
+        "artist": "I Prevail",
+        "year": "Acoustic",
+        "mode": "queue",
+        "tracks": [
+          {
+            "title": "Deep End",
+            "url": "https://youtu.be/wFXJapoQRBw"
+          },
+          {
+            "title": "Everytime You Leave",
+            "url": "https://youtu.be/rABqYJAiFTA"
+          },
+          {
+            "title": "Stuck In Your Head",
+            "url": "https://youtu.be/NUcvAirmEm4"
+          },
+          {
+            "title": "Scars",
+            "url": "https://youtu.be/vadGCs66ing"
+          },
+          {
+            "title": "My Heart I Surrender",
+            "url": "https://youtu.be/CqOgxKsIA88"
+          }
+        ]
+      },
+      {
+        "title": "Papa Roach — WRIF Acoustic Set (Full Session)",
+        "artist": "Papa Roach",
+        "year": 2025,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=f4BK60WVPac"
+          }
+        ]
+      },
+      {
+        "title": "Sevendust — Acoustic Session",
+        "artist": "Sevendust",
+        "year": 2025,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/Q4s_nIG8rw0"
           }
         ]
       },
@@ -1167,6 +1111,62 @@
         ]
       },
       {
+        "title": "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
+        "artist": "Stevie Ray Vaughan • Joe Satriani",
+        "year": "1980s",
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Live Jam",
+            "url": "https://youtu.be/e_UASyYu1iA"
+          }
+        ]
+      },
+      {
+        "title": "The Home Team — Acoustic Session",
+        "artist": "The Home Team",
+        "year": 2023,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://youtu.be/EGB3xoa7Cus"
+          }
+        ]
+      },
+      {
+        "title": "Wage War — Acoustic Queue (6 Songs)",
+        "artist": "Wage War",
+        "year": 2024,
+        "mode": "queue",
+        "tracks": [
+          {
+            "title": "Magnetic",
+            "url": "https://youtu.be/zxvZO7MzYzU"
+          },
+          {
+            "title": "Circle The Drain",
+            "url": "https://youtu.be/HasZm8N83cE"
+          },
+          {
+            "title": "Savin Me (Nickelback Cover)",
+            "url": "https://youtu.be/2lcJUfE2LsQ"
+          },
+          {
+            "title": "Me Against Myself",
+            "url": "https://youtu.be/fT9SJV8KCE8"
+          },
+          {
+            "title": "Will We Ever Learn",
+            "url": "https://youtu.be/laiLOhKO9yU"
+          },
+          {
+            "title": "Johnny Cash (Acoustic)",
+            "url": "https://youtu.be/7WVGNUVsDFw"
+          }
+        ]
+      },
+      {
         "title": "Wind Walkers — Acoustic Queue (2 Songs)",
         "artist": "Wind Walkers",
         "year": 2020,
@@ -1189,138 +1189,72 @@
     "mode": "folder",
     "items": [
       {
-        "title": "Pantera",
+        "title": "Architects",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Resurrection Fest (2023, Pro-Shot 4K)",
-            "artist": "Pantera",
-            "year": 2023,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=WMnhw6H-Wfg"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Metallica",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Slane Castle, Ireland (2019)",
-            "artist": "Metallica",
-            "year": 2019,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=9wz2WWgv9Fs"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "System Of A Down",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Rock In Rio 2015 (Full Show HD)",
-            "artist": "System Of A Down",
-            "year": 2015,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://youtu.be/63SkLEC48Bc"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Rage Against The Machine",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Finsbury Park, London (2010)",
-            "artist": "Rage Against The Machine",
-            "year": 2010,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=Sp_GfATanbM"
-              }
-            ]
-          },
-          {
-            "title": "Full Concert | Live at Woodstock '99",
-            "artist": "Rage Against The Machine",
-            "year": 1999,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://youtu.be/wy9SJkHAI5E"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Tool",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Ball Arena, Denver (2024, Full Show HD)",
-            "artist": "Tool",
+            "title": "Live at Wacken Open Air (2024, Full Show HD)",
+            "artist": "Architects",
             "year": 2024,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Show",
-                "url": "https://www.youtube.com/watch?v=mzURDTmgNy4"
+                "url": "https://www.youtube.com/watch?v=KPHzv4pnuho"
               }
             ]
           }
         ]
       },
       {
-        "title": "Limp Bizkit",
+        "title": "Asking Alexandria",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Woodstock '99 (Full Concert)",
-            "artist": "Limp Bizkit",
-            "year": 1999,
+            "title": "Live at Graspop (2013, Pro-Shot Full Set)",
+            "artist": "Asking Alexandria",
+            "year": 2013,
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Full Concert",
-                "url": "https://youtu.be/lE4NPu5nYS4"
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=Y399t9PIhmw"
               }
             ]
           }
         ]
       },
       {
-        "title": "Mötley Crüe",
+        "title": "B.B. King",
         "mode": "folder",
         "items": [
           {
-            "title": "Carnival Of Sins (Official Full Concert)",
-            "artist": "Mötley Crüe",
-            "year": "DVD",
+            "title": "Live at Montreux",
+            "artist": "B.B. King",
+            "year": "Live",
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=ETqwsTYYdUM"
+                "url": "https://youtu.be/cx5f1Jtqsxo"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Black Sabbath",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Hammersmith Odeon (1978 Full Concert, Remastered HD)",
+            "artist": "Black Sabbath",
+            "year": 1978,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/e0eMNtNlrOA"
               }
             ]
           }
@@ -1345,240 +1279,18 @@
         ]
       },
       {
-        "title": "Dance Gavin Dance",
+        "title": "Bring Me The Horizon",
         "mode": "folder",
         "items": [
           {
-            "title": "Full Set (Pro-Shot, CaliberTV)",
-            "artist": "Dance Gavin Dance",
-            "year": "Live",
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=xC-k4FEYpJ8"
-              }
-            ]
-          },
-          {
-            "title": "Tree City Sessions 2 (Full Show)",
-            "year": 2020,
-            "mode": "fullshow",
-            "added": "2026-06-23",
-            "tracks": [
-              {
-                "title": "Full Show",
-                "url": "https://www.youtube.com/watch?v=gub7n32byNE"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Architects",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Wacken Open Air (2024, Full Show HD)",
-            "artist": "Architects",
-            "year": 2024,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Show",
-                "url": "https://www.youtube.com/watch?v=KPHzv4pnuho"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Starset",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Immersion: The Final Chapter (Live Demonstration, 2024)",
-            "artist": "Starset",
-            "year": 2024,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Show",
-                "url": "https://www.youtube.com/watch?v=EV8n2cU4wRw"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Linkin Park",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Pinkpop Festival (2012, Pro-Shot)",
-            "artist": "Linkin Park",
-            "year": 2012,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=vXsFpdYAV9c"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Sleep Token",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Download Festival 2025 (First-Ever Headline Set)",
-            "artist": "Sleep Token",
-            "year": 2025,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Show",
-                "url": "https://www.youtube.com/watch?v=T8jVvjSbJRI"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Jinjer",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Alive In Melbourne (Official Full Concert)",
-            "artist": "Jinjer",
-            "year": "Live",
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=vHLouXKjTNQ"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Spiritbox",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Rock Am Ring (2025, Official Pro-Shot)",
-            "artist": "Spiritbox",
-            "year": 2025,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=TtmCX9y52ms"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Memphis May Fire",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Full Set, Live at The District, Sioux Falls (2024, Opening Night)",
-            "artist": "Memphis May Fire",
-            "year": 2024,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=QC0uFUhFAN4"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "The Amity Affliction",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Hellfest (2023, Pro-Shot Full Set)",
-            "artist": "The Amity Affliction",
+            "title": "Live at Rock Am Ring (2023, Full Concert)",
+            "artist": "Bring Me The Horizon",
             "year": 2023,
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=_kdPhOs5THA"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Foo Fighters",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live At Wembley Stadium (Official Full Concert)",
-            "artist": "Foo Fighters",
-            "year": 2008,
-            "mode": "fullshow",
-            "tracks": [
-              {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=xATJlGTZwMI"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Polaris",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Full Set w/ Multitrack Audio — Live @ The Foundry Concert Club",
-            "artist": "Polaris",
-            "year": "Live",
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=gx-2U5gFtrc"
-              }
-            ]
-          },
-          {
-            "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
-            "year": 2026,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
-                "url": "https://www.youtube.com/watch?v=z_i_OLeieA0"
-              }
-            ],
-            "added": "2026-06-23"
-          }
-        ]
-      },
-      {
-        "title": "Killswitch Engage",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at The Palladium, Worcester MA (2005, Full Show 4K)",
-            "artist": "Killswitch Engage",
-            "year": 2005,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Show",
-                "url": "https://www.youtube.com/watch?v=H0z-4sYzCig"
+                "url": "https://www.youtube.com/watch?v=zSwqLsuJRY0"
               }
             ]
           }
@@ -1615,90 +1327,36 @@
         ]
       },
       {
-        "title": "Five Finger Death Punch",
+        "title": "Caskets",
         "mode": "folder",
         "items": [
           {
-            "title": "Live in Indianapolis (2024, Full 4K Concert)",
-            "artist": "Five Finger Death Punch",
-            "year": 2024,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=2Ai4U94sb5Q"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Asking Alexandria",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Graspop (2013, Pro-Shot Full Set)",
-            "artist": "Asking Alexandria",
-            "year": 2013,
+            "title": "Live in Seattle (2022, Full Set)",
+            "artist": "Caskets",
+            "year": 2022,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=Y399t9PIhmw"
+                "url": "https://www.youtube.com/watch?v=nSJio_JUZao"
               }
             ]
           }
         ]
       },
       {
-        "title": "Falling In Reverse",
+        "title": "Christone \"Kingfish\" Ingram",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Rock Am Ring (2025, Official Pro-Shot)",
-            "artist": "Falling In Reverse",
-            "year": 2025,
+            "title": "Live At The Ground Zero Blues Club",
+            "artist": "Christone \"Kingfish\" Ingram",
+            "year": "Live",
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Full Performance",
-                "url": "https://www.youtube.com/watch?v=ChyLmu2HUPk"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Black Sabbath",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Hammersmith Odeon (1978 Full Concert, Remastered HD)",
-            "artist": "Black Sabbath",
-            "year": 1978,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://youtu.be/e0eMNtNlrOA"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Led Zeppelin",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "The Song Remains The Same (1973, Madison Square Garden, Original Lineup)",
-            "artist": "Led Zeppelin",
-            "year": 1973,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert Film",
-                "url": "https://www.youtube.com/watch?v=rPDA5pWUGIo"
+                "title": "Full Set",
+                "url": "https://youtu.be/GaQ0IDLw6qs"
               }
             ]
           }
@@ -1723,36 +1381,138 @@
         ]
       },
       {
-        "title": "Caskets",
+        "title": "Dance Gavin Dance",
         "mode": "folder",
         "items": [
           {
-            "title": "Live in Seattle (2022, Full Set)",
-            "artist": "Caskets",
-            "year": 2022,
+            "title": "Full Set (Pro-Shot, CaliberTV)",
+            "artist": "Dance Gavin Dance",
+            "year": "Live",
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=nSJio_JUZao"
+                "url": "https://www.youtube.com/watch?v=xC-k4FEYpJ8"
+              }
+            ]
+          },
+          {
+            "title": "Tree City Sessions 2 (Full Show)",
+            "year": 2020,
+            "mode": "fullshow",
+            "added": "2026-06-23",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=gub7n32byNE"
               }
             ]
           }
         ]
       },
       {
-        "title": "Stone Sour",
+        "title": "Dean Hall and the Loose Eels",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Pinkpop Festival (2007, Pro-Shot)",
-            "artist": "Stone Sour",
-            "year": 2007,
+            "title": "Live at Rivalry's Sports Bar & Grill",
+            "artist": "Dean Hall and the Loose Eels",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://youtu.be/JRlDBoFZ-yI"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Deftones",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Lollapalooza Chicago (2024, Official Pro-Shot HD)",
+            "artist": "Deftones",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=QzJytOdG2ss"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Disturbed",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Disturbed - Austin City Limits Music Festival 2018 [Live From The Vault]",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Disturbed - Austin City Limits Music Festival 2018 [Live From The Vault]",
+                "url": "https://www.youtube.com/watch?v=7RGB34-6C3Y"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Falling In Reverse",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Rock Am Ring (2025, Official Pro-Shot)",
+            "artist": "Falling In Reverse",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Performance",
+                "url": "https://www.youtube.com/watch?v=ChyLmu2HUPk"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Five Finger Death Punch",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Indianapolis (2024, Full 4K Concert)",
+            "artist": "Five Finger Death Punch",
+            "year": 2024,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=jNAHf8Jab1k"
+                "url": "https://www.youtube.com/watch?v=2Ai4U94sb5Q"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Foo Fighters",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live At Wembley Stadium (Official Full Concert)",
+            "artist": "Foo Fighters",
+            "year": 2008,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=xATJlGTZwMI"
               }
             ]
           }
@@ -1777,18 +1537,216 @@
         ]
       },
       {
-        "title": "Trivium",
+        "title": "Guns N' Roses",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Bloodstock (2025, Pro-Shot Full Set)",
-            "artist": "Trivium",
+            "title": "Live in Melbourne (1988, Pro-Shot Full Concert)",
+            "artist": "Guns N' Roses",
+            "year": 1988,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=TvkRYIFE370"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "I Prevail",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Pinkpop 2023",
+            "year": 2023,
+            "mode": "fullshow",
+            "added": "2026-06-23",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=He4klEV3rks"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Imminence",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Hellfest Open Air 2025 (ARTE Concert, Official Broadcast)",
+            "artist": "Imminence",
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=3WA0RbO04GU"
+                "url": "https://www.youtube.com/watch?v=gV5Xd9Yl-Gg"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Jinjer",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Alive In Melbourne (Official Full Concert)",
+            "artist": "Jinjer",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=vHLouXKjTNQ"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Killswitch Engage",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at The Palladium, Worcester MA (2005, Full Show 4K)",
+            "artist": "Killswitch Engage",
+            "year": 2005,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=H0z-4sYzCig"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Kublai Khan TX",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Underground Arts, Philadelphia (2021, hate5six Concert Film)",
+            "artist": "Kublai Khan TX",
+            "year": 2021,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=c-XUqFH_85s"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Lamb Of God",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live in Portland — A hate5six Concert Film (2022, Officially Sanctioned, ~90 Min)",
+            "artist": "Lamb Of God",
+            "year": 2022,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert Film",
+                "url": "https://www.youtube.com/watch?v=enZLHI3F_7A"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Led Zeppelin",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "The Song Remains The Same (1973, Madison Square Garden, Original Lineup)",
+            "artist": "Led Zeppelin",
+            "year": 1973,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert Film",
+                "url": "https://www.youtube.com/watch?v=rPDA5pWUGIo"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Limp Bizkit",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Woodstock '99 (Full Concert)",
+            "artist": "Limp Bizkit",
+            "year": 1999,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/lE4NPu5nYS4"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Linkin Park",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Pinkpop Festival (2012, Pro-Shot)",
+            "artist": "Linkin Park",
+            "year": 2012,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=vXsFpdYAV9c"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Memphis May Fire",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Set, Live at The District, Sioux Falls (2024, Opening Night)",
+            "artist": "Memphis May Fire",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=QC0uFUhFAN4"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Metallica",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Slane Castle, Ireland (2019)",
+            "artist": "Metallica",
+            "year": 2019,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=9wz2WWgv9Fs"
               }
             ]
           }
@@ -1813,38 +1771,38 @@
         ]
       },
       {
-        "title": "We Came As Romans",
+        "title": "Mötley Crüe",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at The Masquerade, Atlanta (2023, Full Set 4K)",
-            "artist": "We Came As Romans",
-            "year": 2023,
+            "title": "Carnival Of Sins (Official Full Concert)",
+            "artist": "Mötley Crüe",
+            "year": "DVD",
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU"
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=ETqwsTYYdUM"
               }
             ]
           }
         ]
       },
       {
-        "title": "Bring Me The Horizon",
+        "title": "Nothing More",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Rock Am Ring (2023, Full Concert)",
-            "artist": "Bring Me The Horizon",
-            "year": 2023,
+            "title": "Nothing More  -  Live @ Tuska Open air Metal Festival 2025",
+            "year": 2026,
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=zSwqLsuJRY0"
+                "title": "Nothing More  -  Live @ Tuska Open air Metal Festival 2025",
+                "url": "https://www.youtube.com/watch?v=rvqMSXVnFnE"
               }
-            ]
+            ],
+            "added": "2026-06-23"
           }
         ]
       },
@@ -1867,36 +1825,186 @@
         ]
       },
       {
-        "title": "Soundgarden",
+        "title": "Orthodox",
         "mode": "folder",
         "items": [
           {
-            "title": "Live At Download Festival (2012, Official Full Concert)",
-            "artist": "Soundgarden",
-            "year": 2012,
+            "title": "hate5six Concert Film (March 2025)",
+            "artist": "Orthodox",
+            "year": 2025,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=hlBKPFTLSiY"
+                "url": "https://youtu.be/fY2XkmJU8WI"
               }
             ]
           }
         ]
       },
       {
-        "title": "Guns N' Roses",
+        "title": "Pantera",
         "mode": "folder",
         "items": [
           {
-            "title": "Live in Melbourne (1988, Pro-Shot Full Concert)",
-            "artist": "Guns N' Roses",
-            "year": 1988,
+            "title": "Live at Resurrection Fest (2023, Pro-Shot 4K)",
+            "artist": "Pantera",
+            "year": 2023,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=TvkRYIFE370"
+                "url": "https://www.youtube.com/watch?v=WMnhw6H-Wfg"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Philip Sayce",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full New Year's Eve Show (Maui Sugar Mill, 2018)",
+            "artist": "Philip Sayce",
+            "year": 2018,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://youtu.be/mQ9WYAIz4vI"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Pierce The Veil",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Pierce The Veil - Live at Lollapalooza Chile 2024 [FULL STREAM HD]",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Pierce The Veil - Live at Lollapalooza Chile 2024 [FULL STREAM HD]",
+                "url": "https://www.youtube.com/watch?v=h_3d6EGwM1A"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Polaris",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Set w/ Multitrack Audio — Live @ The Foundry Concert Club",
+            "artist": "Polaris",
+            "year": "Live",
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=gx-2U5gFtrc"
+              }
+            ]
+          },
+          {
+            "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
+                "url": "https://www.youtube.com/watch?v=z_i_OLeieA0"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Rage Against The Machine",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Finsbury Park, London (2010)",
+            "artist": "Rage Against The Machine",
+            "year": 2010,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=Sp_GfATanbM"
+              }
+            ]
+          },
+          {
+            "title": "Full Concert | Live at Woodstock '99",
+            "artist": "Rage Against The Machine",
+            "year": 1999,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/wy9SJkHAI5E"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Rain City Drive",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Rain City Drive Full Set Live 10-2-2024 Thunderbird Cafe Pittsburgh #music #livemusic #hardrock",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Rain City Drive Full Set Live 10-2-2024 Thunderbird Cafe Pittsburgh #music #livemusic #hardrock",
+                "url": "https://www.youtube.com/watch?v=BQ9WzLI3my0"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Sevendust",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Sevendust - Full Concert | Live at Woodstock ‘99 [HD]",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Sevendust - Full Concert | Live at Woodstock ‘99 [HD]",
+                "url": "https://www.youtube.com/watch?v=LxTvRapI7J4"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Sleep Token",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Download Festival 2025 (First-Ever Headline Set)",
+            "artist": "Sleep Token",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=T8jVvjSbJRI"
               }
             ]
           }
@@ -1933,180 +2041,54 @@
         ]
       },
       {
-        "title": "Deftones",
+        "title": "Soundgarden",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Lollapalooza Chicago (2024, Official Pro-Shot HD)",
-            "artist": "Deftones",
-            "year": 2024,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=QzJytOdG2ss"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Kublai Khan TX",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Underground Arts, Philadelphia (2021, hate5six Concert Film)",
-            "artist": "Kublai Khan TX",
-            "year": 2021,
+            "title": "Live At Download Festival (2012, Official Full Concert)",
+            "artist": "Soundgarden",
+            "year": 2012,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=c-XUqFH_85s"
+                "url": "https://www.youtube.com/watch?v=hlBKPFTLSiY"
               }
             ]
           }
         ]
       },
       {
-        "title": "Orthodox",
+        "title": "Spiritbox",
         "mode": "folder",
         "items": [
           {
-            "title": "hate5six Concert Film (March 2025)",
-            "artist": "Orthodox",
-            "year": 2025,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://youtu.be/fY2XkmJU8WI"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Imminence",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Hellfest Open Air 2025 (ARTE Concert, Official Broadcast)",
-            "artist": "Imminence",
+            "title": "Live at Rock Am Ring (2025, Official Pro-Shot)",
+            "artist": "Spiritbox",
             "year": 2025,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=gV5Xd9Yl-Gg"
+                "url": "https://www.youtube.com/watch?v=TtmCX9y52ms"
               }
             ]
           }
         ]
       },
       {
-        "title": "Lamb Of God",
+        "title": "Starset",
         "mode": "folder",
         "items": [
           {
-            "title": "Live in Portland — A hate5six Concert Film (2022, Officially Sanctioned, ~90 Min)",
-            "artist": "Lamb Of God",
-            "year": 2022,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert Film",
-                "url": "https://www.youtube.com/watch?v=enZLHI3F_7A"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Sum 41",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Music Box, San Diego (2024, Complete Performance, 4K)",
-            "artist": "Sum 41",
+            "title": "Immersion: The Final Chapter (Live Demonstration, 2024)",
+            "artist": "Starset",
             "year": 2024,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://www.youtube.com/watch?v=m9GzUvUf5o8"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Christone \"Kingfish\" Ingram",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live At The Ground Zero Blues Club",
-            "artist": "Christone \"Kingfish\" Ingram",
-            "year": "Live",
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://youtu.be/GaQ0IDLw6qs"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Philip Sayce",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Full New Year's Eve Show (Maui Sugar Mill, 2018)",
-            "artist": "Philip Sayce",
-            "year": 2018,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Show",
-                "url": "https://youtu.be/mQ9WYAIz4vI"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "Tab Benoit",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Full Set - Crescent City Blues & BBQ Festival (2025)",
-            "artist": "Tab Benoit",
-            "year": 2025,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Set",
-                "url": "https://youtu.be/lu2QSzuGx80"
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "title": "B.B. King",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Live at Montreux",
-            "artist": "B.B. King",
-            "year": "Live",
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Full Concert",
-                "url": "https://youtu.be/cx5f1Jtqsxo"
+                "url": "https://www.youtube.com/watch?v=EV8n2cU4wRw"
               }
             ]
           }
@@ -2131,92 +2113,128 @@
         ]
       },
       {
-        "title": "Dean Hall and the Loose Eels",
+        "title": "Stone Sour",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Rivalry's Sports Bar & Grill",
-            "artist": "Dean Hall and the Loose Eels",
-            "year": "Live",
+            "title": "Live at Pinkpop Festival (2007, Pro-Shot)",
+            "artist": "Stone Sour",
+            "year": 2007,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=jNAHf8Jab1k"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Sum 41",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Music Box, San Diego (2024, Complete Performance, 4K)",
+            "artist": "Sum 41",
+            "year": 2024,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=m9GzUvUf5o8"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "System Of A Down",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Rock In Rio 2015 (Full Show HD)",
+            "artist": "System Of A Down",
+            "year": 2015,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Concert",
+                "url": "https://youtu.be/63SkLEC48Bc"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Tab Benoit",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Full Set - Crescent City Blues & BBQ Festival (2025)",
+            "artist": "Tab Benoit",
+            "year": 2025,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://youtu.be/lu2QSzuGx80"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "The Amity Affliction",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Hellfest (2023, Pro-Shot Full Set)",
+            "artist": "The Amity Affliction",
+            "year": 2023,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=_kdPhOs5THA"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Tool",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Live at Ball Arena, Denver (2024, Full Show HD)",
+            "artist": "Tool",
+            "year": 2024,
             "mode": "fullshow",
             "tracks": [
               {
                 "title": "Full Show",
-                "url": "https://youtu.be/JRlDBoFZ-yI"
+                "url": "https://www.youtube.com/watch?v=mzURDTmgNy4"
               }
             ]
           }
         ]
       },
       {
-        "title": "I Prevail",
+        "title": "Trivium",
         "mode": "folder",
         "items": [
           {
-            "title": "Live at Pinkpop 2023",
-            "year": 2023,
+            "title": "Live at Bloodstock (2025, Pro-Shot Full Set)",
+            "artist": "Trivium",
+            "year": 2025,
             "mode": "fullshow",
-            "added": "2026-06-23",
             "tracks": [
               {
-                "title": "Full Concert",
-                "url": "https://www.youtube.com/watch?v=He4klEV3rks"
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=3WA0RbO04GU"
               }
             ]
-          }
-        ]
-      },
-      {
-        "title": "Wage War",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Wage War - full set (Live in Chicago) - May 2026 concert (It Calls Me By Name Tour)",
-            "year": 2026,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Wage War - full set (Live in Chicago) - May 2026 concert (It Calls Me By Name Tour)",
-                "url": "https://www.youtube.com/watch?v=WNATrsl2vHs"
-              }
-            ],
-            "added": "2026-06-23"
-          }
-        ]
-      },
-      {
-        "title": "Sevendust",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Sevendust - Full Concert | Live at Woodstock ‘99 [HD]",
-            "year": 2026,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Sevendust - Full Concert | Live at Woodstock ‘99 [HD]",
-                "url": "https://www.youtube.com/watch?v=LxTvRapI7J4"
-              }
-            ],
-            "added": "2026-06-23"
-          }
-        ]
-      },
-      {
-        "title": "Pierce The Veil",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Pierce The Veil - Live at Lollapalooza Chile 2024 [FULL STREAM HD]",
-            "year": 2026,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Pierce The Veil - Live at Lollapalooza Chile 2024 [FULL STREAM HD]",
-                "url": "https://www.youtube.com/watch?v=h_3d6EGwM1A"
-              }
-            ],
-            "added": "2026-06-23"
           }
         ]
       },
@@ -2239,17 +2257,17 @@
         ]
       },
       {
-        "title": "Rain City Drive",
+        "title": "Wage War",
         "mode": "folder",
         "items": [
           {
-            "title": "Rain City Drive Full Set Live 10-2-2024 Thunderbird Cafe Pittsburgh #music #livemusic #hardrock",
+            "title": "Wage War - full set (Live in Chicago) - May 2026 concert (It Calls Me By Name Tour)",
             "year": 2026,
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Rain City Drive Full Set Live 10-2-2024 Thunderbird Cafe Pittsburgh #music #livemusic #hardrock",
-                "url": "https://www.youtube.com/watch?v=BQ9WzLI3my0"
+                "title": "Wage War - full set (Live in Chicago) - May 2026 concert (It Calls Me By Name Tour)",
+                "url": "https://www.youtube.com/watch?v=WNATrsl2vHs"
               }
             ],
             "added": "2026-06-23"
@@ -2257,38 +2275,20 @@
         ]
       },
       {
-        "title": "Disturbed",
+        "title": "We Came As Romans",
         "mode": "folder",
         "items": [
           {
-            "title": "Disturbed - Austin City Limits Music Festival 2018 [Live From The Vault]",
-            "year": 2026,
+            "title": "Live at The Masquerade, Atlanta (2023, Full Set 4K)",
+            "artist": "We Came As Romans",
+            "year": 2023,
             "mode": "fullshow",
             "tracks": [
               {
-                "title": "Disturbed - Austin City Limits Music Festival 2018 [Live From The Vault]",
-                "url": "https://www.youtube.com/watch?v=7RGB34-6C3Y"
+                "title": "Full Set",
+                "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU"
               }
-            ],
-            "added": "2026-06-23"
-          }
-        ]
-      },
-      {
-        "title": "Nothing More",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Nothing More  -  Live @ Tuska Open air Metal Festival 2025",
-            "year": 2026,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Nothing More  -  Live @ Tuska Open air Metal Festival 2025",
-                "url": "https://www.youtube.com/watch?v=rvqMSXVnFnE"
-              }
-            ],
-            "added": "2026-06-23"
+            ]
           }
         ]
       }
