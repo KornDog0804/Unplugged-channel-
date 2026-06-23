@@ -747,3 +747,108 @@ async function sortAndFixFolders() {
     doneProgress(false);
   }
 }
+
+// ── Remove Artists folder & migrate content to correct homes ──────────────────
+async function removeArtistsFolder() {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Migrating Artists folder content…");
+  try {
+    const epFile = await ghGet("episodes.json");
+    const episodes = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+
+    // Find the folders we need
+    const artistsFolder  = rootArray.find(s => s.title === "🎸 Artists" && Array.isArray(s.items));
+    const stitchedFolder = rootArray.find(s => s.title && s.title.includes("Stitched") && Array.isArray(s.items));
+    const liveFolder     = rootArray.find(s => s.title && s.title.includes("Live Concerts") && s.title.includes("🎤") && Array.isArray(s.items));
+
+    if (!artistsFolder) {
+      logProgress("🎸 Artists folder not found — nothing to migrate.");
+      doneProgress(true);
+      return;
+    }
+
+    logProgress(`Found 🎸 Artists with ${artistsFolder.items.length} artist sub-folders`);
+
+    // Build URL sets for de-dupe
+    function getUrls(folder) {
+      const urls = new Set();
+      (folder.items || []).forEach(item => {
+        (item.tracks || []).forEach(t => { if (t.url) urls.add(t.url); });
+        (item.items || []).forEach(sub => {
+          (sub.tracks || []).forEach(t => { if (t.url) urls.add(t.url); });
+        });
+      });
+      return urls;
+    }
+
+    const stitchedUrls = stitchedFolder ? getUrls(stitchedFolder) : new Set();
+    const liveUrls     = liveFolder     ? getUrls(liveFolder)     : new Set();
+
+    let migratedToStitched = 0;
+    let migratedToLive     = 0;
+    let skipped            = 0;
+
+    for (const artistFolder of artistsFolder.items) {
+      // Each artistFolder has items: fullshow/queue/playlist entries
+      for (const show of (artistFolder.items || [])) {
+        const showUrls = (show.tracks || []).map(t => t.url).filter(Boolean);
+        const isDupeStitched = showUrls.some(u => stitchedUrls.has(u));
+        const isDupeLive     = showUrls.some(u => liveUrls.has(u));
+
+        if (isDupeStitched || isDupeLive) {
+          logProgress(`  Skip (already exists): ${show.title}`);
+          skipped++;
+          continue;
+        }
+
+        // Acoustic/stripped/queue/fullshow → Stitched Streams
+        if (show.mode === "queue" || show.mode === "fullshow") {
+          if (stitchedFolder) {
+            // Add artist name to show if missing
+            if (!show.artist) show.artist = artistFolder.title;
+            // Prefix title with artist if not already there
+            if (!show.title.toLowerCase().includes(artistFolder.title.toLowerCase())) {
+              show.title = `${artistFolder.title} — ${show.title}`;
+            }
+            stitchedFolder.items.push(show);
+            showUrls.forEach(u => stitchedUrls.add(u));
+            logProgress(`  → Stitched Streams: ${show.title}`);
+            migratedToStitched++;
+          }
+        }
+      }
+    }
+
+    // Sort Stitched Streams alphabetically after migration
+    if (stitchedFolder) {
+      stitchedFolder.items.sort((a, b) => (a.title||"").localeCompare(b.title||""));
+    }
+
+    // Remove the Artists folder from root
+    rootArray.splice(rootArray.indexOf(artistsFolder), 1);
+    logProgress(`\nRemoved 🎸 Artists folder`);
+    logProgress(`Migrated: ${migratedToStitched} to Stitched Streams`);
+    logProgress(`Skipped (already existed): ${skipped}`);
+
+    logProgress("\nWriting to GitHub…");
+    await ghPut("episodes.json", episodes, epFile.sha,
+      "Remove Artists folder — migrate acoustic content to Stitched Streams");
+    logProgress("Done! Netlify deploys in ~30 seconds.");
+
+    // Refresh dropdown
+    actualFolders = rootArray.filter(i => Array.isArray(i.items)).map(i => i.title);
+    if ($folderSelect) {
+      $folderSelect.innerHTML = actualFolders.map(f =>
+        `<option value="${f.replace(/"/g,"&quot;")}">${f}</option>`).join("");
+      const liveOpt = [...$folderSelect.options].find(o => o.value.toLowerCase().includes("live concert"));
+      if (liveOpt) $folderSelect.value = liveOpt.value;
+    }
+
+    doneProgress(true);
+    showToast("Artists folder removed — content migrated!");
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
