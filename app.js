@@ -80,6 +80,11 @@
   // also popping a folder level.
   let theaterExitGuardUntil = 0;
 
+  // When true, hitting the end of the queue auto-picks another random
+  // concert instead of stopping. Set by playRandom(), cleared by any
+  // manual card tap or Play All so normal queues still stop normally.
+  let randomMode = false;
+
   // ---- KornDog Features v1 state (favorites / search / resume) ----
   let currentSearch = "";          // active search term ("" = off)
   let lastRenderedItems = null;    // items actually shown, in card order
@@ -689,6 +694,9 @@
   function advanceQueue() {
     if (currentQueueIndex + 1 < currentQueue.length) {
       playTrackAt(currentQueueIndex + 1, true);
+    } else if (randomMode) {
+      // Infinite shuffle — queue ran out, pick another random concert.
+      playRandom();
     } else {
       setStatus("Queue finished.");
     }
@@ -911,6 +919,7 @@
     const q = collectPlayableFromNode(pick);
     if (!q.length) { setStatus("Couldn't start that one — try again."); return; }
 
+    randomMode = true;
     currentQueue = q;
     setStatus(`🎲 ${safeTitle(pick)}`);
     playTrackAt(0, true);
@@ -1192,6 +1201,7 @@
             setStatus("No playable tracks found in that item.");
             return;
           }
+          randomMode = false;
           currentQueue = q;
           playTrackAt(0, true);
           return;
@@ -1304,6 +1314,7 @@
         setStatus("No playable items on this screen.");
         return;
       }
+      randomMode = false;
       currentQueue = q;
       playTrackAt(0, true);
     });
