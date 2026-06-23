@@ -1587,6 +1587,18 @@
                 "url": "https://www.youtube.com/watch?v=zeZYREfp720"
               }
             ]
+          },
+          {
+            "title": "BULLET FOR MY VALENTINE - Live at Resurrection Fest EG 2022 (Viveiro, Galicia, Spain) [Full Show]",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "BULLET FOR MY VALENTINE - Live at Resurrection Fest EG 2022 (Viveiro, Galicia, Spain) [Full Show]",
+                "url": "https://www.youtube.com/watch?v=rScsB_hMjLo"
+              }
+            ],
+            "added": "2026-06-23"
           }
         ]
       },
@@ -1893,6 +1905,18 @@
                 "url": "https://www.youtube.com/watch?v=g5tXsoj-lx8"
               }
             ]
+          },
+          {
+            "title": "SlipKnot - Live At Download 2009 (Full Concert)",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "SlipKnot - Live At Download 2009 (Full Concert)",
+                "url": "https://www.youtube.com/watch?v=72rq16h1IOg"
+              }
+            ],
+            "added": "2026-06-23"
           }
         ]
       },
@@ -2127,6 +2151,42 @@
                 "url": "https://www.youtube.com/watch?v=He4klEV3rks"
               }
             ]
+          }
+        ]
+      },
+      {
+        "title": "Wage War",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Wage War - full set (Live in Chicago) - May 2026 concert (It Calls Me By Name Tour)",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Wage War - full set (Live in Chicago) - May 2026 concert (It Calls Me By Name Tour)",
+                "url": "https://www.youtube.com/watch?v=WNATrsl2vHs"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Sevendust",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Sevendust - Full Concert | Live at Woodstock ‘99 [HD]",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Sevendust - Full Concert | Live at Woodstock ‘99 [HD]",
+                "url": "https://www.youtube.com/watch?v=LxTvRapI7J4"
+              }
+            ],
+            "added": "2026-06-23"
           }
         ]
       }
