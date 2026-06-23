@@ -623,6 +623,21 @@
         }
         playerIsPaused = state === 2;
       }
+      // YouTube error event: codes 100/101/150 = removed, private, or embed-blocked.
+      // Auto-skip so a dead video never hangs the queue (or random mode).
+      if (data.event === "error") {
+        const code = data.info;
+        // 100 = removed/private, 101/150 = playback not allowed in embedded players
+        if (code === 100 || code === 101 || code === 150) {
+          const skippedTitle = currentQueue[currentQueueIndex]?.title || "video";
+          setStatus(`Skipped: "${skippedTitle}" is unavailable — moving on…`);
+          stopListeningHandshake();
+          // Small delay so the status message is readable before the next load
+          setTimeout(advanceQueue, 1200);
+        }
+        return;
+      }
+
       if (data.event === "infoDelivery" && data.info && typeof data.info.currentTime === "number") {
         playerCurrentTime = data.info.currentTime;
         // Save resume position, throttled to ~once every 5s.
@@ -1063,7 +1078,7 @@
         <div class="trackHeaderText">
           <div class="trackHeaderTitle">${escapeHtml(node.title || "Tracks")}</div>
           ${node.artist ? `<div class="trackHeaderSub">${escapeHtml(node.artist)}</div>` : ""}
-          <div class="trackHeaderSmall">${tracks.length} track${tracks.length === 1 ? "" : "s"} • tap one to start there</div>
+          <div class="trackHeaderSmall">${tracks.length} track${tracks.length === 1 ? "" : "s"} • tap one to jump in • Play All to stitch from the top</div>
         </div>
       </div>
     `;
