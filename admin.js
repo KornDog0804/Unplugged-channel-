@@ -537,10 +537,24 @@ $clearReviewed && $clearReviewed.addEventListener("click", () => {
   render(); showToast(`${count} items hidden.`);
 });
 
-$clearPending && $clearPending.addEventListener("click", () => {
+$clearPending && $clearPending.addEventListener("click", async () => {
   if (!allCandidates.length) { showToast("Queue already empty."); return; }
-  if (!confirm(`Clear ALL ${allCandidates.length} pending candidates from view?`)) return;
-  allCandidates = []; render(); showToast("Queue cleared from view.");
+  if (!confirm(`Permanently clear ALL ${allCandidates.length} pending candidates from GitHub? This cannot be undone.`)) return;
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Clearing all pending candidates…");
+  try {
+    const f = await ghGet("data/discovery-candidates.json");
+    await ghPut("data/discovery-candidates.json", [], f.sha,
+      `Clear all ${allCandidates.length} pending candidates`);
+    allCandidates = [];
+    logProgress(`Cleared all candidates from GitHub.`);
+    doneProgress(true);
+    render();
+    showToast("Queue cleared from GitHub!");
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
 });
 
 $resetRejected && $resetRejected.addEventListener("click", () => {
