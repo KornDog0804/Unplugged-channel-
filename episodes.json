@@ -1551,6 +1551,18 @@
                 "url": "https://www.youtube.com/watch?v=gx-2U5gFtrc"
               }
             ]
+          },
+          {
+            "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
+                "url": "https://www.youtube.com/watch?v=z_i_OLeieA0"
+              }
+            ],
+            "added": "2026-06-23"
           }
         ]
       },
@@ -2189,13 +2201,7 @@
             "added": "2026-06-23"
           }
         ]
-      }
-    ]
-  },
-  {
-    "title": "Live Concerts",
-    "mode": "folder",
-    "items": [
+      },
       {
         "title": "Pierce The Veil",
         "mode": "folder",
@@ -2244,24 +2250,6 @@
               {
                 "title": "Rain City Drive Full Set Live 10-2-2024 Thunderbird Cafe Pittsburgh #music #livemusic #hardrock",
                 "url": "https://www.youtube.com/watch?v=BQ9WzLI3my0"
-              }
-            ],
-            "added": "2026-06-23"
-          }
-        ]
-      },
-      {
-        "title": "Polaris",
-        "mode": "folder",
-        "items": [
-          {
-            "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
-            "year": 2026,
-            "mode": "fullshow",
-            "tracks": [
-              {
-                "title": "Polaris - Live at Graspop Metal Meeting (2025) 1080p",
-                "url": "https://www.youtube.com/watch?v=z_i_OLeieA0"
               }
             ],
             "added": "2026-06-23"
