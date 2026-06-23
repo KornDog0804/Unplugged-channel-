@@ -1,15 +1,12 @@
 name: Discover New Shows
 
 on:
-  schedule:
-    - cron: "0 10 * * 1"
-    - cron: "0 10 * * 4"
   workflow_dispatch:
 
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 10
 
     permissions:
       contents: write
@@ -23,16 +20,44 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Shrink discovery for proof of concept
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+
+          const file = "data/artist-watchlist.json";
+          const data = JSON.parse(fs.readFileSync(file, "utf8"));
+
+          data.tier_1_core = (data.tier_1_core || []).slice(0, 5);
+          data.tier_2_adjacent = [];
+          data.tier_3_watchlist = [];
+
+          data.searchTerms = [
+            "full concert",
+            "live at",
+            "acoustic session"
+          ];
+
+          data.maxResultsPerSearch = 3;
+          data.minDurationMinutes = 15;
+
+          fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
+          NODE
+
       - name: Run discovery bot
         run: node scripts/discover-shows.js
 
       - name: Commit discovery results
+        if: always()
         run: |
           git config user.name "concert-corner-bot"
           git config user.email "actions@github.com"
 
           git add data/discovery-candidates.json
 
-          git diff --staged --quiet || git commit -m "🎸 Discovery bot: new concert candidates $(date +'%Y-%m-%d')"
-
-          git push
+          if git diff --staged --quiet; then
+            echo "No discovery changes to commit."
+          else
+            git commit -m "🎸 Discovery proof of concept $(date +'%Y-%m-%d')"
+            git push
+          fi
