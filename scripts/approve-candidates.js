@@ -98,23 +98,12 @@ function indexEpisodes(node) {
 indexEpisodes(episodes);
 
 // ── Find or create folder in episodes.json ────────────────────────────────────
-function findFolder(node, title) {
-  if (!node) return null;
-  if (Array.isArray(node)) {
-    for (const item of node) {
-      const found = findFolder(item, title);
-      if (found) return found;
-    }
-    return null;
-  }
-  if ((node.title || "") === title && Array.isArray(node.items)) return node;
-  if (Array.isArray(node.items)) {
-    for (const item of node.items) {
-      const found = findFolder(item, title);
-      if (found) return found;
-    }
-  }
-  return null;
+// Only search TOP-LEVEL items array for the target folder.
+// Do not recurse into sub-folders — that caused duplicate folder creation
+// when "Live Concerts" artist sub-folders were matched instead of the root.
+function findFolder(rootArray, title) {
+  if (!Array.isArray(rootArray)) return null;
+  return rootArray.find(item => item && item.title === title && Array.isArray(item.items)) || null;
 }
 
 function cleanThumbUrl(thumb) {
@@ -145,16 +134,17 @@ if (approvedIds.length) {
     process.exit(1);
   }
 
-  let folder = findFolder(Array.isArray(episodes) ? episodes : [episodes], targetFolder);
+  // Search only the top-level array — never recurse into sub-folders
+  // to avoid matching artist sub-folders inside Live Concerts
+  const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+  let folder = findFolder(rootArray, targetFolder);
 
   if (!folder) {
     console.log(`Folder "${targetFolder}" not found — creating it.`);
     const newFolder = { title: targetFolder, mode: "folder", items: [] };
-    if (Array.isArray(episodes)) {
-      // Insert before the last 2 items (Monster Jam / Drag Racing)
-      const insertAt = Math.max(0, episodes.length - 2);
-      episodes.splice(insertAt, 0, newFolder);
-    }
+    // Insert before Monster Jam / Drag Racing (last 2 items)
+    const insertAt = Math.max(0, rootArray.length - 2);
+    rootArray.splice(insertAt, 0, newFolder);
     folder = newFolder;
   }
 
