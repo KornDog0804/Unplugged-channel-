@@ -1359,6 +1359,18 @@
                 "url": "https://www.youtube.com/watch?v=xC-k4FEYpJ8"
               }
             ]
+          },
+          {
+            "title": "Tree City Sessions 2 (Full Show)",
+            "year": 2020,
+            "mode": "fullshow",
+            "added": "2026-06-23",
+            "tracks": [
+              {
+                "title": "Full Show",
+                "url": "https://www.youtube.com/watch?v=gub7n32byNE"
+              }
+            ]
           }
         ]
       },
@@ -2099,26 +2111,20 @@
             ]
           }
         ]
-      }
-    ]
-  },
-  {
-    "title": "Live Concerts",
-    "mode": "folder",
-    "items": [
+      },
       {
-        "title": "Bad Omens",
+        "title": "I Prevail",
         "mode": "folder",
         "items": [
           {
-            "title": "Bad Omens - Graspop Metal Meeting 2026 (Full Concert)",
+            "title": "Live at Pinkpop 2023",
+            "year": 2023,
             "mode": "fullshow",
-            "thumb": "https://i.ytimg.com/vi/XL07ZfX84D0/hq720.jpg",
             "added": "2026-06-23",
             "tracks": [
               {
-                "title": "Bad Omens - Graspop Metal Meeting 2026 (Full Concert)",
-                "url": "https://www.youtube.com/watch?v=XL07ZfX84D0"
+                "title": "Full Concert",
+                "url": "https://www.youtube.com/watch?v=He4klEV3rks"
               }
             ]
           }
