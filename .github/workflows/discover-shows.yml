@@ -1,0 +1,40 @@
+name: Discover New Shows
+
+# Runs automatically twice a week (Monday + Thursday at 10am UTC).
+# Can also be triggered manually from the GitHub Actions tab anytime.
+on:
+  schedule:
+    - cron: "0 10 * * 1"   # Monday 10am UTC
+    - cron: "0 10 * * 4"   # Thursday 10am UTC
+  workflow_dispatch:         # Manual trigger
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+
+    # Required so the bot can push the updated candidates file back to the repo
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # No npm install needed — script uses only built-in Node.js modules (https, fs, path)
+
+      - name: Run discovery bot
+        run: node scripts/discover-shows.js
+
+      - name: Commit discovery results
+        run: |
+          git config user.name "concert-corner-bot"
+          git config user.email "actions@github.com"
+          git add data/discovery-candidates.json
+          git diff --staged --quiet || git commit -m "🎸 Discovery bot: new concert candidates $(date +'%Y-%m-%d')"
+          git push
+        # If nothing new was found, the diff is empty and commit is skipped cleanly
