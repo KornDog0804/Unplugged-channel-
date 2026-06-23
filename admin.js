@@ -21,21 +21,34 @@ const REJECT_REASONS = [
 ];
 
 // ── Auto-categorize based on title + search term + channel ──────────────────
+// Returns the EXACT folder title as it appears in episodes.json (with emoji).
+const FOLDER_LIVE      = "🎤 Live Concerts";
+const FOLDER_ACOUSTIC  = "🎸 Artists";          // acoustic goes under Artists
+const FOLDER_UNPLUGGED = "📺 MTV Unplugged";
+const FOLDER_TINY_DESK = "🎙 Tiny Desk";
+const FOLDER_STITCHED  = "🎛 Stitched Streams / Full Sessions";
+
 function suggestFolder(candidate) {
   const title   = (candidate.title || "").toLowerCase();
   const term    = (candidate.searchTerm || "").toLowerCase();
   const channel = (candidate.channelName || "").toLowerCase();
 
+  // Tiny Desk — channel is NPR Music or title says tiny desk
   if (title.includes("tiny desk") || channel.includes("npr"))
-    return "Tiny Desk";
-  if (title.includes("unplugged") || title.includes("mtv unplugged"))
-    return "MTV Unplugged";
-  if (title.includes("acoustic") || term.includes("acoustic"))
-    return "Acoustic Collection";
-  if (title.includes("stitched") || title.includes("full session") || title.includes("stripped"))
-    return "Stitched Streams / Full Sessions";
-  // Default: full concerts
-  return "Live Concerts";
+    return FOLDER_TINY_DESK;
+
+  // MTV Unplugged
+  if (title.includes("mtv unplugged") || title.includes("unplugged"))
+    return FOLDER_UNPLUGGED;
+
+  // Stitched / acoustic sessions
+  if (title.includes("stitched") || title.includes("stripped") ||
+      title.includes("full session") || title.includes("acoustic session") ||
+      term === "acoustic session")
+    return FOLDER_STITCHED;
+
+  // Default: live concerts
+  return FOLDER_LIVE;
 }
 
 function isTrustedChannel(name) {
@@ -233,7 +246,14 @@ async function runApproval() {
     const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
 
     function getOrCreateFolder(name) {
-      let fn = rootArray.find(item => item?.title === name && Array.isArray(item.items));
+      // Match by exact title OR by stripping emoji prefix from existing folders
+      // so "Live Concerts" matches "🎤 Live Concerts" etc.
+      let fn = rootArray.find(item =>
+        Array.isArray(item.items) && (
+          item.title === name ||
+          item.title?.replace(/^[\p{Emoji}\s]+/u, "").trim() === name.replace(/^[\p{Emoji}\s]+/u, "").trim()
+        )
+      );
       if (!fn) {
         logProgress(`  📁 Creating new folder: "${name}"`);
         fn = { title: name, mode: "folder", items: [] };
@@ -279,7 +299,7 @@ async function runApproval() {
         }
 
         // Live Concerts gets artist sub-folders; all others go flat
-        if (destFolder === "Live Concerts") {
+        if (destFolder === FOLDER_LIVE || destFolder === "Live Concerts") {
           const artistName = node.artist || c.artistMatched || c.suggestedArtist || "Unknown";
           let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
           if (!artistFolder) {
@@ -396,7 +416,9 @@ function renderGrid() {
     ).join("");
 
     const sugFolder = suggestFolder(c);
-    const folderBadge = `<div class="card-folder-badge">${esc(sugFolder)}</div>`;
+    // Strip leading emoji for the badge display
+    const sugFolderLabel = sugFolder.replace(/^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\s]+/u, "").trim();
+    const folderBadge = `<div class="card-folder-badge">${esc(sugFolderLabel)}</div>`;
 
     return `<div class="card ${st.selected?"selected":""} ${st.rejected?"rejected":""}" data-id="${esc(c.videoId)}">
       <div class="card-overlay">REJECTED</div>
