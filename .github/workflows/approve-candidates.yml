@@ -1,0 +1,56 @@
+name: Approve Candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      videoIds:
+        description: "Comma-separated videoIds to APPROVE"
+        required: false
+        default: ""
+      targetFolder:
+        description: "Target folder (Live Concerts | Acoustic Collection | MTV Unplugged | Tiny Desk | Stitched Streams / Full Sessions | Joey's Picks | Recently Added)"
+        required: false
+        default: "Live Concerts"
+      rejectIds:
+        description: "Comma-separated videoIds to REJECT"
+        required: false
+        default: ""
+      rejectReasons:
+        description: "Comma-separated reasons matching rejectIds order (fan cam | wrong artist | bad quality | playlist/compilation | duplicate | too short | not a concert | other)"
+        required: false
+        default: ""
+
+jobs:
+  approve:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run approval script
+        env:
+          VIDEO_IDS: ${{ github.event.inputs.videoIds }}
+          TARGET_FOLDER: ${{ github.event.inputs.targetFolder }}
+          REJECT_IDS: ${{ github.event.inputs.rejectIds }}
+          REJECT_REASONS: ${{ github.event.inputs.rejectReasons }}
+        run: node scripts/approve-candidates.js
+
+      - name: Commit all lifecycle files
+        run: |
+          git config user.name "concert-corner-bot"
+          git config user.email "actions@github.com"
+          git add episodes.json \
+                  data/discovery-candidates.json \
+                  data/approved-history.json \
+                  data/rejected-history.json
+          git diff --staged --quiet || git commit -m "✅ Admin: approved $(echo '${{ github.event.inputs.videoIds }}' | tr ',' '\n' | grep -c .) | rejected $(echo '${{ github.event.inputs.rejectIds }}' | tr ',' '\n' | grep -c .) — $(date +'%Y-%m-%d')"
+          git push
