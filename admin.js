@@ -306,6 +306,8 @@ async function runApproval() {
           if (!artistFolder) {
             artistFolder = { title: artistName, mode: "folder", items: [] };
             folder_node.items.push(artistFolder);
+          // Re-sort artist folders alphabetically after adding
+          folder_node.items.sort((a, b) => (a.title||"").localeCompare(b.title||""));
           }
           const { artist, ...nodeClean } = node;
           artistFolder.items.push(nodeClean);
@@ -691,6 +693,55 @@ async function mergeDuplicateFolders() {
     logProgress("Done! Netlify deploys in ~30 seconds.");
     doneProgress(true);
     showToast("Duplicate folders merged!");
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
+
+// ── Sort Live Concerts artists alphabetically ─────────────────────────────────
+async function sortAndFixFolders() {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Sorting folders alphabetically…");
+  try {
+    const epFile = await ghGet("episodes.json");
+    const episodes = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+
+    function stripEmoji(str) {
+      return (str || "").replace(/^[^\w]+/, "").trim().toLowerCase();
+    }
+
+    let sortCount = 0;
+
+    for (const section of rootArray) {
+      if (!Array.isArray(section.items)) continue;
+
+      // Sort artist sub-folders inside Live Concerts alphabetically
+      const hasSubFolders = section.items.some(i => i.mode === "folder" && Array.isArray(i.items));
+      if (hasSubFolders) {
+        const folders = section.items.filter(i => i.mode === "folder");
+        const others  = section.items.filter(i => i.mode !== "folder");
+        folders.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+        section.items = [...folders, ...others];
+        logProgress(`  Sorted "${section.title}": ${folders.length} artist folders`);
+        sortCount++;
+      } else {
+        // Flat items — sort by title
+        section.items.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+        logProgress(`  Sorted "${section.title}": ${section.items.length} items`);
+        sortCount++;
+      }
+    }
+
+    logProgress(`\nSorted ${sortCount} sections`);
+    logProgress("Writing to GitHub…");
+
+    await ghPut("episodes.json", episodes, epFile.sha,
+      "Sort all folders alphabetically");
+    logProgress("Done! Netlify deploys in ~30 seconds.");
+    doneProgress(true);
+    showToast("All folders sorted alphabetically!");
   } catch(e) {
     logProgress(`ERROR: ${e.message}`);
     doneProgress(false);
