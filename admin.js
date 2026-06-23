@@ -20,6 +20,24 @@ const REJECT_REASONS = [
   "not a concert","other"
 ];
 
+// ── Auto-categorize based on title + search term + channel ──────────────────
+function suggestFolder(candidate) {
+  const title   = (candidate.title || "").toLowerCase();
+  const term    = (candidate.searchTerm || "").toLowerCase();
+  const channel = (candidate.channelName || "").toLowerCase();
+
+  if (title.includes("tiny desk") || channel.includes("npr"))
+    return "Tiny Desk";
+  if (title.includes("unplugged") || title.includes("mtv unplugged"))
+    return "MTV Unplugged";
+  if (title.includes("acoustic") || term.includes("acoustic"))
+    return "Acoustic Collection";
+  if (title.includes("stitched") || title.includes("full session") || title.includes("stripped"))
+    return "Stitched Streams / Full Sessions";
+  // Default: full concerts
+  return "Live Concerts";
+}
+
 function isTrustedChannel(name) {
   const l = (name || "").toLowerCase();
   return TRUSTED_CHANNEL_KEYWORDS.some(k => l.includes(k));
@@ -208,71 +226,84 @@ async function runApproval() {
     }
     indexNode(episodes);
 
-    // ── 3. Find target folder (top-level only, no recursion) ─────────────────
+    // ── 3. Group approved cards by their auto-suggested folder ─────────────
+    // Each card knows where it belongs via suggestFolder().
+    // Mixed selections (e.g. Live Concerts + Tiny Desk) each go to the
+    // correct place in a single approval tap — no separate runs needed.
     const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
-    let folder_node = rootArray.find(item => item?.title === folder && Array.isArray(item.items));
-    if (!folder_node) {
-      logProgress(`📁 Creating new folder: "${folder}"`);
-      folder_node = { title: folder, mode: "folder", items: [] };
-      rootArray.splice(Math.max(0, rootArray.length - 2), 0, folder_node);
-    } else {
-      logProgress(`📁 Found folder: "${folder}" (${folder_node.items.length} existing items)`);
+
+    function getOrCreateFolder(name) {
+      let fn = rootArray.find(item => item?.title === name && Array.isArray(item.items));
+      if (!fn) {
+        logProgress(`  📁 Creating new folder: "${name}"`);
+        fn = { title: name, mode: "folder", items: [] };
+        rootArray.splice(Math.max(0, rootArray.length - 2), 0, fn);
+      }
+      return fn;
     }
 
-    // ── 4. Add approved episodes ─────────────────────────────────────────────
-    let added = 0, skipped = 0;
+    const groups = {};
     for (const c of approved) {
-      // Only skip true duplicates already in episodes.json or approved history.
-      // NOT being in the candidates list is NOT a reason to skip —
-      // the card is already on screen so Joey chose it intentionally.
-      if (existingIds.has(c.videoId)) {
-        logProgress(`  ⚠ Skip (already in library): ${c.title?.slice(0,50)}`);
-        skipped++; continue;
-      }
+      const dest = suggestFolder(c);
+      if (!groups[dest]) groups[dest] = [];
+      groups[dest].push(c);
+    }
+    logProgress(`📂 Routing to ${Object.keys(groups).length} folder(s): ${Object.entries(groups).map(([f,v])=>`${f} (${v.length})`).join(" · ")}`);
 
-      // Build episode node from suggestedEpisodesJson if available,
-      // otherwise build from the card data directly — no candidate lookup required.
-      let node = c.suggestedEpisodesJson
-        ? JSON.parse(JSON.stringify(c.suggestedEpisodesJson))
-        : {
-            title: c.title || `Video ${c.videoId}`,
-            artist: c.artistMatched || c.suggestedArtist || "",
-            year: new Date().getFullYear(),
-            mode: "fullshow",
-            tracks: [{ title: c.title || "Full Show", url: c.url || `https://www.youtube.com/watch?v=${c.videoId}` }]
-          };
+    // ── 4. Add approved episodes into their correct folders ──────────────────
+    let added = 0, skipped = 0;
 
-      node.added = today;
+    for (const [destFolder, cards] of Object.entries(groups)) {
+      const folder_node = getOrCreateFolder(destFolder);
+      logProgress(`\n📁 "${destFolder}" — ${cards.length} item(s)`);
 
-      // Clean expiring YouTube thumb tracking params
-      if (node.thumb?.includes("sqp=")) {
-        try { const u = new URL(node.thumb); u.search = ""; node.thumb = u.toString(); } catch {}
-      }
-
-      if (folder === "Live Concerts") {
-        const artistName = node.artist || c.artistMatched || c.suggestedArtist || "Unknown";
-        let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
-        if (!artistFolder) {
-          artistFolder = { title: artistName, mode: "folder", items: [] };
-          folder_node.items.push(artistFolder);
+      for (const c of cards) {
+        if (existingIds.has(c.videoId)) {
+          logProgress(`  ⚠ Skip (dupe): ${c.title?.slice(0,50)}`);
+          skipped++; continue;
         }
-        const { artist, ...nodeClean } = node;
-        artistFolder.items.push(nodeClean);
-      } else {
-        folder_node.items.push(node);
-      }
 
-      existingIds.add(c.videoId);
-      approvedHist.unshift({
-        videoId: c.videoId,
-        title: c.title,
-        artist: c.artistMatched || c.suggestedArtist || "",
-        targetFolder: folder,
-        approvedAt: nowIso,
-        url: c.url || `https://www.youtube.com/watch?v=${c.videoId}`,
-      });
-      logProgress(`  ✅ Added: ${c.title?.slice(0,55)}`);
-      added++;
+        let node = c.suggestedEpisodesJson
+          ? JSON.parse(JSON.stringify(c.suggestedEpisodesJson))
+          : {
+              title: c.title || `Video ${c.videoId}`,
+              artist: c.artistMatched || c.suggestedArtist || "",
+              year: new Date().getFullYear(),
+              mode: "fullshow",
+              tracks: [{ title: c.title || "Full Show", url: c.url || `https://www.youtube.com/watch?v=${c.videoId}` }]
+            };
+
+        node.added = today;
+        if (node.thumb?.includes("sqp=")) {
+          try { const u = new URL(node.thumb); u.search = ""; node.thumb = u.toString(); } catch {}
+        }
+
+        // Live Concerts gets artist sub-folders; all others go flat
+        if (destFolder === "Live Concerts") {
+          const artistName = node.artist || c.artistMatched || c.suggestedArtist || "Unknown";
+          let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
+          if (!artistFolder) {
+            artistFolder = { title: artistName, mode: "folder", items: [] };
+            folder_node.items.push(artistFolder);
+          }
+          const { artist, ...nodeClean } = node;
+          artistFolder.items.push(nodeClean);
+        } else {
+          folder_node.items.push(node);
+        }
+
+        existingIds.add(c.videoId);
+        approvedHist.unshift({
+          videoId: c.videoId,
+          title: c.title,
+          artist: c.artistMatched || c.suggestedArtist || "",
+          targetFolder: destFolder,
+          approvedAt: nowIso,
+          url: c.url || `https://www.youtube.com/watch?v=${c.videoId}`,
+        });
+        logProgress(`  ✅ [${destFolder}] ${c.title?.slice(0,48)}`);
+        added++;
+      }
     }
 
     // ── 5. Process rejections ────────────────────────────────────────────────
@@ -364,6 +395,9 @@ function renderGrid() {
       `<option value="${esc(r)}" ${st.reason===r?"selected":""}>${esc(r)}</option>`
     ).join("");
 
+    const sugFolder = suggestFolder(c);
+    const folderBadge = `<div class="card-folder-badge">${esc(sugFolder)}</div>`;
+
     return `<div class="card ${st.selected?"selected":""} ${st.rejected?"rejected":""}" data-id="${esc(c.videoId)}">
       <div class="card-overlay">REJECTED</div>
       <div class="thumb-wrap">
@@ -377,6 +411,7 @@ function renderGrid() {
         <div class="card-meta">🎤 <span>${esc(c.artistMatched||c.suggestedArtist||"")}</span>${c.viewCountText?` &nbsp;·&nbsp; 👁 <span>${esc(c.viewCountText)}</span>`:""}</div>
         <div class="card-channel ${trusted?"trusted":""}">${esc(c.channelName)}${c.publishedText?` · ${esc(c.publishedText)}`:""}</div>
         <div class="card-search-term">found via "${esc(c.searchTerm||"")}"</div>
+        ${folderBadge}
         <div class="card-actions">
           <input type="checkbox" class="card-cb" data-id="${esc(c.videoId)}" ${st.selected?"checked":""} ${st.rejected?"disabled":""}>
           <a class="card-yt" href="${esc(c.url)}" target="_blank" rel="noopener">▶ Watch</a>
@@ -427,6 +462,26 @@ function syncCard(id) {
   if (cb)  { cb.checked = st.selected; cb.disabled = st.rejected; }
   if (btn) btn.textContent = st.rejected ? "↩ Restore" : "✕ Reject";
   if (sel) sel.disabled = !st.rejected;
+  // Auto-update folder dropdown to match selected cards
+  updateFolderSuggestion();
+}
+
+// Tally suggested folders across all selected cards and pick the winner
+function updateFolderSuggestion() {
+  const selected = allCandidates.filter(c => getState(c.videoId).selected);
+  if (!selected.length) return;
+
+  const tally = {};
+  for (const c of selected) {
+    const f = suggestFolder(c);
+    tally[f] = (tally[f] || 0) + 1;
+  }
+  // Pick the folder with the most votes
+  const winner = Object.entries(tally).sort((a,b) => b[1]-a[1])[0][0];
+
+  // Only update if dropdown option exists
+  const opt = [...$folderSelect.options].find(o => o.value === winner);
+  if (opt) $folderSelect.value = winner;
 }
 
 function render() { renderGrid(); renderStats(); }
