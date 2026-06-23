@@ -852,3 +852,130 @@ async function removeArtistsFolder() {
     doneProgress(false);
   }
 }
+
+// ── Restore missing episodes from approved history ────────────────────────────
+async function restoreFromHistory() {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Checking approved history against live episodes.json…");
+  try {
+    const [epFile, appFile] = await Promise.all([
+      ghGet("episodes.json"),
+      ghGet("data/approved-history.json"),
+    ]);
+
+    const episodes = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    const history  = JSON.parse(decodeURIComponent(escape(atob(appFile.content.replace(/\n/g,"")))));
+    const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+
+    // Build set of all videoIds currently in episodes.json
+    const existingIds  = new Set();
+    const existingUrls = new Set();
+    function indexNode(node) {
+      if (!node) return;
+      if (Array.isArray(node)) { node.forEach(indexNode); return; }
+      if (Array.isArray(node.items)) { node.items.forEach(indexNode); return; }
+      (node.tracks || []).forEach(t => {
+        if (!t?.url) return;
+        existingUrls.add(t.url);
+        try {
+          const u = new URL(t.url);
+          const v = u.searchParams.get("v") ||
+            (u.hostname.includes("youtu.be") ? u.pathname.replace("/","").trim() : null);
+          if (v) existingIds.add(v);
+        } catch {}
+      });
+    }
+    indexNode(episodes);
+    logProgress(`Currently indexed: ${existingIds.size} videos in episodes.json`);
+
+    // Find missing entries
+    const missing = history.filter(h => !existingIds.has(h.videoId) && !existingUrls.has(h.url));
+    logProgress(`Found ${missing.length} approved videos missing from episodes.json`);
+
+    if (!missing.length) {
+      logProgress("Nothing missing — everything looks good!");
+      doneProgress(true);
+      return;
+    }
+
+    // Re-populate actualFolders from live file
+    actualFolders = rootArray.filter(i => Array.isArray(i.items)).map(i => i.title);
+
+    function getOrCreateFolderLocal(name) {
+      let fn = rootArray.find(item => Array.isArray(item.items) && item.title === name);
+      if (!fn) {
+        // Try fuzzy match ignoring emoji
+        fn = rootArray.find(item =>
+          Array.isArray(item.items) &&
+          item.title.replace(/^[^\w]+/,"").trim().toLowerCase() ===
+          name.replace(/^[^\w]+/,"").trim().toLowerCase()
+        );
+      }
+      if (!fn) {
+        fn = { title: name, mode: "folder", items: [] };
+        rootArray.splice(Math.max(0, rootArray.length - 2), 0, fn);
+        logProgress(`  Created folder: "${name}"`);
+      }
+      return fn;
+    }
+
+    const today = new Date().toISOString().slice(0,10);
+    let restored = 0;
+
+    for (const h of missing) {
+      // Determine correct folder using suggestFolder logic
+      const destFolder = resolveFolder(
+        h.title.toLowerCase().includes("tiny desk") ? "tiny desk" :
+        h.title.toLowerCase().includes("unplugged") ? "unplugged" :
+        h.title.toLowerCase().includes("acoustic") ? "stitched" :
+        "live concert"
+      ) || h.targetFolder || resolveFolder("live concert");
+
+      const folder_node = getOrCreateFolderLocal(destFolder);
+
+      const node = {
+        title: h.title,
+        artist: h.artist || "",
+        year: new Date(h.approvedAt).getFullYear(),
+        mode: "fullshow",
+        added: today,
+        tracks: [{ title: h.title, url: h.url }]
+      };
+
+      // Live Concerts — wrap in artist sub-folder
+      const liveFolder = resolveFolder("live concert");
+      if (destFolder === liveFolder) {
+        const artistName = h.artist || "Unknown";
+        let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
+        if (!artistFolder) {
+          artistFolder = { title: artistName, mode: "folder", items: [] };
+          folder_node.items.push(artistFolder);
+        }
+        const { artist, ...nodeClean } = node;
+        artistFolder.items.push(nodeClean);
+        // Re-sort
+        folder_node.items.sort((a,b) => (a.title||"").localeCompare(b.title||""));
+      } else {
+        folder_node.items.push(node);
+      }
+
+      existingIds.add(h.videoId);
+      existingUrls.add(h.url);
+      logProgress(`  ✅ Restored [${destFolder}]: ${h.title?.slice(0,50)}`);
+      restored++;
+    }
+
+    logProgress(`\nRestored ${restored} missing videos`);
+    logProgress("Writing to GitHub…");
+
+    await ghPut("episodes.json", episodes, epFile.sha,
+      `Restore ${restored} missing approved videos from history`);
+    logProgress("Done! Netlify deploys in ~30 seconds.");
+    doneProgress(true);
+    showToast(`Restored ${restored} missing videos!`);
+
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
