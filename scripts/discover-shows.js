@@ -293,7 +293,7 @@ async function searchYouTube(query, artist, searchTerm) {
 async function main() {
   console.log("🎸 Joey's Concert Corner — Discovery Bot");
   console.log("==========================================");
-  console.log(`Artists: ${coreArtists.length} | Search terms: ${searchTerms.length}`);
+  console.log(`Artists: ${artistsThisRun.length} | Search terms: ${searchTerms.length}`);
   console.log("SAFE MODE: episodes.json will NOT be touched.\n");
 
   // ── Lifecycle de-dupe: check candidates + approved + rejected + episodes ──
