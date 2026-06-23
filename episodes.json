@@ -2291,6 +2291,24 @@
             "added": "2026-06-23"
           }
         ]
+      },
+      {
+        "title": "Jinjer",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "JINJER - Live at Resurrection Fest EG 2025 (Viveiro, Galicia, Spain) [Full Show]",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "JINJER - Live at Resurrection Fest EG 2025 (Viveiro, Galicia, Spain) [Full Show]",
+                "url": "https://www.youtube.com/watch?v=9ctgIVKTdjM"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
       }
     ]
   },
