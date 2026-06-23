@@ -2133,6 +2133,168 @@
     ]
   },
   {
+    "title": "Live Concerts",
+    "mode": "folder",
+    "items": [
+      {
+        "title": "Korn",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Korn - WOODSTOCK '99 (Full Concert) 4K REMASTERED",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Korn - WOODSTOCK '99 (Full Concert) 4K REMASTERED",
+                "url": "https://www.youtube.com/watch?v=8kt5i6NYLk4"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Usher",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Usher: Tiny Desk Concert",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Usher: Tiny Desk Concert",
+                "url": "https://www.youtube.com/watch?v=up8ODGFWgFg"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Incubus",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Incubus: Morning View Sessions | Full Concert",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Incubus: Morning View Sessions | Full Concert",
+                "url": "https://www.youtube.com/watch?v=nbVet-Z5sng"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Ozzy Osbourne",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Ozzy Osbourne Live At Budokan",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Ozzy Osbourne Live At Budokan",
+                "url": "https://www.youtube.com/watch?v=kkZBXywsPGs"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Joe",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Joe: Tiny Desk Concert",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Joe: Tiny Desk Concert",
+                "url": "https://www.youtube.com/watch?v=YCbFsAwwyyg"
+              }
+            ],
+            "added": "2026-06-23"
+          },
+          {
+            "title": "Joe Cocker Live In Dortmund 1992 Full Concert HD 👍😀 💯",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Joe Cocker Live In Dortmund 1992 Full Concert HD 👍😀 💯",
+                "url": "https://www.youtube.com/watch?v=XwB_iS1pA-s"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Sum 41",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Sum 41 - Full Performance (Live from the KROQ Helpful Honda Sound Space)",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Sum 41 - Full Performance (Live from the KROQ Helpful Honda Sound Space)",
+                "url": "https://www.youtube.com/watch?v=_1LtE0qIO0Y"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Papa Roach",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Papa Roach - live at Pukkelpop 2025",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Papa Roach - live at Pukkelpop 2025",
+                "url": "https://www.youtube.com/watch?v=Zn0D4KapP1E"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      },
+      {
+        "title": "Three Days Grace",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Three Days Grace Live in Concert: Alienation Album Release Event in Toronto - iHeartRadio Live 2025",
+            "year": 2026,
+            "mode": "fullshow",
+            "tracks": [
+              {
+                "title": "Three Days Grace Live in Concert: Alienation Album Release Event in Toronto - iHeartRadio Live 2025",
+                "url": "https://www.youtube.com/watch?v=RbcCI_iEmVk"
+              }
+            ],
+            "added": "2026-06-23"
+          }
+        ]
+      }
+    ]
+  },
+  {
     "title": "🛻 Monster Jam — 2026 Episodes",
     "artist": "Monster Jam",
     "year": "Playlist",
