@@ -605,3 +605,94 @@ async function init() {
 }
 
 init();
+
+// ── Merge duplicate folders ───────────────────────────────────────────────────
+async function mergeDuplicateFolders() {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Scanning for duplicate folders…");
+  try {
+    const epFile = await ghGet("episodes.json");
+    const episodes = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+
+    function stripEmoji(str) {
+      return (str || "").replace(/^[^\w]+/, "").trim().toLowerCase();
+    }
+
+    // Group top-level folders by stripped name
+    const groups = {};
+    for (const item of rootArray) {
+      if (!Array.isArray(item.items)) continue;
+      const key = stripEmoji(item.title);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(item);
+    }
+
+    const dupes = Object.entries(groups).filter(([, arr]) => arr.length > 1);
+
+    if (!dupes.length) {
+      logProgress("No duplicate folders found — everything is clean!");
+      doneProgress(true);
+      return;
+    }
+
+    let totalMerged = 0;
+
+    for (const [key, folders] of dupes) {
+      // Keep the folder with the longer title (has emoji prefix)
+      folders.sort((a, b) => b.title.length - a.title.length);
+      const keeper = folders[0];
+      const dupeList = folders.slice(1);
+      logProgress(`\nMerging "${key}" — keeping: "${keeper.title}"`);
+
+      for (const dupe of dupeList) {
+        logProgress(`  Absorbing "${dupe.title}" (${dupe.items.length} items)…`);
+        for (const item of dupe.items) {
+          if (item.mode === "folder" && Array.isArray(item.items)) {
+            // Artist sub-folder
+            const existing = keeper.items.find(k => k.title === item.title && k.mode === "folder");
+            if (existing) {
+              const existingUrls = new Set(existing.items.flatMap(s => (s.tracks||[]).map(t => t.url)));
+              const newItems = item.items.filter(s => !(s.tracks||[]).some(t => existingUrls.has(t.url)));
+              existing.items.push(...newItems);
+              logProgress(`    Merged artist "${item.title}": +${newItems.length} shows`);
+            } else {
+              keeper.items.push(item);
+              logProgress(`    Moved artist folder: "${item.title}"`);
+            }
+          } else {
+            const existingUrls = new Set(keeper.items.flatMap(s => (s.tracks||[]).map(t => t.url)));
+            const isDupe = (item.tracks||[]).some(t => existingUrls.has(t.url));
+            if (!isDupe) { keeper.items.push(item); logProgress(`    Moved: "${item.title}"`); }
+            else { logProgress(`    Skipped (dupe): "${item.title}"`); }
+          }
+          totalMerged++;
+        }
+        rootArray.splice(rootArray.indexOf(dupe), 1);
+        logProgress(`  Removed duplicate "${dupe.title}"`);
+      }
+    }
+
+    logProgress(`\nMerged ${totalMerged} items across ${dupes.length} group(s)`);
+    logProgress("Writing to GitHub…");
+    await ghPut("episodes.json", episodes, epFile.sha,
+      `Merge duplicate folders: ${dupes.map(([k])=>k).join(", ")}`);
+    logProgress("episodes.json updated");
+
+    // Refresh dropdown
+    actualFolders = rootArray.filter(i => Array.isArray(i.items)).map(i => i.title);
+    if ($folderSelect) {
+      $folderSelect.innerHTML = actualFolders.map(f =>
+        `<option value="${f.replace(/"/g,"&quot;")}">${f}</option>`).join("");
+      const liveOpt = [...$folderSelect.options].find(o => o.value.toLowerCase().includes("live concert"));
+      if (liveOpt) $folderSelect.value = liveOpt.value;
+    }
+
+    logProgress("Done! Netlify deploys in ~30 seconds.");
+    doneProgress(true);
+    showToast("Duplicate folders merged!");
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
