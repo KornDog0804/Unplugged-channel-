@@ -20,35 +20,34 @@ const REJECT_REASONS = [
   "not a concert","other"
 ];
 
-// ── Auto-categorize based on title + search term + channel ──────────────────
-// Returns the EXACT folder title as it appears in episodes.json (with emoji).
-const FOLDER_LIVE      = "🎤 Live Concerts";
-const FOLDER_ACOUSTIC  = "🎸 Artists";          // acoustic goes under Artists
-const FOLDER_UNPLUGGED = "📺 MTV Unplugged";
-const FOLDER_TINY_DESK = "🎙 Tiny Desk";
-const FOLDER_STITCHED  = "🎛 Stitched Streams / Full Sessions";
+// ── Folder name resolution ────────────────────────────────────────────────────
+// actualFolders is populated after episodes.json loads — contains the real
+// folder titles exactly as they appear in the file (with emojis).
+let actualFolders = [];
+
+function resolveFolder(keyword) {
+  // Find a folder whose title contains the keyword (case-insensitive, ignores emoji)
+  const kw = keyword.toLowerCase();
+  return actualFolders.find(f =>
+    f.toLowerCase().includes(kw) ||
+    f.toLowerCase().replace(/[^a-z0-9 ]/g, "").includes(kw.replace(/[^a-z0-9 ]/g, ""))
+  ) || actualFolders.find(f => f.toLowerCase().includes("live")) || actualFolders[0] || keyword;
+}
 
 function suggestFolder(candidate) {
   const title   = (candidate.title || "").toLowerCase();
   const term    = (candidate.searchTerm || "").toLowerCase();
   const channel = (candidate.channelName || "").toLowerCase();
 
-  // Tiny Desk — channel is NPR Music or title says tiny desk
-  if (title.includes("tiny desk") || channel.includes("npr"))
-    return FOLDER_TINY_DESK;
-
-  // MTV Unplugged
+  if (title.includes("tiny desk") || channel.includes("npr music") || channel.includes("npr"))
+    return resolveFolder("tiny desk");
   if (title.includes("mtv unplugged") || title.includes("unplugged"))
-    return FOLDER_UNPLUGGED;
-
-  // Stitched / acoustic sessions
+    return resolveFolder("unplugged");
   if (title.includes("stitched") || title.includes("stripped") ||
       title.includes("full session") || title.includes("acoustic session") ||
       term === "acoustic session")
-    return FOLDER_STITCHED;
-
-  // Default: live concerts
-  return FOLDER_LIVE;
+    return resolveFolder("stitched");
+  return resolveFolder("live concert");
 }
 
 function isTrustedChannel(name) {
@@ -219,6 +218,13 @@ async function runApproval() {
 
     logProgress(`✓ Loaded: ${episodes.length || "?"} sections · ${candidates.length} candidates`);
 
+    // Populate actualFolders so suggestFolder uses real names from THIS file
+    const rootArr = Array.isArray(episodes) ? episodes : (episodes.items || []);
+    actualFolders = rootArr
+      .filter(item => item && Array.isArray(item.items))
+      .map(item => item.title);
+    logProgress(`📂 Known folders: ${actualFolders.join(" · ")}`);
+
     // ── 2. Index existing videoIds ───────────────────────────────────────────
     const existingIds = new Set(approvedHist.map(h => h.videoId));
     const existingUrls = new Set();
@@ -246,14 +252,8 @@ async function runApproval() {
     const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
 
     function getOrCreateFolder(name) {
-      // Match by exact title OR by stripping emoji prefix from existing folders
-      // so "Live Concerts" matches "🎤 Live Concerts" etc.
-      let fn = rootArray.find(item =>
-        Array.isArray(item.items) && (
-          item.title === name ||
-          item.title?.replace(/^[\p{Emoji}\s]+/u, "").trim() === name.replace(/^[\p{Emoji}\s]+/u, "").trim()
-        )
-      );
+      // Exact match first
+      let fn = rootArray.find(item => Array.isArray(item.items) && item.title === name);
       if (!fn) {
         logProgress(`  📁 Creating new folder: "${name}"`);
         fn = { title: name, mode: "folder", items: [] };
@@ -299,7 +299,8 @@ async function runApproval() {
         }
 
         // Live Concerts gets artist sub-folders; all others go flat
-        if (destFolder === FOLDER_LIVE || destFolder === "Live Concerts") {
+        const liveFolder = resolveFolder("live concert");
+        if (destFolder === liveFolder) {
           const artistName = node.artist || c.artistMatched || c.suggestedArtist || "Unknown";
           let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
           if (!artistFolder) {
@@ -574,14 +575,32 @@ async function loadJson(url) {
 async function init() {
   updateTokenUI();
   $grid.innerHTML = `<div class="empty" style="grid-column:1/-1">Loading…</div>`;
-  const [cands, approved, rejected] = await Promise.all([
+
+  const [cands, approved, rejected, eps] = await Promise.all([
     loadJson("./data/discovery-candidates.json"),
     loadJson("./data/approved-history.json"),
     loadJson("./data/rejected-history.json"),
+    loadJson("./episodes.json"),
   ]);
+
   allCandidates   = Array.isArray(cands)    ? cands    : [];
   approvedHistory = Array.isArray(approved) ? approved : [];
   rejectedHistory = Array.isArray(rejected) ? rejected : [];
+
+  // Populate folder dropdown from live episodes.json
+  if (Array.isArray(eps)) {
+    const folders = eps.filter(s => Array.isArray(s.items)).map(s => s.title);
+    actualFolders = folders;
+    if (folders.length && $folderSelect) {
+      $folderSelect.innerHTML = folders.map(f =>
+        `<option value="${f.replace(/"/g,"&quot;")}">${f}</option>`
+      ).join("");
+      // Default to Live Concerts
+      const liveOpt = [...$folderSelect.options].find(o => o.value.toLowerCase().includes("live concert"));
+      if (liveOpt) $folderSelect.value = liveOpt.value;
+    }
+  }
+
   render();
 }
 
