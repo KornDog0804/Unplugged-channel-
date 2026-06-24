@@ -23,25 +23,56 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Configure discovery scope
+      - name: Configure discovery scope with rotation
         run: |
           node - <<'NODE'
           const fs = require("fs");
           const file = "data/artist-watchlist.json";
           const data = JSON.parse(fs.readFileSync(file, "utf8"));
 
-          // Tier 1: 15 artists — core weekly artists, shuffled so
-          // different ones get coverage each run
-          const shuffle = arr => arr.sort(() => Math.random() - 0.5);
-          data.tier_1_core = shuffle(data.tier_1_core || []).slice(0, 15);
+          // Rotation state file — tracks which artists ran last time
+          const rotFile = "data/discovery-rotation.json";
+          let rot = { lastRun: [], runCount: 0 };
+          try { rot = JSON.parse(fs.readFileSync(rotFile, "utf8")); } catch {}
 
-          // Tier 2: 8 artists — adjacent taste, rotates each run
-          data.tier_2_adjacent = shuffle(data.tier_2_adjacent || []).slice(0, 8);
+          const shuffle = arr => [...arr].sort(() => Math.random() - 0.5);
 
-          // Tier 3: off for now — re-enable once workflow is proven stable
-          data.tier_3_watchlist = [];
+          const tier1 = data._tier_1_core_full || data.tier_1_core || [];
+          const tier2 = data._tier_2_adjacent_full || data.tier_2_adjacent || [];
 
-          // 5 search terms — good spread without going nuclear
+          // Save full lists on first run so rotation persists
+          if (!data._tier_1_core_full) data._tier_1_core_full = [...tier1];
+          if (!data._tier_2_adjacent_full) data._tier_2_adjacent_full = [...tier2];
+
+          // Tier 1: rotate in halves — run A on even counts, B on odd
+          // So each artist gets searched every OTHER run, not every run
+          const half = Math.ceil(tier1.length / 2);
+          const t1sorted = [...tier1];
+          const t1ThisRun = rot.runCount % 2 === 0
+            ? t1sorted.slice(0, half)
+            : t1sorted.slice(half);
+
+          // Tier 2: pick 8 that WEREN'T in last run
+          const t2eligible = tier2.filter(a => !rot.lastRun.includes(a));
+          const t2ThisRun = shuffle(t2eligible.length >= 8 ? t2eligible : tier2).slice(0, 8);
+
+          // Tier 3: Monday only, 5 artists
+          const dayOfWeek = new Date().getDay();
+          const tier3 = data._tier_3_watchlist_full || data.tier_3_watchlist || [];
+          if (!data._tier_3_watchlist_full) data._tier_3_watchlist_full = [...tier3];
+          const t3ThisRun = dayOfWeek === 1 ? shuffle(tier3).slice(0, 5) : [];
+
+          const thisRunAll = [...t1ThisRun, ...t2ThisRun, ...t3ThisRun];
+
+          // Update rotation state
+          rot.lastRun = thisRunAll.map(a => typeof a === 'string' ? a : a);
+          rot.runCount = (rot.runCount || 0) + 1;
+          fs.writeFileSync(rotFile, JSON.stringify(rot, null, 2));
+
+          // Write scoped watchlist for this run
+          data.tier_1_core = t1ThisRun;
+          data.tier_2_adjacent = t2ThisRun;
+          data.tier_3_watchlist = t3ThisRun;
           data.searchTerms = [
             "full concert",
             "full set live",
@@ -49,27 +80,25 @@ jobs:
             "acoustic session",
             "official live"
           ];
-
-          // 5 results per search — enough to find gold, filtered hard
           data.maxResultsPerSearch = 5;
           data.minDurationMinutes = 20;
 
-          fs.writeFileSync(file, JSON.stringify(data, null, 2) + "\n");
-          console.log(`Scope: ${data.tier_1_core.length + data.tier_2_adjacent.length} artists x ${data.searchTerms.length} terms = ${(data.tier_1_core.length + data.tier_2_adjacent.length) * data.searchTerms.length} searches`);
+          fs.writeFileSync(file, JSON.stringify(data, null, 2));
+          console.log(`Run #${rot.runCount}`);
+          console.log(`Tier 1 (${t1ThisRun.length}): ${t1ThisRun.join(", ")}`);
+          console.log(`Tier 2 (${t2ThisRun.length}): ${t2ThisRun.join(", ")}`);
+          console.log(`Tier 3 (${t3ThisRun.length}): ${t3ThisRun.length ? t3ThisRun.join(", ") : "skipped"}`);
+          console.log(`Total: ${thisRunAll.length} artists x 5 terms = ${thisRunAll.length * 5} searches`);
           NODE
 
       - name: Run discovery bot
         run: node scripts/discover-shows.js
 
-      - name: Commit discovery results
+      - name: Commit results
         if: always()
         run: |
           git config user.name "concert-corner-bot"
           git config user.email "actions@github.com"
-          git add data/discovery-candidates.json
-          if git diff --staged --quiet; then
-            echo "No new candidates found."
-          else
-            git commit -m "🎸 Discovery: new concert candidates $(date +'%Y-%m-%d')"
-            git push
-          fi
+          git add data/discovery-candidates.json data/discovery-rotation.json data/artist-watchlist.json
+          git diff --staged --quiet || git commit -m "🎸 Discovery run $(date +'%Y-%m-%d') — new candidates"
+          git push
