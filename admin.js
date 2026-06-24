@@ -1242,3 +1242,103 @@ async function dismissArtistSuggestion(artistName) {
     showToast(`Error: ${e.message}`, true);
   }
 }
+
+// ── Clean up Stitched Streams ─────────────────────────────────────────────────
+// Moves items that belong in other folders back to their correct home.
+// Rules:
+//   title contains "unplugged" → MTV Unplugged
+//   title contains "tiny desk"  → Tiny Desk
+//   title/artist already exists in Live Concerts → remove (dupe)
+//   everything else stays in Stitched Streams
+async function cleanupStitchedStreams() {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Cleaning up Stitched Streams…");
+  try {
+    const epFile = await ghGet("episodes.json");
+    const episodes = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    const root = Array.isArray(episodes) ? episodes : (episodes.items || []);
+
+    const stitched  = root.find(s => s.title?.includes("Stitched") && Array.isArray(s.items));
+    const unplugged = root.find(s => s.title?.includes("Unplugged") && Array.isArray(s.items));
+    const tinyDesk  = root.find(s => s.title?.includes("Tiny Desk") && Array.isArray(s.items));
+    const live      = root.find(s => s.title?.includes("Live Concerts") && s.title?.includes("🎤") && Array.isArray(s.items));
+
+    if (!stitched) { logProgress("Stitched Streams not found."); doneProgress(false); return; }
+
+    logProgress(`Stitched Streams has ${stitched.items.length} items — scanning…`);
+
+    // Build URL sets for existing content in other folders
+    function getUrls(folder) {
+      if (!folder) return new Set();
+      const urls = new Set();
+      function walk(node) {
+        if (!node) return;
+        if (Array.isArray(node.items)) { node.items.forEach(walk); return; }
+        (node.tracks || []).forEach(t => { if (t?.url) urls.add(t.url); });
+      }
+      walk(folder);
+      return urls;
+    }
+
+    const unpluggedUrls = getUrls(unplugged);
+    const tinyDeskUrls  = getUrls(tinyDesk);
+    const liveUrls      = getUrls(live);
+
+    const keep = [];
+    let movedToUnplugged = 0, movedToTinyDesk = 0, removedDupe = 0;
+
+    for (const item of stitched.items) {
+      const title = (item.title || "").toLowerCase();
+      const trackUrls = (item.tracks || []).map(t => t.url).filter(Boolean);
+      const isDupeUnplugged = trackUrls.some(u => unpluggedUrls.has(u));
+      const isDupeTinyDesk  = trackUrls.some(u => tinyDeskUrls.has(u));
+      const isDupeLive      = trackUrls.some(u => liveUrls.has(u));
+
+      if (isDupeUnplugged || isDupeTinyDesk || isDupeLive) {
+        logProgress(`  Remove (dupe): ${item.title}`);
+        removedDupe++;
+        continue;
+      }
+
+      if ((title.includes("unplugged") || title.includes("mtv unplugged")) && unplugged) {
+        unplugged.items.push(item);
+        logProgress(`  → MTV Unplugged: ${item.title}`);
+        movedToUnplugged++;
+        continue;
+      }
+
+      if (title.includes("tiny desk") && tinyDesk) {
+        tinyDesk.items.push(item);
+        logProgress(`  → Tiny Desk: ${item.title}`);
+        movedToTinyDesk++;
+        continue;
+      }
+
+      keep.push(item);
+    }
+
+    stitched.items = keep;
+
+    // Sort all affected folders
+    const sorter = (a, b) => (a.title||"").localeCompare(b.title||"");
+    stitched.items.sort(sorter);
+    if (unplugged) unplugged.items.sort(sorter);
+    if (tinyDesk)  tinyDesk.items.sort(sorter);
+
+    logProgress(`\nResults:`);
+    logProgress(`  Stayed in Stitched: ${keep.length}`);
+    logProgress(`  Moved to MTV Unplugged: ${movedToUnplugged}`);
+    logProgress(`  Moved to Tiny Desk: ${movedToTinyDesk}`);
+    logProgress(`  Removed (duplicates): ${removedDupe}`);
+
+    logProgress("\nWriting to GitHub…");
+    await ghPut("episodes.json", episodes, epFile.sha,
+      `Clean up Stitched Streams: moved ${movedToUnplugged + movedToTinyDesk}, removed ${removedDupe} dupes`);
+    logProgress("Done! Netlify deploys in ~30 seconds.");
+    doneProgress(true);
+    showToast("Stitched Streams cleaned up!");
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
