@@ -923,6 +923,24 @@
             ]
           },
           {
+            "title": "A Day To Remember",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "A Day To Remember (Live At Warped Tour 2025) Fullset (Remastered)",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/5nAcq5Gvhyk/hqdefault.jpg",
+                "added": "2026-06-24",
+                "tracks": [
+                  {
+                    "title": "A Day To Remember (Live At Warped Tour 2025) Fullset (Remastered)",
+                    "url": "https://www.youtube.com/watch?v=5nAcq5Gvhyk"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Dean Hall and the Loose Eels",
             "mode": "folder",
             "items": [
@@ -1066,6 +1084,24 @@
         "title": "G",
         "mode": "folder",
         "items": [
+          {
+            "title": "The Ghost Inside",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "The Ghost Inside – Rise From The Ashes: Live at the Shrine",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/u4eQtdrav-w/hqdefault.jpg",
+                "added": "2026-06-24",
+                "tracks": [
+                  {
+                    "title": "The Ghost Inside – Rise From The Ashes: Live at the Shrine",
+                    "url": "https://www.youtube.com/watch?v=u4eQtdrav-w"
+                  }
+                ]
+              }
+            ]
+          },
           {
             "title": "Greta Van Fleet",
             "mode": "folder",
