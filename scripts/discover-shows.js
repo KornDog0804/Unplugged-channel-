@@ -281,7 +281,37 @@ async function searchYouTube(query, artist, searchTerm) {
   return passed;
 }
 
-// ── Main ──────────────────────────────────────────────────────────────────────
+// ── Title similarity de-dupe ─────────────────────────────────────────────────
+// Prevents the same concert appearing multiple times under slightly different
+// titles (e.g. "Sevendust Woodstock 99" vs "SEVENDUST WOODSTOCK 99 1999").
+// Uses a simple word-overlap score — if 70%+ of meaningful words match, skip.
+function titleSimilarity(a, b) {
+  const clean = s => s.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/(full|concert|live|show|set|official|hd|4k|pro|shot|remastered|at|in|the|a|an|of|and|with|ft|feat|featuring)/g, " ")
+    .replace(/\s+/g, " ").trim();
+
+  const wordsA = new Set(clean(a).split(" ").filter(w => w.length > 2));
+  const wordsB = new Set(clean(b).split(" ").filter(w => w.length > 2));
+  if (!wordsA.size || !wordsB.size) return 0;
+
+  let overlap = 0;
+  for (const w of wordsA) { if (wordsB.has(w)) overlap++; }
+  return overlap / Math.max(wordsA.size, wordsB.size);
+}
+
+function isTitleDupe(title, newCandidates, existingCandidates) {
+  const threshold = 0.70;
+  for (const c of newCandidates) {
+    if (titleSimilarity(title, c.title) >= threshold) return true;
+  }
+  for (const c of existingCandidates) {
+    if (titleSimilarity(title, c.title) >= threshold) return true;
+  }
+  return false;
+}
+
+// ── Main ───────────────────────────────────────────────────────────────────────
 async function main() {
   console.log("🎸 Joey's Concert Corner — Discovery Bot v2 (Smart Edition)");
   console.log("=============================================================");
@@ -393,11 +423,13 @@ async function main() {
           }
         }
 
-        if (!seenIds.has(r.videoId)) {
+        if (!seenIds.has(r.videoId) && !isTitleDupe(r.title, newCandidates, existingCandidates)) {
           seenIds.add(r.videoId);
           newCandidates.push(r);
-        } else {
+        } else if (seenIds.has(r.videoId)) {
           console.log(`    (already seen: ${r.videoId})`);
+        } else {
+          console.log(`    (title dupe skipped): ${r.title}`);
         }
       }
 
