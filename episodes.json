@@ -4,6 +4,17 @@
     "mode": "folder",
     "items": [
       {
+        "title": "Alanis Morissette — MTV Unplugged (Full Session)",
+        "artist": "Alanis Morissette",
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "MTV Unplugged",
+            "url": "https://youtu.be/irJK3I1m8zY"
+          }
+        ]
+      },
+      {
         "title": "Alice In Chains — MTV Unplugged (Full Session)",
         "artist": "Alice In Chains",
         "year": 1996,
@@ -12,6 +23,18 @@
           {
             "title": "Full Session Stream",
             "url": "https://youtu.be/Jprla2NvHY0"
+          }
+        ]
+      },
+      {
+        "title": "Creed — Reunited And Unplugged (SiriusXM, 2024)",
+        "artist": "Creed",
+        "year": 2024,
+        "mode": "fullshow",
+        "tracks": [
+          {
+            "title": "Full Session Stream",
+            "url": "https://www.youtube.com/watch?v=P7DWcyB9ElQ"
           }
         ]
       },
@@ -168,6 +191,19 @@
         ]
       },
       {
+        "title": "Joe: Tiny Desk Concert",
+        "artist": "Joe",
+        "year": 2026,
+        "mode": "fullshow",
+        "added": "2026-06-23",
+        "tracks": [
+          {
+            "title": "Joe: Tiny Desk Concert",
+            "url": "https://www.youtube.com/watch?v=YCbFsAwwyyg"
+          }
+        ]
+      },
+      {
         "title": "Living Colour — Tiny Desk",
         "mode": "fullshow",
         "tracks": [
@@ -194,19 +230,6 @@
           {
             "title": "Tiny Desk Concert",
             "url": "https://youtu.be/ajNYTJcF6rE"
-          }
-        ]
-      },
-      {
-        "title": "Joe: Tiny Desk Concert",
-        "artist": "Joe",
-        "year": 2026,
-        "mode": "fullshow",
-        "added": "2026-06-23",
-        "tracks": [
-          {
-            "title": "Joe: Tiny Desk Concert",
-            "url": "https://www.youtube.com/watch?v=YCbFsAwwyyg"
           }
         ]
       },
@@ -256,29 +279,6 @@
         ]
       },
       {
-        "title": "Alanis Morissette — MTV Unplugged (Full Session)",
-        "artist": "Alanis Morissette",
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "MTV Unplugged",
-            "url": "https://youtu.be/irJK3I1m8zY"
-          }
-        ]
-      },
-      {
-        "title": "Alice In Chains — MTV Unplugged (Full Session)",
-        "artist": "Alice In Chains",
-        "year": 1996,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/Jprla2NvHY0"
-          }
-        ]
-      },
-      {
         "title": "Bad Omens — Acoustic Queue (6 Songs)",
         "artist": "Bad Omens",
         "year": "Acoustic",
@@ -307,18 +307,6 @@
           {
             "title": "If I'm There",
             "url": "https://youtu.be/7vkBQFjrorU"
-          }
-        ]
-      },
-      {
-        "title": "Billy Strings — Tiny Desk Concert",
-        "artist": "Billy Strings",
-        "year": 2019,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/WgqaxMOKfnI"
           }
         ]
       },
@@ -363,18 +351,6 @@
           {
             "title": "Acoustic Performance",
             "url": "https://youtu.be/uetFO7y8WPA"
-          }
-        ]
-      },
-      {
-        "title": "Creed — Reunited And Unplugged (SiriusXM, 2024)",
-        "artist": "Creed",
-        "year": 2024,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://www.youtube.com/watch?v=P7DWcyB9ElQ"
           }
         ]
       },
@@ -471,66 +447,6 @@
         ]
       },
       {
-        "title": "JAY-Z — Unplugged / Live (Full Session)",
-        "artist": "JAY-Z",
-        "year": 2001,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/r2I_pGlvtAY"
-          }
-        ]
-      },
-      {
-        "title": "KISS — MTV Unplugged (Full Session, 1995)",
-        "artist": "KISS",
-        "year": 1995,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://www.youtube.com/watch?v=X4E_ULt7tLM"
-          }
-        ]
-      },
-      {
-        "title": "Korn — MTV Unplugged (Full Session)",
-        "artist": "Korn",
-        "year": 2007,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/El8-JgiqcUI"
-          }
-        ]
-      },
-      {
-        "title": "Lauryn Hill — MTV Unplugged No. 2.0 (Full Show, Remastered 4K)",
-        "artist": "Lauryn Hill",
-        "year": 2002,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://www.youtube.com/watch?v=4SDCuFLAF78"
-          }
-        ]
-      },
-      {
-        "title": "Nirvana — MTV Unplugged (Full Session)",
-        "artist": "Nirvana",
-        "year": 1993,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://youtu.be/pOTkCgkxqyg"
-          }
-        ]
-      },
-      {
         "title": "Papa Roach — WRIF Acoustic Set (Full Session)",
         "artist": "Papa Roach",
         "year": 2025,
@@ -539,30 +455,6 @@
           {
             "title": "Full Session Stream",
             "url": "https://www.youtube.com/watch?v=f4BK60WVPac"
-          }
-        ]
-      },
-      {
-        "title": "Pearl Jam — MTV Unplugged (Full Session)",
-        "artist": "Pearl Jam",
-        "year": 1992,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Unplugged Full Session",
-            "url": "https://youtu.be/P9fPF204icg"
-          }
-        ]
-      },
-      {
-        "title": "Scarface — Tiny Desk (Home) Concert",
-        "artist": "Scarface",
-        "year": 2023,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Tiny Desk Concert",
-            "url": "https://youtu.be/ajNYTJcF6rE"
           }
         ]
       },
@@ -643,18 +535,6 @@
         ]
       },
       {
-        "title": "Staind — MTV Unplugged (Full Session)",
-        "artist": "Staind",
-        "year": 2002,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Session Stream",
-            "url": "https://www.youtube.com/watch?v=33MIi9bfmQo"
-          }
-        ]
-      },
-      {
         "title": "Stevie Ray Vaughan & Joe Satriani — Blues / Guitar Jam",
         "artist": "Stevie Ray Vaughan • Joe Satriani",
         "year": "1980s",
@@ -663,18 +543,6 @@
           {
             "title": "Live Jam",
             "url": "https://youtu.be/e_UASyYu1iA"
-          }
-        ]
-      },
-      {
-        "title": "Stone Temple Pilots — MTV Unplugged (Full Session)",
-        "artist": "Stone Temple Pilots",
-        "year": 1993,
-        "mode": "fullshow",
-        "tracks": [
-          {
-            "title": "Full Acoustic Performance",
-            "url": "https://youtu.be/Apok0654Qnc"
           }
         ]
       },
