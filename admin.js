@@ -163,6 +163,17 @@ async function ghGet(path) {
 }
 
 async function ghPut(path, content, sha, message) {
+  // Always fetch the latest SHA right before writing to avoid 409 conflicts
+  // when the file was updated by the bot or another tab since page load.
+  let freshSha = sha;
+  try {
+    const latest = await ghGet(path);
+    freshSha = latest.sha;
+  } catch (_) {
+    // File may not exist yet (new file) — use passed-in sha (may be undefined)
+    freshSha = sha;
+  }
+
   const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}`, {
     method: "PUT",
     headers: {
@@ -173,7 +184,7 @@ async function ghPut(path, content, sha, message) {
     body: JSON.stringify({
       message,
       content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
-      sha,
+      sha: freshSha,
       branch: BRANCH
     })
   });
