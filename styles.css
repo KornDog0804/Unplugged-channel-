@@ -307,6 +307,9 @@ a{ color: var(--text); text-decoration: none; }
 
 .btn.wide{ width: 100%; }
 
+/* Load More only shows when JS explicitly sets inline-flex */
+#loadMoreBtn{ display: none; }
+
 /* =========================================================
    LANDING PAGE
    ========================================================= */
