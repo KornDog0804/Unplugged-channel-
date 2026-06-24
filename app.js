@@ -1062,8 +1062,10 @@
     $episodes.innerHTML = html || `<div class="empty">Nothing here yet.</div>`;
 
     if ($loadMoreBtn) {
+      // Only show Load More when inside a folder, not at root level
       const more = items.length > renderLimit;
-      $loadMoreBtn.style.display = more ? "inline-flex" : "none";
+      const atRoot = node === ROOT;
+      $loadMoreBtn.style.display = (more && !atRoot) ? "inline-flex" : "none";
     }
 
     if ($playAllBtn) $playAllBtn.style.display = "inline-flex";
