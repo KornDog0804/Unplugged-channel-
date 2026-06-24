@@ -91,6 +91,9 @@ jobs:
           console.log(`Total: ${thisRunAll.length} artists x 5 terms = ${thisRunAll.length * 5} searches`);
           NODE
 
+      - name: Sync Discogs collection
+        run: node scripts/sync-discogs.js
+
       - name: Run discovery bot
         run: node scripts/discover-shows.js
 
@@ -99,6 +102,6 @@ jobs:
         run: |
           git config user.name "concert-corner-bot"
           git config user.email "actions@github.com"
-          git add data/discovery-candidates.json data/discovery-rotation.json data/artist-watchlist.json
+          git add data/discovery-candidates.json data/discovery-rotation.json data/artist-watchlist.json data/trusted-channels.json
           git diff --staged --quiet || git commit -m "🎸 Discovery run $(date +'%Y-%m-%d') — new candidates"
           git push
