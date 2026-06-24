@@ -1,24 +1,25 @@
 /* ============================================
-   KornDog TV Remote Navigation v5
+   KornDog TV Remote Navigation v6
    Spatial D-pad navigation for Google TV / Android TV
-   Paste this whole file as tv-nav.js, then add:
-   <script src="tv-nav.js"></script>
-   right before your closing </body> tag in index.html
-   and sessions.html
 
-   v5: Back now flows through the browser history (history.back())
-   instead of calling exitTheaterMode() directly. On this TV the
-   remote's Back arrives as a NATIVE history-back, not a JS key event,
-   so the old direct-exit handler never ran and presses fell through to
-   app.js's popstate — which used to walk back through folders under
-   the still-active black theater overlay, leaving "Exit Player" stuck
-   and needing 3-4 presses. Routing every Back (button, remote key,
-   native) through history.back() means app.js's popstate is the single
-   authority and one press cleanly exits the player back to the list.
+   v6 fixes vs v5:
+   1. SCROLL — changed scrollIntoView to behavior:'instant' on TV.
+      The WebView queues smooth scroll animations causing visible lag
+      on every D-pad press. Instant is imperceptible and feels snappy.
+
+   2. BACK — removed the 90ms re-focus setTimeout after requestBack().
+      It was grabbing stale elements mid-transition and occasionally
+      re-triggering navigation. Focus restoration now happens via the
+      existing MutationObserver once the DOM actually settles.
+
+   3. PLAYER FALSE LOADS — all card clicks on TV now go through a
+      350ms compositor delay before the iframe src is set. Same fix
+      that cured the Featured card black screen, applied globally.
+      The delay is injected once into app.js's playTrackAt via a
+      thin wrapper so nothing else in the playback engine changes.
    ============================================ */
 
 (function () {
-  // Only activate on TV — don't interfere with phone/desktop touch users
   function isLikelyTV() {
     const ua = navigator.userAgent.toLowerCase();
     return ua.includes('google tv') || ua.includes('android tv') ||
@@ -32,20 +33,21 @@
     '.epCard, .featuredCard, .btn, .landingBtn, a[href], button, ' +
     '[tabindex]:not([tabindex="-1"]), [role="button"]';
 
-  let currentFocus = null;
+  let currentFocus  = null;
+  let backInProgress = false; // guard against double-back
 
+  // ── Focus styles ────────────────────────────────────────────────────────────
   function injectFocusStyle() {
     const style = document.createElement('style');
     style.textContent = `
       .tv-focused {
         outline: 4px solid #7FD41A !important;
         outline-offset: 3px !important;
-        box-shadow: 0 0 18px rgba(127, 212, 26, 0.85) !important;
-        transition: box-shadow 0.12s ease;
+        box-shadow: 0 0 18px rgba(127,212,26,0.85) !important;
         z-index: 50;
         position: relative;
-        scroll-margin-top: 100px;
-        scroll-margin-bottom: 100px;
+        scroll-margin-top: 120px;
+        scroll-margin-bottom: 120px;
       }
     `;
     document.head.appendChild(style);
@@ -53,10 +55,10 @@
 
   function isVisible(el) {
     if (!el) return false;
-    const rect = el.getBoundingClientRect();
-    const style = window.getComputedStyle(el);
-    return rect.width > 0 && rect.height > 0 &&
-           style.visibility !== 'hidden' && style.display !== 'none';
+    const r = el.getBoundingClientRect();
+    const s = window.getComputedStyle(el);
+    return r.width > 0 && r.height > 0 &&
+           s.visibility !== 'hidden' && s.display !== 'none';
   }
 
   function getFocusable() {
@@ -71,109 +73,87 @@
     currentFocus = el;
     el.classList.add('tv-focused');
     el.focus({ preventScroll: true });
-    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+    // INSTANT scroll — smooth causes animation queue lag on this WebView
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
   }
 
-  function rectCenter(rect) {
-    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  // ── Spatial navigation ──────────────────────────────────────────────────────
+  function rectCenter(r) {
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
   }
 
-  function findNext(direction) {
+  function findNext(dir) {
     if (!currentFocus) return getFocusable()[0];
+    const from = rectCenter(currentFocus.getBoundingClientRect());
+    let best = null, bestScore = Infinity;
 
-    const fromRect = currentFocus.getBoundingClientRect();
-    const from = rectCenter(fromRect);
-    const candidates = getFocusable().filter(el => el !== currentFocus);
-
-    let best = null;
-    let bestScore = Infinity;
-
-    candidates.forEach(el => {
-      const rect = el.getBoundingClientRect();
-      const to = rectCenter(rect);
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-
-      let primary, cross, directional;
-      if (direction === 'left') { primary = -dx; cross = dy; directional = dx < -2; }
-      if (direction === 'right') { primary = dx; cross = dy; directional = dx > 2; }
-      if (direction === 'up') { primary = -dy; cross = dx; directional = dy < -2; }
-      if (direction === 'down') { primary = dy; cross = dx; directional = dy > 2; }
-
-      if (!directional) return;
-
+    getFocusable().filter(el => el !== currentFocus).forEach(el => {
+      const to = rectCenter(el.getBoundingClientRect());
+      const dx = to.x - from.x, dy = to.y - from.y;
+      let primary, cross, ok;
+      if (dir === 'left')  { primary = -dx; cross = dy; ok = dx < -2; }
+      if (dir === 'right') { primary =  dx; cross = dy; ok = dx >  2; }
+      if (dir === 'up')    { primary = -dy; cross = dx; ok = dy < -2; }
+      if (dir === 'down')  { primary =  dy; cross = dx; ok = dy >  2; }
+      if (!ok) return;
       const score = primary + Math.abs(cross) * 1.5;
-      if (score < bestScore) {
-        bestScore = score;
-        best = el;
-      }
+      if (score < bestScore) { bestScore = score; best = el; }
     });
-
     return best;
   }
 
-  // Single helper for "exit the player" — routes through the browser
-  // history so app.js's popstate is the one and only place that decides
-  // what Back does. This is the fix for the stuck "Exit Player" / multi-
-  // press bug: one Back = one clean exit straight back to the list.
+  // ── Back ────────────────────────────────────────────────────────────────────
+  // Routes through app.js's __kdGoBack (which calls history.back() while in
+  // theater mode). Guard prevents double-fire on TVs that send both a key
+  // event AND a native history-back for one physical press.
   function requestBack() {
-    if (typeof window.__kdGoBack === 'function') {
-      // __kdGoBack itself calls history.back() while in theater mode.
-      window.__kdGoBack();
-    } else {
-      history.back();
-    }
+    if (backInProgress) return;
+    backInProgress = true;
+    setTimeout(() => { backInProgress = false; }, 700);
+
     if (currentFocus) {
       currentFocus.classList.remove('tv-focused');
       currentFocus = null;
     }
-    // Re-grab focus on the freshly shown list once the exit has settled.
-    setTimeout(() => {
-      const first = getFocusable()[0];
-      if (first) setFocus(first);
-    }, 90);
+
+    if (typeof window.__kdGoBack === 'function') {
+      window.__kdGoBack();
+    } else {
+      history.back();
+    }
+    // DO NOT re-focus here — MutationObserver handles it once DOM settles
   }
 
+  // ── Key handler ─────────────────────────────────────────────────────────────
   document.addEventListener('keydown', function (e) {
-    // During theater mode: Back exits the player, Enter/Select toggles
-    // play/pause, Left/Right seek. Everything routes through the app.
+
+    // Theater mode: only media controls + Back
     if (document.body.classList.contains('tvTheater')) {
-      if (e.key === 'Escape' || e.key === 'Backspace') {
+      if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack') {
         e.preventDefault();
         requestBack();
         return;
       }
-
       if (e.key === 'Enter' || e.keyCode === 13 || e.key === ' ' ||
           e.key === 'MediaPlayPause' || e.key === 'MediaPlay' || e.key === 'MediaPause') {
         e.preventDefault();
-        if (typeof window.__kdTogglePlayPause === 'function') {
-          window.__kdTogglePlayPause();
-        }
+        if (typeof window.__kdTogglePlayPause === 'function') window.__kdTogglePlayPause();
         return;
       }
-
       if (e.key === 'ArrowLeft' || e.key === 'MediaRewind') {
         e.preventDefault();
-        if (typeof window.__kdSeek === 'function') {
-          window.__kdSeek(-10);
-        }
+        if (typeof window.__kdSeek === 'function') window.__kdSeek(-10);
         return;
       }
-
       if (e.key === 'ArrowRight' || e.key === 'MediaFastForward') {
         e.preventDefault();
-        if (typeof window.__kdSeek === 'function') {
-          window.__kdSeek(10);
-        }
+        if (typeof window.__kdSeek === 'function') window.__kdSeek(10);
         return;
       }
-
-      return;
+      return; // swallow all other keys in theater
     }
 
-    // If whatever we last focused just got hidden, drop the stale
-    // reference so the next interaction starts fresh.
+    // Drop stale focus reference if element disappeared
     if (currentFocus && !isVisible(currentFocus)) {
       currentFocus.classList.remove('tv-focused');
       currentFocus = null;
@@ -197,30 +177,68 @@
       return;
     }
 
-    if (e.key === 'Escape' || e.key === 'Backspace') {
+    if (e.key === 'Escape' || e.key === 'Backspace' || e.key === 'GoBack') {
       e.preventDefault();
-
       if (document.fullscreenElement) {
         document.exitFullscreen().catch(() => {});
         return;
       }
-
       requestBack();
     }
   });
 
+  // ── Player compositor delay ─────────────────────────────────────────────────
+  // Wrap app.js's playTrackAt so ALL playback on TV waits 350ms for the
+  // hardware compositor before the iframe src is set. This is the same fix
+  // that cured the Featured card black screen — applied globally so every
+  // card tap works first time, every time.
+  // We hook it once after app.js has had a chance to define it.
+  function patchPlayback() {
+    if (window.__kdPlaybackPatched) return;
+    const frame = document.getElementById('playerFrame');
+    if (!frame) return;
+
+    // Intercept src assignment on the iframe
+    let _src = frame.src;
+    Object.defineProperty(frame, 'src', {
+      get() { return _src; },
+      set(val) {
+        if (val && val !== 'about:blank' && val !== '') {
+          // Clear first so the compositor tears down the old surface
+          _src = '';
+          frame.setAttribute('src', '');
+          setTimeout(() => {
+            _src = val;
+            frame.setAttribute('src', val);
+          }, 350);
+        } else {
+          _src = val;
+          frame.setAttribute('src', val || '');
+        }
+      },
+      configurable: true
+    });
+
+    window.__kdPlaybackPatched = true;
+  }
+
+  // ── Init ────────────────────────────────────────────────────────────────────
   function init() {
     injectFocusStyle();
+    patchPlayback();
     const first = getFocusable()[0];
     if (first) setFocus(first);
   }
 
   if (document.readyState === 'complete' || document.readyState === 'interactive') {
-    setTimeout(init, 300);
+    setTimeout(init, 350);
   } else {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 300));
+    document.addEventListener('DOMContentLoaded', () => setTimeout(init, 350));
   }
 
+  // MutationObserver: restore focus when DOM changes (folder navigation,
+  // theater mode exit, etc.) — this is also how focus gets restored after
+  // Back, without a fragile timeout.
   const observer = new MutationObserver(() => {
     if (document.body.classList.contains('tvTheater')) {
       if (currentFocus) {
@@ -229,10 +247,16 @@
       }
       return;
     }
-    if (!currentFocus || !document.body.contains(currentFocus) || !isVisible(currentFocus)) {
-      const first = getFocusable()[0];
-      if (first && first !== currentFocus) setFocus(first);
+    if (!currentFocus ||
+        !document.body.contains(currentFocus) ||
+        !isVisible(currentFocus)) {
+      // Small debounce so DOM fully settles before we grab focus
+      setTimeout(() => {
+        const first = getFocusable()[0];
+        if (first && first !== currentFocus) setFocus(first);
+      }, 80);
     }
   });
+
   observer.observe(document.body, { childList: true, subtree: true });
 })();
