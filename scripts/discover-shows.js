@@ -332,12 +332,32 @@ async function main() {
   }
   indexEpisodeIds(episodesRaw);
 
+  // Also extract videoIds directly from episodes.json track URLs
+  // (catches items added manually that may not be in approved-history)
+  const approvedUrls = new Set([
+    ...approvedHistory.map(h => h.url).filter(Boolean),
+    ...existingCandidates.map(c => c.url).filter(Boolean),
+  ]);
+
   const seenIds = new Set([
     ...existingCandidates.map(c => c.videoId),
     ...approvedHistory.map(h => h.videoId || h),
     ...rejectedHistory.map(h => h.videoId || h),
     ...episodeVideoIds,
   ]);
+
+  // Also block by URL pattern — catches different URL formats for same video
+  function urlToVideoId(url) {
+    try {
+      const u = new URL(url);
+      return u.searchParams.get("v") ||
+        (u.hostname.includes("youtu.be") ? u.pathname.replace("/","").trim() : null);
+    } catch { return null; }
+  }
+  approvedUrls.forEach(url => {
+    const id = urlToVideoId(url);
+    if (id) seenIds.add(id);
+  });
 
   console.log(`De-dupe pool: ${existingCandidates.length} pending | ${approvedHistory.length} approved | ${rejectedHistory.length} rejected | ${episodeVideoIds.size} in episodes`);
   console.log(`Total blocked IDs: ${seenIds.size}\n`);
