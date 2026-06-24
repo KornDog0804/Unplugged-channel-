@@ -1631,6 +1631,24 @@
             ]
           },
           {
+            "title": "Of Virtue",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Of Virtue | Live At Reggies 7.18.25 (Full Set)",
+                "year": 2026,
+                "mode": "fullshow",
+                "tracks": [
+                  {
+                    "title": "Of Virtue | Live At Reggies 7.18.25 (Full Set)",
+                    "url": "https://www.youtube.com/watch?v=aq0_j4csJJE"
+                  }
+                ],
+                "added": "2026-06-24"
+              }
+            ]
+          },
+          {
             "title": "Orthodox",
             "mode": "folder",
             "items": [
