@@ -893,6 +893,24 @@
             ]
           },
           {
+            "title": "Breaking Benjamin",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Pointfest 2015: Breaking Benjamin (Full Set)",
+                "year": 2026,
+                "mode": "fullshow",
+                "tracks": [
+                  {
+                    "title": "Pointfest 2015: Breaking Benjamin (Full Set)",
+                    "url": "https://www.youtube.com/watch?v=GCzAMEMexZk"
+                  }
+                ],
+                "added": "2026-06-24"
+              }
+            ]
+          },
+          {
             "title": "Bring Me The Horizon",
             "mode": "folder",
             "items": [
@@ -1087,6 +1105,30 @@
                   }
                 ],
                 "added": "2026-06-23"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "E",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "ERRA",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "ERRA - Cure North America Tour [4K60FPS](FULLSET) Live at the Irving Plaza NYC 6/2/24",
+                "year": 2026,
+                "mode": "fullshow",
+                "tracks": [
+                  {
+                    "title": "ERRA - Cure North America Tour [4K60FPS](FULLSET) Live at the Irving Plaza NYC 6/2/24",
+                    "url": "https://www.youtube.com/watch?v=gNoUzBB5LRk"
+                  }
+                ],
+                "added": "2026-06-24"
               }
             ]
           }
@@ -1483,6 +1525,24 @@
                     "url": "https://www.youtube.com/watch?v=9wz2WWgv9Fs"
                   }
                 ]
+              }
+            ]
+          },
+          {
+            "title": "Michael Jackson",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Michael Jackson - Live In Auckland | 11th November 1996 - HIStory Tour (Full Concert)",
+                "year": 2026,
+                "mode": "fullshow",
+                "tracks": [
+                  {
+                    "title": "Michael Jackson - Live In Auckland | 11th November 1996 - HIStory Tour (Full Concert)",
+                    "url": "https://www.youtube.com/watch?v=ChrLRauOR28"
+                  }
+                ],
+                "added": "2026-06-24"
               }
             ]
           },
