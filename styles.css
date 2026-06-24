@@ -719,6 +719,9 @@ body.landing{ background: var(--oled); }
   font-size: 12px;
 }
 
+/* Player frame hidden until something is playing */
+.playerFrameWrap{ display: none; }
+body.playerOpen .playerFrameWrap{ display: flex; }
 body.playerCollapsed .playerFrameWrap{ display: none; }
 body.playerCollapsed #playerFrame{ display: none; }
 
