@@ -298,16 +298,42 @@ async function runApproval() {
           try { const u = new URL(node.thumb); u.search = ""; node.thumb = u.toString(); } catch {}
         }
 
-        // Live Concerts gets artist sub-folders; all others go flat
+        // Live Concerts: insert into letter group if already structured that way
         const liveFolder = resolveFolder("live concert");
         if (destFolder === liveFolder) {
           const artistName = node.artist || c.artistMatched || c.suggestedArtist || "Unknown";
-          let artistFolder = folder_node.items.find(i => i.mode === "folder" && i.title === artistName);
+
+          // Check if already letter-grouped (all items are single-letter folders)
+          const isLetterGrouped = folder_node.items.length > 0 &&
+            folder_node.items.filter(i => i.mode === "folder").every(i => /^[A-Z#]$/.test(i.title));
+
+          let targetContainer = folder_node;
+
+          if (isLetterGrouped) {
+            const sortName = artistName.replace(/^(the |a |an )/i,"").trim();
+            let letter = sortName[0]?.toUpperCase() || "#";
+            if (!/[A-Z]/.test(letter)) letter = "#";
+            let letterGroup = folder_node.items.find(i => i.title === letter && i.mode === "folder");
+            if (!letterGroup) {
+              letterGroup = { title: letter, mode: "folder", items: [] };
+              folder_node.items.push(letterGroup);
+              folder_node.items.sort((a,b) => {
+                if (a.title==="#") return 1; if (b.title==="#") return -1;
+                return a.title.localeCompare(b.title);
+              });
+            }
+            targetContainer = letterGroup;
+          }
+
+          let artistFolder = targetContainer.items.find(i => i.mode === "folder" && i.title === artistName);
           if (!artistFolder) {
             artistFolder = { title: artistName, mode: "folder", items: [] };
-            folder_node.items.push(artistFolder);
-          // Re-sort artist folders alphabetically after adding
-          folder_node.items.sort((a, b) => (a.title||"").localeCompare(b.title||""));
+            targetContainer.items.push(artistFolder);
+            targetContainer.items.sort((a,b) => {
+              const sa = a.title.replace(/^(the |a |an )/i,"").trim().toLowerCase();
+              const sb = b.title.replace(/^(the |a |an )/i,"").trim().toLowerCase();
+              return sa.localeCompare(sb);
+            });
           }
           const { artist, ...nodeClean } = node;
           artistFolder.items.push(nodeClean);
@@ -987,6 +1013,101 @@ async function restoreFromHistory() {
     logProgress("Done! Netlify deploys in ~30 seconds.");
     doneProgress(true);
     showToast(`Restored ${restored} missing videos!`);
+
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
+
+// ── Group Live Concerts artists by first letter ───────────────────────────────
+async function groupByLetter() {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress("Grouping Live Concerts by letter…");
+  try {
+    const epFile = await ghGet("episodes.json");
+    const episodes = JSON.parse(decodeURIComponent(escape(atob(epFile.content.replace(/\n/g,"")))));
+    const rootArray = Array.isArray(episodes) ? episodes : (episodes.items || []);
+
+    // Find Live Concerts folder
+    const liveFolder = rootArray.find(s =>
+      s.title && s.title.includes("Live Concerts") && Array.isArray(s.items)
+    );
+
+    if (!liveFolder) {
+      logProgress("Live Concerts folder not found.");
+      doneProgress(false); return;
+    }
+
+    // Check if already grouped by letter (items are single-letter folders)
+    const alreadyGrouped = liveFolder.items.every(i =>
+      i.mode === "folder" && i.title && i.title.length <= 3 && /^[A-Z#]/.test(i.title)
+    );
+    if (alreadyGrouped) {
+      logProgress("Already grouped by letter — nothing to do.");
+      doneProgress(true); return;
+    }
+
+    logProgress(`Found ${liveFolder.items.length} artist folders to group`);
+
+    // Separate artist folders from flat shows
+    const artistFolders = liveFolder.items.filter(i => i.mode === "folder" && Array.isArray(i.items));
+    const flatShows     = liveFolder.items.filter(i => i.mode !== "folder" || !Array.isArray(i.items));
+
+    if (flatShows.length) {
+      logProgress(`  Note: ${flatShows.length} flat items will stay ungrouped at bottom`);
+    }
+
+    // Group artist folders by first letter
+    const letterMap = {};
+    for (const artist of artistFolders) {
+      // Strip leading "The ", "A " for sorting purposes
+      const sortName = artist.title.replace(/^(the |a |an )/i, "").trim();
+      let letter = sortName[0]?.toUpperCase() || "#";
+      if (!/[A-Z]/.test(letter)) letter = "#";
+      if (!letterMap[letter]) letterMap[letter] = [];
+      letterMap[letter].push(artist);
+    }
+
+    // Sort artists within each letter group
+    for (const letter of Object.keys(letterMap)) {
+      letterMap[letter].sort((a, b) => {
+        const sa = a.title.replace(/^(the |a |an )/i,"").trim().toLowerCase();
+        const sb = b.title.replace(/^(the |a |an )/i,"").trim().toLowerCase();
+        return sa.localeCompare(sb);
+      });
+    }
+
+    // Build new items array: letter folders sorted A→Z, then any flat shows
+    const sortedLetters = Object.keys(letterMap).sort((a, b) => {
+      if (a === "#") return 1;
+      if (b === "#") return -1;
+      return a.localeCompare(b);
+    });
+
+    const newItems = sortedLetters.map(letter => ({
+      title: letter,
+      mode: "folder",
+      items: letterMap[letter]
+    }));
+
+    // Add flat shows at end if any
+    liveFolder.items = [...newItems, ...flatShows];
+
+    // Log summary
+    for (const letter of sortedLetters) {
+      logProgress(`  ${letter}: ${letterMap[letter].map(a => a.title).join(", ")}`);
+    }
+
+    logProgress(`\nGrouped ${artistFolders.length} artists into ${sortedLetters.length} letter sections`);
+    logProgress("Writing to GitHub…");
+
+    await ghPut("episodes.json", episodes, epFile.sha,
+      `Group Live Concerts by letter (${sortedLetters.length} sections)`);
+
+    logProgress("Done! Netlify deploys in ~30 seconds.");
+    doneProgress(true);
+    showToast(`Grouped into ${sortedLetters.length} letter sections!`);
 
   } catch(e) {
     logProgress(`ERROR: ${e.message}`);
