@@ -64,9 +64,10 @@ function esc(s) {
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
-let allCandidates   = [];
-let approvedHistory = [];
-let rejectedHistory = [];
+let allCandidates      = [];
+let artistSuggestions  = [];
+let approvedHistory    = [];
+let rejectedHistory    = [];
 const itemState = {};
 function getState(id) {
   if (!itemState[id]) itemState[id] = { selected:false, rejected:false, reason:"other" };
@@ -636,9 +637,14 @@ async function init() {
     loadJson("./episodes.json"),
   ]);
 
-  allCandidates   = Array.isArray(cands)    ? cands    : [];
+  const allCands  = Array.isArray(cands)    ? cands    : [];
   approvedHistory = Array.isArray(approved) ? approved : [];
   rejectedHistory = Array.isArray(rejected) ? rejected : [];
+
+  // Separate regular concert candidates from new artist suggestions
+  allCandidates      = allCands.filter(c => c.type !== "new_artist_suggestion");
+  artistSuggestions  = allCands.filter(c => c.type === "new_artist_suggestion");
+  renderArtistSuggestions();
 
   // Populate folder dropdown from live episodes.json
   if (Array.isArray(eps)) {
@@ -1123,5 +1129,116 @@ async function groupByLetter() {
   } catch(e) {
     logProgress(`ERROR: ${e.message}`);
     doneProgress(false);
+  }
+}
+
+// ── New Artist Suggestions section ────────────────────────────────────────────
+function renderArtistSuggestions() {
+  let $section = document.getElementById("artistSuggestionsSection");
+  if (!$section) {
+    $section = document.createElement("div");
+    $section.id = "artistSuggestionsSection";
+    $section.style.cssText = "padding:0 20px 20px;";
+    // Insert before grid
+    const $grid = document.getElementById("grid");
+    $grid.parentNode.insertBefore($section, $grid);
+  }
+
+  if (!artistSuggestions.length) {
+    $section.innerHTML = "";
+    return;
+  }
+
+  const confidenceColor = { "similarity-map": "#7FD41A", "co-occurrence": "#9a5cff" };
+
+  $section.innerHTML = `
+    <div style="margin-bottom:12px;padding:14px 0 8px;border-bottom:1px solid rgba(127,212,26,.2);">
+      <div style="font-size:13px;font-weight:900;color:#7FD41A;letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px;">
+        🎤 New Artist Suggestions (${artistSuggestions.length})
+      </div>
+      <div style="font-size:11px;color:#8E84A6;">Found via similarity graph and co-occurrence. Add to watchlist to start discovering their shows.</div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;">
+      ${artistSuggestions.map((s, i) => `
+        <div style="background:rgba(255,255,255,.04);border:1px solid rgba(154,92,255,.25);border-radius:12px;padding:10px 14px;min-width:160px;flex:1 1 160px;">
+          <div style="font-weight:900;font-size:13px;color:#F4F1F8;margin-bottom:4px;">${esc(s.artistName)}</div>
+          <div style="font-size:10px;color:${confidenceColor[s.confidence]||'#888'};margin-bottom:6px;font-weight:700;">
+            ${s.confidence === 'similarity-map' ? '🔗 Similar to' : '👥 Seen with'} ${esc(s.discoveredVia)}
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <a href="https://www.youtube.com/results?search_query=${encodeURIComponent((s.artistName||'') + ' full concert')}"
+               target="_blank" rel="noopener"
+               style="font-size:10px;font-weight:800;color:#9a5cff;text-decoration:none;padding:3px 8px;border-radius:6px;border:1px solid rgba(154,92,255,.35);background:rgba(154,92,255,.1);">
+              🔍 Search
+            </a>
+            <button onclick="addToWatchlist('${esc(s.artistName)}')"
+              style="font-size:10px;font-weight:800;color:#0a1500;background:#7FD41A;border:none;border-radius:6px;padding:3px 8px;cursor:pointer;">
+              + Add
+            </button>
+            <button onclick="dismissArtistSuggestion('${esc(s.artistName)}')"
+              style="font-size:10px;font-weight:800;color:#ffaaaa;background:rgba(255,68,68,.07);border:1px solid rgba(255,68,68,.3);border-radius:6px;padding:3px 8px;cursor:pointer;">
+              ✕
+            </button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+async function addToWatchlist(artistName) {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  showProgress(`Adding ${artistName} to watchlist…`);
+  try {
+    const wlFile = await ghGet("data/artist-watchlist.json");
+    const wl = JSON.parse(decodeURIComponent(escape(atob(wlFile.content.replace(/\n/g,"")))));
+
+    // Add to tier_1_core and _tier_1_core_full
+    if (!wl.tier_1_core.includes(artistName)) wl.tier_1_core.push(artistName);
+    if (wl._tier_1_core_full && !wl._tier_1_core_full.includes(artistName)) {
+      wl._tier_1_core_full.push(artistName);
+    }
+
+    await ghPut("data/artist-watchlist.json", wl, wlFile.sha,
+      `Add ${artistName} to watchlist via admin suggestion`);
+
+    // Remove from suggestions
+    artistSuggestions = artistSuggestions.filter(s => s.artistName !== artistName);
+    logProgress(`Added ${artistName} to watchlist!`);
+    doneProgress(true);
+    renderArtistSuggestions();
+    showToast(`${artistName} added to watchlist!`);
+  } catch(e) {
+    logProgress(`ERROR: ${e.message}`);
+    doneProgress(false);
+  }
+}
+
+async function dismissArtistSuggestion(artistName) {
+  if (!getToken()) { showToast("Save your GitHub token first.", true); return; }
+  try {
+    // Add to rejected history so bot never suggests them again
+    const rejFile = await ghGet("data/rejected-history.json").catch(() => ({ content: btoa("[]"), sha: null }));
+    const rejHist = JSON.parse(decodeURIComponent(escape(atob(rejFile.content.replace(/\n/g,"")))));
+
+    const alreadyRejected = rejHist.some(h => h.videoId === `artist_${artistName.replace(/\s+/g,"_").toLowerCase()}`);
+    if (!alreadyRejected) {
+      rejHist.unshift({
+        videoId:    `artist_${artistName.replace(/\s+/g,"_").toLowerCase()}`,
+        title:      `Artist suggestion: ${artistName}`,
+        artist:     artistName,
+        reason:     "not interested",
+        rejectedAt: new Date().toISOString(),
+        url:        "",
+      });
+      await ghPut("data/rejected-history.json", rejHist, rejFile.sha,
+        `Dismiss artist suggestion: ${artistName}`);
+    }
+
+    artistSuggestions = artistSuggestions.filter(s => s.artistName !== artistName);
+    renderArtistSuggestions();
+    showToast(`${artistName} dismissed.`);
+  } catch(e) {
+    showToast(`Error: ${e.message}`, true);
   }
 }
