@@ -681,6 +681,24 @@
                 ]
               }
             ]
+          },
+          {
+            "title": "Awaken I Am",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Awaken I Am - Full Set HD - Live at The Foundry Concert Club",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/ZNvtfY5LTpc/hqdefault.jpg",
+                "added": "2026-07-05",
+                "tracks": [
+                  {
+                    "title": "Awaken I Am - Full Set HD - Live at The Foundry Concert Club",
+                    "url": "https://www.youtube.com/watch?v=ZNvtfY5LTpc"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -1853,6 +1871,18 @@
                   {
                     "title": "Full Set",
                     "url": "https://www.youtube.com/watch?v=TtmCX9y52ms"
+                  }
+                ]
+              },
+              {
+                "title": "Spiritbox - full set (live in concert)",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/xsS1aFEl2Ps/hqdefault.jpg",
+                "added": "2026-07-05",
+                "tracks": [
+                  {
+                    "title": "Spiritbox - full set (live in concert)",
+                    "url": "https://www.youtube.com/watch?v=xsS1aFEl2Ps"
                   }
                 ]
               }
