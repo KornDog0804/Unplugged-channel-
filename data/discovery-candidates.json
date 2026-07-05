@@ -270,36 +270,6 @@
     }
   },
   {
-    "videoId": "ZNvtfY5LTpc",
-    "title": "Awaken I Am - Full Set HD - Live at The Foundry Concert Club",
-    "channelName": "Leo Sypniewski | Multitracked Concerts",
-    "url": "https://www.youtube.com/watch?v=ZNvtfY5LTpc",
-    "duration": "28:58",
-    "durationMinutes": 28.966666666666665,
-    "publishedText": "7y ago",
-    "viewCountText": "14,471 views",
-    "thumbnail": "https://img.youtube.com/vi/ZNvtfY5LTpc/hqdefault.jpg",
-    "artistMatched": "Awaken I Am",
-    "searchTerm": "full concert",
-    "discoveredAt": "2026-06-24T03:46:34.564Z",
-    "suggestedMode": "fullshow",
-    "suggestedTitle": "Awaken I Am - Full Set HD - Live at The Foundry Concert Club",
-    "suggestedArtist": "Awaken I Am",
-    "suggestedEpisodesJson": {
-      "title": "Awaken I Am - Full Set HD - Live at The Foundry Concert Club",
-      "artist": "Awaken I Am",
-      "mode": "fullshow",
-      "thumb": "https://img.youtube.com/vi/ZNvtfY5LTpc/hqdefault.jpg",
-      "added": "2026-06-24",
-      "tracks": [
-        {
-          "title": "Awaken I Am - Full Set HD - Live at The Foundry Concert Club",
-          "url": "https://www.youtube.com/watch?v=ZNvtfY5LTpc"
-        }
-      ]
-    }
-  },
-  {
     "videoId": "fiXuMmnvtxw",
     "title": "Awaken I Am  - Full Set (Live) - Minneapolis, MN @ The Whiskey Junction",
     "channelName": "Leo Presents",
@@ -415,36 +385,6 @@
         {
           "title": "Spiritbox: Full Set - (54 mins). [West Palm Bch, Florida 6/11/2026]. 4k  GoldanWolf Graphics",
           "url": "https://www.youtube.com/watch?v=xAHBEnFjqNc"
-        }
-      ]
-    }
-  },
-  {
-    "videoId": "xsS1aFEl2Ps",
-    "title": "Spiritbox - full set (live in concert)",
-    "channelName": "Concert Curator",
-    "url": "https://www.youtube.com/watch?v=xsS1aFEl2Ps",
-    "duration": "43:29",
-    "durationMinutes": 43.483333333333334,
-    "publishedText": "11 days ago",
-    "viewCountText": "2,628 views",
-    "thumbnail": "https://img.youtube.com/vi/xsS1aFEl2Ps/hqdefault.jpg",
-    "artistMatched": "Spiritbox",
-    "searchTerm": "full set live",
-    "discoveredAt": "2026-06-24T03:46:54.242Z",
-    "suggestedMode": "fullshow",
-    "suggestedTitle": "Spiritbox - full set (live in concert)",
-    "suggestedArtist": "Spiritbox",
-    "suggestedEpisodesJson": {
-      "title": "Spiritbox - full set (live in concert)",
-      "artist": "Spiritbox",
-      "mode": "fullshow",
-      "thumb": "https://img.youtube.com/vi/xsS1aFEl2Ps/hqdefault.jpg",
-      "added": "2026-06-24",
-      "tracks": [
-        {
-          "title": "Spiritbox - full set (live in concert)",
-          "url": "https://www.youtube.com/watch?v=xsS1aFEl2Ps"
         }
       ]
     }
