@@ -164,8 +164,8 @@ async function main() {
   watchlist._tier_3_watchlist_full = t3Full.sort();
 
   // Also update the active tier arrays
-  if (watchlist.tier_1_core) watchlist.tier_1_core = [...t1Full];
-  if (watchlist.tier_3_watchlist) watchlist.tier_3_watchlist = [...t3Full];
+  // (rotation fix: no longer overwriting tier_1_core here, see sync-discogs.js history)
+  // (rotation fix: no longer overwriting tier_3_watchlist here, see sync-discogs.js history)
 
   fs.writeFileSync(WATCHLIST_PATH, JSON.stringify(watchlist, null, 2), "utf8");
   console.log(`\n✅ Added ${added} new artists to watchlist`);
