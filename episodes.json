@@ -793,6 +793,18 @@
                   }
                 ],
                 "added": "2026-06-24"
+              },
+              {
+                "title": "Breaking Benjamin - Co-Headline Tour [4K60FPS](FULLSET) Live at the Prudential Center NJ 9/10/25",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/5JAldgD6b3Q/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "Breaking Benjamin - Co-Headline Tour [4K60FPS](FULLSET) Live at the Prudential Center NJ 9/10/25",
+                    "url": "https://www.youtube.com/watch?v=5JAldgD6b3Q"
+                  }
+                ]
               }
             ]
           },
@@ -1018,6 +1030,24 @@
         "title": "E",
         "mode": "folder",
         "items": [
+          {
+            "title": "Eidola",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Eidola @ the Gramercy Theatre - full set, March 16, 2026",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/lBOCpLBh6Bs/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "Eidola @ the Gramercy Theatre - full set, March 16, 2026",
+                    "url": "https://www.youtube.com/watch?v=lBOCpLBh6Bs"
+                  }
+                ]
+              }
+            ]
+          },
           {
             "title": "ERRA",
             "mode": "folder",
@@ -1289,6 +1319,24 @@
                   {
                     "title": "Full Show",
                     "url": "https://www.youtube.com/watch?v=H0z-4sYzCig"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Knocked Loose",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "KNOCKED LOOSE - 4K - MULTICAM FULL SET - THE UNDERWORLD, LONDON - 14.03.25",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/hh0gL-W8Wqo/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "KNOCKED LOOSE - 4K - MULTICAM FULL SET - THE UNDERWORLD, LONDON - 14.03.25",
+                    "url": "https://www.youtube.com/watch?v=hh0gL-W8Wqo"
                   }
                 ]
               }
@@ -1837,6 +1885,18 @@
                   }
                 ],
                 "added": "2026-06-23"
+              },
+              {
+                "title": "SLIPKNOT - Live at Resurrection Fest EG 2023 (Viveiro, Galicia, Spain) [Full Show]",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/ENJumhoaW2s/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "SLIPKNOT - Live at Resurrection Fest EG 2023 (Viveiro, Galicia, Spain) [Full Show]",
+                    "url": "https://www.youtube.com/watch?v=ENJumhoaW2s"
+                  }
+                ]
               }
             ]
           },
@@ -1987,6 +2047,18 @@
                     "url": "https://youtu.be/63SkLEC48Bc"
                   }
                 ]
+              },
+              {
+                "title": "System Of A Down - Live in Rock Am Ring 2011 (4K High Quality Remastered Proshot)",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/gkrnafm9WPI/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "System Of A Down - Live in Rock Am Ring 2011 (4K High Quality Remastered Proshot)",
+                    "url": "https://www.youtube.com/watch?v=gkrnafm9WPI"
+                  }
+                ]
               }
             ]
           }
@@ -2027,6 +2099,36 @@
                   {
                     "title": "Three Days Grace Live in Concert: Alienation Album Release Event in Toronto - iHeartRadio Live 2025",
                     "url": "https://www.youtube.com/watch?v=RbcCI_iEmVk"
+                  }
+                ]
+              },
+              {
+                "title": "Three Days Grace - Live at Graspop Metal Meeting 2026 (FULL CONCERT) HD/1080p",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/jryYf103wLg/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "Three Days Grace - Live at Graspop Metal Meeting 2026 (FULL CONCERT) HD/1080p",
+                    "url": "https://www.youtube.com/watch?v=jryYf103wLg"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Too Close To Touch",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Too Close To Touch - Full Set HD - Live at The Foundry Concert Club",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/WVC60ljimEM/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "Too Close To Touch - Full Set HD - Live at The Foundry Concert Club",
+                    "url": "https://www.youtube.com/watch?v=WVC60ljimEM"
                   }
                 ]
               }
@@ -2129,6 +2231,30 @@
                   {
                     "title": "Full Set",
                     "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "#",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "8Ball and MJG",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "8Ball & MJG: Noochie’s Live From The Front Porch",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/F_WhcARxqLE/hqdefault.jpg",
+                "added": "2026-07-09",
+                "tracks": [
+                  {
+                    "title": "8Ball & MJG: Noochie’s Live From The Front Porch",
+                    "url": "https://www.youtube.com/watch?v=F_WhcARxqLE"
                   }
                 ]
               }
