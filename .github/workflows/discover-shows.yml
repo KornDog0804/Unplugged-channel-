@@ -104,4 +104,5 @@ jobs:
           git config user.email "actions@github.com"
           git add data/discovery-candidates.json data/discovery-rotation.json data/artist-watchlist.json data/trusted-channels.json
           git diff --staged --quiet || git commit -m "🎸 Discovery run $(date +'%Y-%m-%d') — new candidates"
+          git pull --rebase --autostash origin main
           git push
