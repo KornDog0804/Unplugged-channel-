@@ -683,6 +683,24 @@
             ]
           },
           {
+            "title": "Atreyu",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "ATREYU-LIVE FULL SET (BEST SHOW OF THE WHOLE TOUR) NOVEMBER 25 2025",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/0_iHMRkyknM/hqdefault.jpg",
+                "added": "2026-07-10",
+                "tracks": [
+                  {
+                    "title": "ATREYU-LIVE FULL SET (BEST SHOW OF THE WHOLE TOUR) NOVEMBER 25 2025",
+                    "url": "https://www.youtube.com/watch?v=0_iHMRkyknM"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Awaken I Am",
             "mode": "folder",
             "items": [
@@ -755,6 +773,24 @@
                   {
                     "title": "Full Concert",
                     "url": "https://youtu.be/e0eMNtNlrOA"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Blues Traveler",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Blues Traveler - Full Show - Perinton, NY 8/17/2024",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/IkcQ5NPTtFo/hqdefault.jpg",
+                "added": "2026-07-10",
+                "tracks": [
+                  {
+                    "title": "Blues Traveler - Full Show - Perinton, NY 8/17/2024",
+                    "url": "https://www.youtube.com/watch?v=IkcQ5NPTtFo"
                   }
                 ]
               }
@@ -875,6 +911,18 @@
                   {
                     "title": "Full Set",
                     "url": "https://www.youtube.com/watch?v=nSJio_JUZao"
+                  }
+                ]
+              },
+              {
+                "title": "Caskets - (FULL SET) Live at the Irving Plaza NYC 8/18/23",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/eHLVw2jVDfM/hqdefault.jpg",
+                "added": "2026-07-10",
+                "tracks": [
+                  {
+                    "title": "Caskets - (FULL SET) Live at the Irving Plaza NYC 8/18/23",
+                    "url": "https://www.youtube.com/watch?v=eHLVw2jVDfM"
                   }
                 ]
               }
@@ -1181,6 +1229,30 @@
                   {
                     "title": "Full Concert",
                     "url": "https://www.youtube.com/watch?v=TvkRYIFE370"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "H",
+        "mode": "folder",
+        "items": [
+          {
+            "title": "Holding Absence",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "HOLDING ABSENCE - 4K - MULTICAM FULL SET - THE GARAGE, GLASGOW - 19.11.23",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/m-gJl8i1-ss/hqdefault.jpg",
+                "added": "2026-07-10",
+                "tracks": [
+                  {
+                    "title": "HOLDING ABSENCE - 4K - MULTICAM FULL SET - THE GARAGE, GLASGOW - 19.11.23",
+                    "url": "https://www.youtube.com/watch?v=m-gJl8i1-ss"
                   }
                 ]
               }
