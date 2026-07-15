@@ -1325,6 +1325,24 @@
         "mode": "folder",
         "items": [
           {
+            "title": "The Jimi Hendrix Experience",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Jimi Hendrix - Live at The Royal Albert Hall 1969 FULL SHOW",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/bCM53IgJLPU/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Jimi Hendrix - Live at The Royal Albert Hall 1969 FULL SHOW",
+                    "url": "https://www.youtube.com/watch?v=bCM53IgJLPU"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Jinjer",
             "mode": "folder",
             "items": [
@@ -1523,6 +1541,18 @@
                   {
                     "title": "Full Concert",
                     "url": "https://www.youtube.com/watch?v=vXsFpdYAV9c"
+                  }
+                ]
+              },
+              {
+                "title": "Live In Texas (Full) [HD UPGRADE] - Linkin Park",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/7Mxg4VkkRRI/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Live In Texas (Full) [HD UPGRADE] - Linkin Park",
+                    "url": "https://www.youtube.com/watch?v=7Mxg4VkkRRI"
                   }
                 ]
               }
