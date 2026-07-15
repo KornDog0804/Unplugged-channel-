@@ -1,35 +1,5 @@
 [
   {
-    "videoId": "7Mxg4VkkRRI",
-    "title": "Live In Texas (Full) [HD UPGRADE] - Linkin Park",
-    "channelName": "Linkin Park",
-    "url": "https://www.youtube.com/watch?v=7Mxg4VkkRRI",
-    "duration": "1:11:01",
-    "durationMinutes": 71.01666666666667,
-    "publishedText": "16y ago",
-    "viewCountText": "51,834,953 views",
-    "thumbnail": "https://img.youtube.com/vi/7Mxg4VkkRRI/hqdefault.jpg",
-    "artistMatched": "Linkin Park",
-    "searchTerm": "full concert",
-    "discoveredAt": "2026-07-13T12:32:16.895Z",
-    "suggestedMode": "fullshow",
-    "suggestedTitle": "Live In Texas (Full) [HD UPGRADE] - Linkin Park",
-    "suggestedArtist": "Linkin Park",
-    "suggestedEpisodesJson": {
-      "title": "Live In Texas (Full) [HD UPGRADE] - Linkin Park",
-      "artist": "Linkin Park",
-      "mode": "fullshow",
-      "thumb": "https://img.youtube.com/vi/7Mxg4VkkRRI/hqdefault.jpg",
-      "added": "2026-07-13",
-      "tracks": [
-        {
-          "title": "Live In Texas (Full) [HD UPGRADE] - Linkin Park",
-          "url": "https://www.youtube.com/watch?v=7Mxg4VkkRRI"
-        }
-      ]
-    }
-  },
-  {
     "videoId": "C1Q-Ac4FFE8",
     "title": "Linkin Park   Rock in Rio Lisboa 2012 (Full Show) HD",
     "channelName": "Mr.Fantomas",
@@ -355,36 +325,6 @@
         {
           "title": "SLEEP TOKEN- FROM THE ROOM BELOW- LAFAYETTE - FULL SHOW  2 OF 2",
           "url": "https://www.youtube.com/watch?v=EDYXv5fECjQ"
-        }
-      ]
-    }
-  },
-  {
-    "videoId": "bCM53IgJLPU",
-    "title": "Jimi Hendrix - Live at The Royal Albert Hall 1969 FULL SHOW",
-    "channelName": "The Blues Archive",
-    "url": "https://www.youtube.com/watch?v=bCM53IgJLPU",
-    "duration": "1:12:45",
-    "durationMinutes": 72.75,
-    "publishedText": "2 months ago",
-    "viewCountText": "8,456 views",
-    "thumbnail": "https://img.youtube.com/vi/bCM53IgJLPU/hqdefault.jpg",
-    "artistMatched": "The Jimi Hendrix Experience",
-    "searchTerm": "full concert",
-    "discoveredAt": "2026-07-13T12:33:11.794Z",
-    "suggestedMode": "fullshow",
-    "suggestedTitle": "Jimi Hendrix - Live at The Royal Albert Hall 1969 FULL SHOW",
-    "suggestedArtist": "The Jimi Hendrix Experience",
-    "suggestedEpisodesJson": {
-      "title": "Jimi Hendrix - Live at The Royal Albert Hall 1969 FULL SHOW",
-      "artist": "The Jimi Hendrix Experience",
-      "mode": "fullshow",
-      "thumb": "https://img.youtube.com/vi/bCM53IgJLPU/hqdefault.jpg",
-      "added": "2026-07-13",
-      "tracks": [
-        {
-          "title": "Jimi Hendrix - Live at The Royal Albert Hall 1969 FULL SHOW",
-          "url": "https://www.youtube.com/watch?v=bCM53IgJLPU"
         }
       ]
     }
