@@ -701,6 +701,24 @@
             ]
           },
           {
+            "title": "Avenged Sevenfold",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Avenged Sevenfold - Live in The LBC 2008",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/_I6Mzd3lChI/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Avenged Sevenfold - Live in The LBC 2008",
+                    "url": "https://www.youtube.com/watch?v=_I6Mzd3lChI"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Awaken I Am",
             "mode": "folder",
             "items": [
@@ -1031,6 +1049,24 @@
                   {
                     "title": "Full Show",
                     "url": "https://youtu.be/JRlDBoFZ-yI"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Def Leppard",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Def Leppard - Live in Sheffield - 1993 (HD/1080p)",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/ING-LjzbppE/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Def Leppard - Live in Sheffield - 1993 (HD/1080p)",
+                    "url": "https://www.youtube.com/watch?v=ING-LjzbppE"
                   }
                 ]
               }
@@ -1557,6 +1593,24 @@
                 ]
               }
             ]
+          },
+          {
+            "title": "Lynyrd Skynyrd",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Lynyrd Skynyrd Live Asbury Park 1977 Full Concert",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/QoEZa5oG4b4/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Lynyrd Skynyrd Live Asbury Park 1977 Full Concert",
+                    "url": "https://www.youtube.com/watch?v=QoEZa5oG4b4"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -1619,6 +1673,24 @@
             ]
           },
           {
+            "title": "Morgan Wallen",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Morgan Wallen - FULL CONCERT in 4k | Ben Hill Griffin Stadium | Gainesville FL | May 15, 2026 ",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/T0URQXb93xk/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Morgan Wallen - FULL CONCERT in 4k | Ben Hill Griffin Stadium | Gainesville FL | May 15, 2026 ",
+                    "url": "https://www.youtube.com/watch?v=T0URQXb93xk"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Motionless In White",
             "mode": "folder",
             "items": [
@@ -1660,6 +1732,24 @@
         "title": "N",
         "mode": "folder",
         "items": [
+          {
+            "title": "Nevertel",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Nevertel - IT CALLS BY NAME TOUR (FULLSET) Live at Irving Plaza NYC 5/20/26",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/a2sz_SFSUIg/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Nevertel - IT CALLS BY NAME TOUR (FULLSET) Live at Irving Plaza NYC 5/20/26",
+                    "url": "https://www.youtube.com/watch?v=a2sz_SFSUIg"
+                  }
+                ]
+              }
+            ]
+          },
           {
             "title": "Nothing More",
             "mode": "folder",
@@ -1717,6 +1807,18 @@
                   }
                 ],
                 "added": "2026-06-24"
+              },
+              {
+                "title": "OF VIRTUE - LIVE AT THE HOUSE OF BLUES IN ANAHEIM, CA - 04/28/24",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/MT17T7svlsk/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "OF VIRTUE - LIVE AT THE HOUSE OF BLUES IN ANAHEIM, CA - 04/28/24",
+                    "url": "https://www.youtube.com/watch?v=MT17T7svlsk"
+                  }
+                ]
               }
             ]
           },
@@ -1763,6 +1865,24 @@
         "mode": "folder",
         "items": [
           {
+            "title": "Palisades",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Palisades - Live at Rock am Ring 2019",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/0eRqQsrcD68/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Palisades - Live at Rock am Ring 2019",
+                    "url": "https://www.youtube.com/watch?v=0eRqQsrcD68"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Pantera",
             "mode": "folder",
             "items": [
@@ -1793,6 +1913,24 @@
                   {
                     "title": "Papa Roach - live at Pukkelpop 2025",
                     "url": "https://www.youtube.com/watch?v=Zn0D4KapP1E"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "A Perfect Circle",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "A Perfect Circle - Stone And Echo ( Live at Red Rocks 2013 ) Full Concert 16:9 HD",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/ukms1X4GKjc/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "A Perfect Circle - Stone And Echo ( Live at Red Rocks 2013 ) Full Concert 16:9 HD",
+                    "url": "https://www.youtube.com/watch?v=ukms1X4GKjc"
                   }
                 ]
               }
@@ -1835,6 +1973,24 @@
             ]
           },
           {
+            "title": "Pink Floyd",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "Pink Floyd - Echoes - Live At Pompeii (1972) Full Video NoStop",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/OWwEqxG7RVo/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Pink Floyd - Echoes - Live At Pompeii (1972) Full Video NoStop",
+                    "url": "https://www.youtube.com/watch?v=OWwEqxG7RVo"
+                  }
+                ]
+              }
+            ]
+          },
+          {
             "title": "Polaris",
             "mode": "folder",
             "items": [
@@ -1861,6 +2017,18 @@
                   }
                 ],
                 "added": "2026-06-23"
+              },
+              {
+                "title": "Polaris - Fatalism North American Tour (FULLSET, SOLDOUT SHOW) Live at the Irving Plaza NYC 10/21/23",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/19uB58eplZU/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "Polaris - Fatalism North American Tour (FULLSET, SOLDOUT SHOW) Live at the Irving Plaza NYC 10/21/23",
+                    "url": "https://www.youtube.com/watch?v=19uB58eplZU"
+                  }
+                ]
               }
             ]
           }
@@ -2333,6 +2501,24 @@
                   {
                     "title": "Full Set",
                     "url": "https://www.youtube.com/watch?v=bb1xFy1fjjU"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "title": "Wind Walkers",
+            "mode": "folder",
+            "items": [
+              {
+                "title": "WIND WALKERS Full Set Live in Japan 赤羽 ReNY alpha 2025 1104 4K 60fps",
+                "mode": "fullshow",
+                "thumb": "https://img.youtube.com/vi/qbKO55RHOCY/hqdefault.jpg",
+                "added": "2026-07-15",
+                "tracks": [
+                  {
+                    "title": "WIND WALKERS Full Set Live in Japan 赤羽 ReNY alpha 2025 1104 4K 60fps",
+                    "url": "https://www.youtube.com/watch?v=qbKO55RHOCY"
                   }
                 ]
               }
