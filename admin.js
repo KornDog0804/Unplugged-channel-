@@ -155,12 +155,22 @@ $progressClose.addEventListener("click", () => {
 });
 
 // ── GitHub API helpers ────────────────────────────────────────────────────────
-async function ghGet(path) {
-  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`, {
-    headers: { Authorization: `token ${getToken()}`, Accept: "application/vnd.github.v3+json" }
-  });
+async function ghGet(path, shaOnly = false) {
+  const headers = { Authorization: `token ${getToken()}`, Accept: "application/vnd.github.v3+json" };
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${path}?ref=${BRANCH}`, { headers });
   if (!res.ok) throw new Error(`GET ${path}: ${res.status} ${res.statusText}`);
-  return res.json();
+  const data = await res.json();
+
+  // GitHub's contents API returns EMPTY content for files over 1 MB (encoding "none").
+  // Fall back to the git blob API, which returns the full base64 body.
+  if (!shaOnly && data.sha && (!data.content || data.encoding === "none")) {
+    const b = await fetch(`https://api.github.com/repos/${REPO}/git/blobs/${data.sha}`, { headers });
+    if (!b.ok) throw new Error(`GET blob ${path}: ${b.status} ${b.statusText}`);
+    const blob = await b.json();
+    data.content  = blob.content;
+    data.encoding = blob.encoding;
+  }
+  return data;
 }
 
 async function ghPut(path, content, sha, message) {
@@ -168,7 +178,7 @@ async function ghPut(path, content, sha, message) {
   // when the file was updated by the bot or another tab since page load.
   let freshSha = sha;
   try {
-    const latest = await ghGet(path);
+    const latest = await ghGet(path, true);
     freshSha = latest.sha;
   } catch (_) {
     // File may not exist yet (new file) — use passed-in sha (may be undefined)
