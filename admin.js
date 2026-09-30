@@ -68,6 +68,13 @@ let allCandidates      = [];
 let artistSuggestions  = [];
 let approvedHistory    = [];
 let rejectedHistory    = [];
+
+// Mobile-safe candidate rendering.
+// Keep the entire queue in memory but only build a small number
+// of cards in the DOM at one time.
+const PAGE_SIZE = 30;
+let visibleCandidateCount = PAGE_SIZE;
+
 const itemState = {};
 function getState(id) {
   if (!itemState[id]) itemState[id] = { selected:false, rejected:false, reason:"other" };
@@ -446,7 +453,9 @@ function renderGrid() {
     return;
   }
 
-  $grid.innerHTML = allCandidates.map(c => {
+  const visibleCandidates = allCandidates.slice(0, visibleCandidateCount);
+
+  $grid.innerHTML = visibleCandidates.map(c => {
     const st      = getState(c.videoId);
     const trusted = isTrustedChannel(c.channelName);
     const isNew   = isRecent(c.discoveredAt);
@@ -484,6 +493,38 @@ function renderGrid() {
       </div>
     </div>`;
   }).join("");
+
+  // Do not render the whole discovery queue at once.
+  // A 900+ item queue can overwhelm mobile browsers.
+  if (visibleCandidateCount < allCandidates.length) {
+    const remaining = allCandidates.length - visibleCandidateCount;
+    const more = document.createElement("div");
+    more.style.cssText =
+      "grid-column:1/-1;text-align:center;padding:24px 12px 110px;";
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent =
+      `Load ${Math.min(PAGE_SIZE, remaining)} More · ${remaining} Remaining`;
+
+    btn.style.cssText =
+      "border:1px solid rgba(127,212,26,.45);" +
+      "background:rgba(127,212,26,.12);" +
+      "color:#7FD41A;border-radius:12px;" +
+      "font-weight:900;font-size:14px;" +
+      "padding:14px 22px;cursor:pointer;";
+
+    btn.addEventListener("click", () => {
+      visibleCandidateCount = Math.min(
+        visibleCandidateCount + PAGE_SIZE,
+        allCandidates.length
+      );
+      renderGrid();
+    });
+
+    more.appendChild(btn);
+    $grid.appendChild(more);
+  }
 
   $grid.querySelectorAll(".card-cb").forEach(cb => {
     cb.addEventListener("change", () => {
@@ -644,6 +685,7 @@ async function init() {
   // Separate regular concert candidates from new artist suggestions
   allCandidates      = allCands.filter(c => c.type !== "new_artist_suggestion");
   artistSuggestions  = allCands.filter(c => c.type === "new_artist_suggestion");
+  visibleCandidateCount = PAGE_SIZE;
   renderArtistSuggestions();
 
   // Populate folder dropdown from live episodes.json
