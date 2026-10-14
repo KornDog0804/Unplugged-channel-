@@ -1,4 +1,5 @@
-const CACHE_NAME = "joeys-acoustic-corner-v1";
+// Network-first so installed copies always pick up new versions; the cache is only an offline fallback.
+const CACHE_NAME = "joeys-concert-corner-v2";
 
 const CORE_ASSETS = [
   "./",
@@ -6,16 +7,19 @@ const CORE_ASSETS = [
   "./sessions.html",
   "./styles.css",
   "./app.js",
-  "./data/episodes.js",
+  "./episodes.json",
   "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
+  "./icon-192.png",
+  "./icon-512.png",
+  "./apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (event) => {
+  // add each file on its own so one missing file can no longer abort the whole install
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(CORE_ASSETS.map((url) => cache.add(url).catch(() => null)))
+    )
   );
   self.skipWaiting();
 });
@@ -30,7 +34,17 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  if (request.method !== "GET" || new URL(request.url).origin !== self.location.origin) return;
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    fetch(request)
+      .then((response) => {
+        if (response && response.ok) {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy)).catch(() => {});
+        }
+        return response;
+      })
+      .catch(() => caches.match(request))
   );
 });

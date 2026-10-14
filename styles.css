@@ -607,11 +607,17 @@ body.landing{ background: var(--oled); }
   margin: 0 auto;
   padding: 14px;
   display: grid;
+  grid-template-columns: minmax(0, 1fr); /* stop wide children (buttons) from pushing the player off screen */
   gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
 }
+.playerShell > *{ min-width: 0; }
 
 .playerTop{
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
@@ -624,7 +630,7 @@ body.landing{ background: var(--oled); }
   padding: 10px 12px;
 }
 
-.npBlock{ min-width: 0; flex: 1; overflow: hidden; }
+.npBlock{ min-width: 0; flex: 1 1 140px; overflow: hidden; }
 .npTitle{
   font-weight: 900;
   letter-spacing: .02em;
@@ -646,7 +652,12 @@ body.landing{ background: var(--oled); }
   gap: 10px;
   align-items: center;
   flex-wrap: wrap;
-  flex: 0 0 auto;
+  flex: 0 1 auto;
+  max-width: 100%;
+}
+@media (max-width: 600px){
+  .npBtns{ flex: 1 1 100%; }
+  .npBtns .btn{ flex: 1 1 0; min-width: 0; text-align: center; white-space: nowrap; }
 }
 
 .npArtWrap{
