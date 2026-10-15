@@ -1444,7 +1444,6 @@
       } else {
         tryAutoPlayFromQuery();
       }
-      setStatus((($status?.textContent || "") + " — If weird, hard refresh / clear cache.").trim());
     } catch (err) {
       console.error(err);
       setStatus(`App crashed: ${err.message || err}`);

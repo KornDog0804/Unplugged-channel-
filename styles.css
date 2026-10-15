@@ -1242,3 +1242,19 @@ html.device-tv #kdSearch,
 html.device-tv #kdClearSearch {
   display: none !important;
 }
+
+/* ===== Simplified home: art + buttons up top, bigger featured cards ===== */
+.landingHeroTop{ padding: 26px 20px 4px; }
+.heroTag{ width: min(66vw, 270px); margin: 0 auto; }
+.landingHeroBody{ padding: 6px 20px 24px; }
+.landingHeroBody .heroTagline{ margin-bottom: 18px; }
+.featuredCard{ width: 156px; }
+.featuredArt{ width: 156px; height: 156px; border-radius: 22px; }
+.featuredCardTitle{ font-size: 13px; }
+@media (max-width: 420px){
+  .featuredCard{ width: 138px; }
+  .featuredArt{ width: 138px; height: 138px; }
+}
+html.device-tv .featuredCard{ width: 220px; }
+html.device-tv .featuredArt{ width: 220px; height: 220px; }
+.statusLine:empty{ display: none; }
