@@ -337,6 +337,10 @@
         }
       }
 
+      if (/^\/(@|channel\/|c\/|user\/)/.test(u.pathname)) {
+        return { kind: "playlist", watchUrl: url, embedUrl: "" };
+      }
+
       if (u.pathname.includes("/watch") && u.searchParams.get("v")) {
         const id = u.searchParams.get("v");
         const list = u.searchParams.get("list");

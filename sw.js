@@ -1,5 +1,5 @@
 // Network-first so installed copies always pick up new versions; the cache is only an offline fallback.
-const CACHE_NAME = "joeys-concert-corner-v4";
+const CACHE_NAME = "joeys-concert-corner-v5";
 
 const CORE_ASSETS = [
   "./",

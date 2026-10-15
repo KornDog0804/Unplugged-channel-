@@ -2641,48 +2641,12 @@
     "title": "🚗 Drag Racing",
     "artist": "Drag Racing",
     "year": "Playlist",
-    "mode": "queue",
+    "mode": "playlist",
     "thumb": "./images/nhra-4-logo-svg-vector.svg",
     "tracks": [
       {
-        "title": "Muckleshoot Casino Resort NHRA Northwest Nationals Full Broadcast",
-        "url": "https://youtu.be/XK2jFOJ43kk"
-      },
-      {
-        "title": "Jack Beckman completes the Indy double-up",
-        "url": "https://youtu.be/o-tl0N6mtFA"
-      },
-      {
-        "title": "DENSO NHRA Sonoma Nationals presented by PowerEdge Full Broadcast",
-        "url": "https://youtu.be/WfHeKO_OtrA"
-      },
-      {
-        "title": "Summit Racing Equipment NHRA Nationals Full Broadcast",
-        "url": "https://youtu.be/fDUHHWDtuW8"
-      },
-      {
-        "title": "Super Grip NHRA Thunder Valley Nationals Full Broadcast",
-        "url": "https://youtu.be/iSJu_6wSELU"
-      },
-      {
-        "title": "NHRA New England Nationals presented by bproauto Full Broadcast",
-        "url": "https://youtu.be/nNZ0i8XBBGM"
-      },
-      {
-        "title": "NHRA Potomac Nationals presented by JEGS Full Broadcast",
-        "url": "https://youtu.be/SrjHq0NwtPA"
-      },
-      {
-        "title": "Gerber Collision & Glass Route 66 NHRA Nationals presented by PEAK Full Broadcast",
-        "url": "https://youtu.be/VDHdfuCiqLU"
-      },
-      {
-        "title": "NHRA Southern Nationals Full Broadcast",
-        "url": "https://youtu.be/5VbusGXigBc"
-      },
-      {
-        "title": "NHRA 4-Wide Nationals Full Broadcast",
-        "url": "https://youtu.be/b6yi1cF6yX4"
+        "title": "NHRA 2026 - Full Events (Official Channel)",
+        "url": "https://www.youtube.com/@NHRA/streams"
       }
     ]
   }

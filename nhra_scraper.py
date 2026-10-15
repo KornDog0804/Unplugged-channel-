@@ -153,6 +153,10 @@ def main():
         print("Could not find the Drag Racing section in episodes.json — aborting.", file=sys.stderr)
         sys.exit(1)
 
+    if section.get("mode") == "playlist":
+        print("Drag Racing points at the official NHRA channel; scraper not needed.")
+        return
+
     ensure_queue_mode(section)
 
     existing_urls = {t.get("url") for t in section.get("tracks", [])}
