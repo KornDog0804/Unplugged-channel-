@@ -1258,3 +1258,9 @@ html.device-tv #kdClearSearch {
 html.device-tv .featuredCard{ width: 220px; }
 html.device-tv .featuredArt{ width: 220px; height: 220px; }
 .statusLine:empty{ display: none; }
+
+/* Fix: horizontal featured strip was widening the whole page */
+.landingWrap{ grid-template-columns: minmax(0,1fr); width: 100%; box-sizing: border-box; }
+.landingWrap > *{ min-width: 0; max-width: 100%; }
+body.landing{ overflow-x: hidden; }
+.featuredScroll{ max-width: 100%; }
